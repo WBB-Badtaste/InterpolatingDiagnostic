@@ -1,0 +1,1998 @@
+/*
+//    BOSCH REXROTH
+//
+//    Copyright (c) Bosch Rexroth AG 2009-2012
+//    Internet: http://www.boschrexroth.com
+//
+//    Project Name  : NYCe4000_SW
+//    Component Name: HOSTSW
+//    Subsystem Name: NYCE
+//    %full_filespec:    nycedefs.h`484.1.3.1.7.1.12:incl:1 % (SYNERGY INFO, do not change)
+//
+//    Description   : Generic public interface to NYCe4000
+*/
+
+#ifndef __NYCEDEFS_H__
+#define __NYCEDEFS_H__
+
+#include "n4k_deprecated.h" //lint !e451
+#include "nhiparameters.h"
+#include "nhivariables.h"
+#include "sacparameters.h"
+#include "sacvariables.h"
+#include "nycetypes.h"
+
+#if !defined(C67)
+#if !defined(NT)
+#if !defined(GNUARM)
+#if !defined(linux)
+#error "Define correct preprocessor macro for NYCe4000 (NT for building WIN32, C67 for building firmware, GNUARM for building microware or building dspproxy)"
+#endif
+#endif
+#endif
+#endif
+
+
+#ifdef NT
+#pragma pack(push)
+#pragma pack() //use default
+#endif
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+/*-----------------------------------------------------------------------
+ * GLOBAL DEFINES
+ *-----------------------------------------------------------------------
+ */
+
+#ifndef NULL
+#ifdef __cplusplus
+#define NULL    0
+#else
+#define NULL    ((void *)0)
+#endif
+#endif // NULL
+
+#ifdef WIN32
+#define NYCE_API _stdcall
+#else
+#define NYCE_API
+#endif
+
+
+/**
+ *  @addtogroup cm
+ *  @{
+ */
+
+/* LMS definitions */
+
+/*
+ * Maximum track, coils and carriers definitions.
+ */
+#define CM_MAX_TRACKS               16   
+#define CM_MAX_COILS_PER_TRACK      64
+#define CM_MAX_TOTAL_COILS          64
+#define CM_MAX_COILS_PER_TRACK_POSITION CM_MAX_TRACKS
+
+#define CM_MAX_SENSORS_PER_COIL     NYCE_MAX_SENSORS_PER_COIL
+#define CM_MAX_BUMPERS_PER_TRACK    10
+
+#define CM_MAX_CARRIERS             32
+#define CM_MAX_CARRIER_IDS          CM_MAX_CARRIERS
+
+/*
+ * Maximum profile points definition.
+ */
+#define CM_MAX_PROFILE_POINTS       16
+
+/*
+ * Maximum CPA tables and values per CPA table definitions.
+ */
+#define CM_MAX_NR_OF_CPA_TABLES     64
+#define CM_MAX_NR_OF_CPA_VALUES     4001
+
+/* 
+ * Definition to indicate carriers, tracks and coil indices that are not present.
+ */
+#define CM_NO_ID                    255 /* 0xFF */
+#define CM_CARRIER_HOMED_ID         254 /* 0xFE */
+
+/**
+ *  @}
+ */
+
+/**
+ *  @addtogroup nyce
+ *  @{
+ */
+
+/** Defacto values for error and success in definition of status and return codes */
+#define NYCE_OK_MASK                   ((uint32_t)0)
+#define NYCE_ERROR_MASK                ((uint32_t)1<<31)
+
+/**
+ *  @}
+ */
+
+/* START NYCE_STATUS and NYCE_ERROR_CODE section (leave this comment here and in tact for automatic parsing) */
+
+/* NYCE status codes */
+#define NYCE_OK                             ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_NYCE<<NYCE_SUBSYS_SHIFT)| 0)))
+#define NYCE_ERR_INVALID_OUTPUT_ARGUMENT    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCE<<NYCE_SUBSYS_SHIFT)| 1)))
+#define NYCE_ERR_INVALID_PARAMETER          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCE<<NYCE_SUBSYS_SHIFT)| 2)))
+#define NYCE_ERR_SYSTEM_ERROR               ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCE<<NYCE_SUBSYS_SHIFT)| 3)))
+#define NYCE_ERR_OS_ERROR                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCE<<NYCE_SUBSYS_SHIFT)| 4)))
+#define NYCE_ERR_WRONG_DEH_VERSION          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCE<<NYCE_SUBSYS_SHIFT)| 5)))
+#define NYCE_ERR_WRONG_OSAL_VERSION         ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCE<<NYCE_SUBSYS_SHIFT)| 6)))
+#define NYCE_ERR_WRONG_NCS_VERSION          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCE<<NYCE_SUBSYS_SHIFT)| 7)))
+#define NYCE_ERR_WRONG_SAC_VERSION          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCE<<NYCE_SUBSYS_SHIFT)| 8)))
+#define NYCE_ERR_WRONG_NHI_VERSION          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCE<<NYCE_SUBSYS_SHIFT)| 9)))
+#define NYCE_ERR_WRONG_SYS_VERSION          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCE<<NYCE_SUBSYS_SHIFT)|10)))
+#define NYCE_ERR_WRONG_DWN_VERSION          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCE<<NYCE_SUBSYS_SHIFT)|11)))
+#define NYCE_WRN_ALREADY_INITIALIZED        ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_NYCE<<NYCE_SUBSYS_SHIFT)|12)))
+/**
+ *  @brief  NyceInit is called with NYCE_SIM or NYCE_ETH while Nyce is already initialized using NYCE_FIWI.
+ */
+#define NYCE_WRN_FIWI_USED                  ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_NYCE<<NYCE_SUBSYS_SHIFT)|13)))
+#define NYCE_WRN_NOT_TERMINATED             ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_NYCE<<NYCE_SUBSYS_SHIFT)|14)))
+#define NYCE_ERR_NOT_INITIALIZED            ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCE<<NYCE_SUBSYS_SHIFT)|15)))
+#define NYCE_ERR_INVALID_OUTPUT_SIZE        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCE<<NYCE_SUBSYS_SHIFT)|16)))
+//code not used--------------------------------------------------------------------------------------------17
+/**
+ *  @brief  NyceInit is called with NYCE_NET, NYCE_ETH or NYCE_FIWI while Nyce is already initialized using NYCE_SIM.
+ */
+#define NYCE_WRN_SIM_USED                   ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_NYCE<<NYCE_SUBSYS_SHIFT)|18)))
+#define NYCE_ERR_WRONG_UTILS_VERSION        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCE<<NYCE_SUBSYS_SHIFT)|19)))
+#define NYCE_WRN_NO_NETWORK_INITIALIZED     ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_NYCE<<NYCE_SUBSYS_SHIFT)|20)))
+#define NYCE_ERR_UNKNOWN_ENUM_STRING        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCE<<NYCE_SUBSYS_SHIFT)|21)))
+#define NYCE_ERR_PARAMETER_OUT_OF_RANGE     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCE<<NYCE_SUBSYS_SHIFT)|22)))
+#define NYCE_ERR_INCORRECT_DATA_SIZE        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCE<<NYCE_SUBSYS_SHIFT)|23)))
+#define NYCE_ERR_WRITING_READONLY_PARAMETER ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCE<<NYCE_SUBSYS_SHIFT)|24)))
+#define NYCE_ERR_INCORRECT_DATA_TYPE        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCE<<NYCE_SUBSYS_SHIFT)|25)))
+/**
+ *  @brief  Only major version of (user) application and NYCe4000 software are the same.
+ */
+#define NYCE_WRN_WRONG_APPL_VERSION         ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_NYCE<<NYCE_SUBSYS_SHIFT)|26)))
+#define NYCE_ERR_WRONG_DLL_VERSION          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCE<<NYCE_SUBSYS_SHIFT)|27)))
+/**
+ *  @brief  NyceInit is called with NYCE_SIM or NYCE_FIWI while Nyce is already initialized using NYCE_ETH.
+ */
+#define NYCE_WRN_ETH_USED                   ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_NYCE<<NYCE_SUBSYS_SHIFT)|28)))
+#define NYCE_ERR_NOT_IMPLEMENTED            ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCE<<NYCE_SUBSYS_SHIFT)|29)))
+
+/* TRACE status codes */
+#define TRACE_WRN_VARIABLE_ALREADY_SELECTED     ((NYCE_STATUS)((NYCE_OK_MASK   )|((SS_TRACE<<NYCE_SUBSYS_SHIFT)| 1)))
+#define TRACE_WRN_VARIABLE_LOST                 ((NYCE_STATUS)((NYCE_OK_MASK   )|((SS_TRACE<<NYCE_SUBSYS_SHIFT)| 2)))
+#define TRACE_WRN_HSD_INVALID                   ((NYCE_STATUS)((NYCE_OK_MASK   )|((SS_TRACE<<NYCE_SUBSYS_SHIFT)| 3)))
+#define TRACE_WRN_ERROR_ACTIVE                  ((NYCE_STATUS)((NYCE_OK_MASK   )|((SS_TRACE<<NYCE_SUBSYS_SHIFT)| 4)))
+#define TRACE_WRN_NO_VARIABLE_AT_INDEX          ((NYCE_STATUS)((NYCE_OK_MASK   )|((SS_TRACE<<NYCE_SUBSYS_SHIFT)| 5)))
+
+#define TRACE_ERR_SERVER_COMMUNICATION_ERROR    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_TRACE<<NYCE_SUBSYS_SHIFT)|20)))
+#define TRACE_ERR_INVALID_STATE                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_TRACE<<NYCE_SUBSYS_SHIFT)|21)))
+#define TRACE_ERR_MAX_NR_OF_VARS_REACHED        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_TRACE<<NYCE_SUBSYS_SHIFT)|22)))
+#define TRACE_ERR_INTERNAL_ERROR                ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_TRACE<<NYCE_SUBSYS_SHIFT)|23)))
+#define TRACE_ERR_SERVER_ALREADY_RUNNING        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_TRACE<<NYCE_SUBSYS_SHIFT)|24)))
+#define TRACE_ERR_SERVER_NOT_RUNNING            ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_TRACE<<NYCE_SUBSYS_SHIFT)|25)))
+#define TRACE_ERR_INVALID_PARAMETER             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_TRACE<<NYCE_SUBSYS_SHIFT)|26)))
+#define TRACE_ERR_INVALID_OUTPUT_ARGUMENT       ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_TRACE<<NYCE_SUBSYS_SHIFT)|27)))
+#define TRACE_ERR_INVALID_VARIABLE_INDEX        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_TRACE<<NYCE_SUBSYS_SHIFT)|28)))
+#define TRACE_ERR_OUT_OF_MEMORY                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_TRACE<<NYCE_SUBSYS_SHIFT)|29)))
+#define TRACE_ERR_INVALID_PROCESS_ID            ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_TRACE<<NYCE_SUBSYS_SHIFT)|30)))
+#define TRACE_ERR_INVALID_FREQUENCY             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_TRACE<<NYCE_SUBSYS_SHIFT)|31)))
+#define TRACE_ERR_MAX_NR_OF_NODES_REACHED       ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_TRACE<<NYCE_SUBSYS_SHIFT)|32)))
+#define TRACE_ERR_SERVER_LOST                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_TRACE<<NYCE_SUBSYS_SHIFT)|33)))
+#define TRACE_ERR_BUFFER_TOO_LARGE              ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_TRACE<<NYCE_SUBSYS_SHIFT)|34)))
+#define TRACE_ERR_BUFFER_TOO_SMALL              ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_TRACE<<NYCE_SUBSYS_SHIFT)|35)))
+#define TRACE_ERR_NR_OF_VARIABLES_TOO_LARGE     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_TRACE<<NYCE_SUBSYS_SHIFT)|36)))
+#define TRACE_ERR_NO_VARIABLES_DEFINED          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_TRACE<<NYCE_SUBSYS_SHIFT)|37)))
+#define TRACE_ERR_ERROR_ACTIVE                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_TRACE<<NYCE_SUBSYS_SHIFT)|38)))
+#define TRACE_ERR_TIMEOUT                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_TRACE<<NYCE_SUBSYS_SHIFT)|39)))
+#define TRACE_ERR_EXCL_WRITE_PROHIBITS_DEFINE   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_TRACE<<NYCE_SUBSYS_SHIFT)|40)))
+
+/* ACS status codes */
+#define ACS_ERR_SERVER_COMMUNICATION_ERROR   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_ACS<<NYCE_SUBSYS_SHIFT)| 1)))
+#define ACS_ERR_SERVER_ALREADY_RUNNING       ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_ACS<<NYCE_SUBSYS_SHIFT)| 2)))
+#define ACS_ERR_SERVER_NOT_RUNNING           ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_ACS<<NYCE_SUBSYS_SHIFT)| 3)))
+#define ACS_ERR_INTERNAL_ERROR               ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_ACS<<NYCE_SUBSYS_SHIFT)| 4)))
+#define ACS_ERR_OUT_OF_MEMORY                ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_ACS<<NYCE_SUBSYS_SHIFT)| 5)))
+#define ACS_ERR_SERVER_LOST                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_ACS<<NYCE_SUBSYS_SHIFT)| 6)))
+#define ACS_ERR_INVALID_STATE                ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_ACS<<NYCE_SUBSYS_SHIFT)| 7)))
+
+/* SYS status codes */
+#define SYS_ERR_INVALID_OUTPUT_ARGUMENT             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SYS<<NYCE_SUBSYS_SHIFT)|1)))
+#define SYS_ERR_INVALID_PARAMETER                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SYS<<NYCE_SUBSYS_SHIFT)|2)))
+#define SYS_ERR_NODE_DOES_NOT_EXIST                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SYS<<NYCE_SUBSYS_SHIFT)|3)))
+#define SYS_ERR_INVALID_NODE_NAME                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SYS<<NYCE_SUBSYS_SHIFT)|7)))
+#define SYS_ERR_DUPLICATE_NAME                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SYS<<NYCE_SUBSYS_SHIFT)|8)))
+#define SYS_ERR_INVALID_AXIS_NAME                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SYS<<NYCE_SUBSYS_SHIFT)|9)))
+#define SYS_ERR_INVALID_EVENT_ID                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SYS<<NYCE_SUBSYS_SHIFT)|10)))
+#define SYS_ERR_MAX_HANDLERS_REACHED                ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SYS<<NYCE_SUBSYS_SHIFT)|12)))
+#define SYS_ERR_HANDLER_NOT_DEFINED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SYS<<NYCE_SUBSYS_SHIFT)|13)))
+#define SYS_ERR_NO_NODES                            ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SYS<<NYCE_SUBSYS_SHIFT)|14)))
+#define SYS_ERR_SYSTEM_ERROR                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SYS<<NYCE_SUBSYS_SHIFT)|15)))
+#define SYS_ERR_OS_ERROR                            ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SYS<<NYCE_SUBSYS_SHIFT)|16)))
+#define SYS_ERR_WRONG_FIRMWARE_VERSION              ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SYS<<NYCE_SUBSYS_SHIFT)|17)))
+#define SYS_ERR_NODE_IN_ERROR                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SYS<<NYCE_SUBSYS_SHIFT)|18)))
+#define SYS_ERR_NODE_DOES_NOT_SUPPORT_RESET_NODES   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SYS<<NYCE_SUBSYS_SHIFT)|19)))
+#define SYS_ERR_NOT_SUPPORTED                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SYS<<NYCE_SUBSYS_SHIFT)|20)))
+
+/* HNI status codes */
+#define HNI_WRN_USER_ABORT                      ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_HNI<<NYCE_SUBSYS_SHIFT)|1)))
+#define HNI_ERR_INVALID_PARAMETER               ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_HNI<<NYCE_SUBSYS_SHIFT)|2)))
+#define HNI_ERR_OS_ERROR                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_HNI<<NYCE_SUBSYS_SHIFT)|3)))
+#define HNI_ERR_NETWORK_ERROR                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_HNI<<NYCE_SUBSYS_SHIFT)|4)))
+#define HNI_ERR_SYSTEM_ERROR                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_HNI<<NYCE_SUBSYS_SHIFT)|5)))
+#define HNI_ERR_INVALID_OUTPUT_ARGUMENT         ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_HNI<<NYCE_SUBSYS_SHIFT)|6)))
+#define HNI_ERR_WRONG_DRIVER_VERSION            ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_HNI<<NYCE_SUBSYS_SHIFT)|8)))
+#define HNI_ERR_BUSRESET_DURING_TASK_EXECUTION  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_HNI<<NYCE_SUBSYS_SHIFT)|10)))
+#define HNI_ERR_OPERATION_ABORTED               ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_HNI<<NYCE_SUBSYS_SHIFT)|11)))
+#define HNI_ERR_INVALID_DEVICE_STATE            ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_HNI<<NYCE_SUBSYS_SHIFT)|12)))
+#define HNI_ERR_INVALID_HANDLE                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_HNI<<NYCE_SUBSYS_SHIFT)|13)))
+#define HNI_ERR_NETWORK_TIMEOUT                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_HNI<<NYCE_SUBSYS_SHIFT)|15)))
+#define HNI_ERR_BUSRESET_PENDING                ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_HNI<<NYCE_SUBSYS_SHIFT)|16)))
+#define HNI_ERR_INVALID_DEVICE_REQUEST          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_HNI<<NYCE_SUBSYS_SHIFT)|17)))
+#define HNI_ERR_INVALID_TASK_RESULT_SIZE        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_HNI<<NYCE_SUBSYS_SHIFT)|18)))
+#define HNI_ERR_OUTPUT_SIZE_TOO_SMALL           ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_HNI<<NYCE_SUBSYS_SHIFT)|19)))
+#define HNI_ERR_NO_ISOCH_CHANNEL                ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_HNI<<NYCE_SUBSYS_SHIFT)|20)))
+#define HNI_ERR_EVENT_RECEIVE_CANCELED          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_HNI<<NYCE_SUBSYS_SHIFT)|21)))
+#define HNI_ERR_NO_EVENT_AVAILABLE              ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_HNI<<NYCE_SUBSYS_SHIFT)|22)))
+#define HNI_WRN_DEVICE_REMOVED                  ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_HNI<<NYCE_SUBSYS_SHIFT)|23)))
+#define HNI_ERR_EVENT_POOL_UNDERRUN             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_HNI<<NYCE_SUBSYS_SHIFT)|24)))
+#define HNI_ERR_ALREADY_INITIALIZED             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_HNI<<NYCE_SUBSYS_SHIFT)|25)))
+
+/* NCS status codes */
+#define NCS_ERR_DUPLICATE_NAME                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)| 2)))
+#define NCS_ERR_INVALID_OUTPUT_ARGUMENT         ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)| 3)))
+#define NCS_ERR_INVALID_OUTPUT_SIZE             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)| 4)))
+#define NCS_ERR_INVALID_PARAMETER               ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)| 5)))
+#define NCS_ERR_NETWORK_ERROR                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)| 7)))
+#define NCS_ERR_OS_ERROR                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)| 9)))
+#define NCS_ERR_SYSTEM_ERROR                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|10)))
+/**
+ *  @brief  Failed to load the dependent dll.
+ */
+#define NCS_ERR_DLL_MISSING                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|11)))
+#define NCS_ERR_NODE_DOES_NOT_EXIST             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|15)))
+#define NCS_ERR_AXIS_DOES_NOT_EXIST             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|16)))
+#define NCS_WRN_USER_ABORT                      ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_NCS<<NYCE_SUBSYS_SHIFT)|17)))
+#define NCS_ERR_ALREADY_INIT                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|18)))
+#define NCS_ERR_NOT_INIT                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|19)))
+#define NCS_ERR_DUPLICATE_NODENAME              ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|20)))
+#define NCS_ERR_DUPLICATE_AXISNAME              ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|21)))
+#define NCS_ERR_NO_ENROLMENT_DEFINED            ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|23)))
+#define NCS_ERR_WRONG_HNI_VERSION               ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|24)))
+#define NCS_WRN_NOT_SUPPORTED_IN_SIMULATION     ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_NCS<<NYCE_SUBSYS_SHIFT)|25)))
+#define NCS_NETWORK_CONFIG_CHANGE_OCCURRED      ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_NCS<<NYCE_SUBSYS_SHIFT)|28)))
+#define NCS_NODE_CONFIG_CHANGE_OCCURRED         ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_NCS<<NYCE_SUBSYS_SHIFT)|29)))
+#define NCS_BUSRESET_OCCURRED                   ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_NCS<<NYCE_SUBSYS_SHIFT)|30)))
+#define NCS_ERR_MAX_NR_OF_ENROLMENTS_REACHED    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|31)))
+#define NCS_AXIS_CONFIG_CHANGE_OCCURRED         ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_NCS<<NYCE_SUBSYS_SHIFT)|32)))
+#define NCS_ERR_WRONG_N4KSERVICE_VERSION        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|33)))
+#define NCS_ERR_WRONG_FIRMWARE_VERSION          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|35)))
+#define NCS_WRN_WRONG_FIRMWARE_VERSION          ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_NCS<<NYCE_SUBSYS_SHIFT)|36)))
+#define NCS_ERR_WRONG_NET_VERSION               ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|37)))
+#define NCS_ERR_WRONG_SIM_VERSION               ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|38)))
+#define NCS_ERR_N4KSERVICE_NOT_AVAILABLE        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|39)))
+#define NCS_NETWORK_OUT_OF_SYNC                 ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_NCS<<NYCE_SUBSYS_SHIFT)|41)))
+#define NCS_NODE_TRANSMIT_BUFFER_FULL           ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_NCS<<NYCE_SUBSYS_SHIFT)|42)))
+#define NCS_EVENT_BUFFER_FULL                   ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_NCS<<NYCE_SUBSYS_SHIFT)|43)))
+#define NCS_WRN_NO_ENROLMENT_DEFINED            ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_NCS<<NYCE_SUBSYS_SHIFT)|44)))
+/**
+ *  @brief  The host and node administration is inconsistent.
+ *
+ *  A node reset might solve this problem.
+*/
+#define NCS_ERR_HOST_ADMIN_INCONSISTENT         ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|44)))
+#define NCS_ERR_FUNCTION_NOT_INITIALIZED        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|45)))
+#define NCS_ERR_INVALID_INPUT_TASK_PARS_SIZE    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|46)))
+
+/**
+ *  @brief  Exclusive write access functionality has been disabled.
+ *
+ *  Exclusive write access cannot be granted. This functionality has been disabled by the CMServer (NYCe4000LMS software only). 
+ */
+#define NCS_ERR_EXCL_WRITE_DISABLED             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|47)))
+/**
+ *  @brief  Exclusive write not available when trace is running.
+ *
+ *  Exclusive write access cannot be granted, as a process is running which uses the trace functionality. 
+*/
+#define NCS_ERR_EXCL_WRITE_NOT_GRANTED_TRACE_RUNNING ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|48)))
+/**
+ *  @brief  Exclusive write access functionality has been granted to another process.
+ *
+ *  Exclusive write access cannot be granted or released by the current process, as it has been granted to another process. 
+ */
+#define NCS_ERR_EXCL_WRITE_GRANTED_TO_ANOTHER_PROCESS ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|49)))
+/**
+ *  @brief  Exclusive write access functionality has been granted to another process.
+ *
+ *  Exclusive write access cannot be released, as it has not been granted to any process. 
+ */
+#define NCS_ERR_EXCL_WRITE_NOT_GRANTED          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|50)))
+/**
+ *  @brief  No write access.
+ *
+ *  Exclusive write access has been granted to another process; the current process does not have write access. 
+ */
+#define NCS_ERR_NO_WRITE_ACCESS                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|51))) 
+/**
+ *  @brief  The requested function is not supported for the current NYCE_NETWORK_TYPE.
+ */
+#define NCS_WRN_NOT_SUPPORTED                   ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_NCS<<NYCE_SUBSYS_SHIFT)|52)))
+/**
+ *  @brief  The n4kservice is running, but it failed to monitor the requested network type.
+ */
+#define NCS_ERR_N4KSERVICE_NOT_ACTIVE           ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|53)))
+/**
+ *  @brief  The Zynq firmware has the wrong version.
+ */
+#define NCS_ERR_WRONG_ZYNQ_FIRMWARE_VERSION     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|54)))
+/**
+ *  @brief  The Zynq firmware has the wrong version.
+ */
+#define NCS_WRN_WRONG_ZYNQ_FIRMWARE_VERSION     ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_NCS<<NYCE_SUBSYS_SHIFT)|55)))
+/**
+ *  @brief  Time-out during flash action.
+*/
+#define NCS_ERR_FLASH_TIMEOUT               ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NCS<<NYCE_SUBSYS_SHIFT)|56)))
+
+/* SIM error codes */
+#define SIM_ERR_INVALID_OUTPUT_ARGUMENT     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)| 1)))
+#define SIM_ERR_FILE_NOT_FOUND              ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)| 3)))
+#define SIM_ERR_FILE_OPEN_ERROR             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)| 4)))
+#define SIM_ERR_FILE_CONTENTS_ERROR         ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)| 5)))
+#define SIM_ERR_NODE_NOT_FOUND              ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)| 6)))
+#define SIM_ERR_SIM_NOT_INIT                ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)| 7)))
+#define SIM_ERR_INVALID_PARAMETER           ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)| 8)))
+#define SIM_ERR_INVALID_SLOT                ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)| 9)))
+#define SIM_ERR_INVALID_AXIS                ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|10)))
+#define SIM_ERR_INVALID_IO                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|11)))
+#define SIM_ERR_DATASET_BUFFER_TOO_SMALL    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|12)))
+#define SIM_ERR_INSUFFICIENT_RESOURCES      ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|13)))
+#define SIM_ERR_SYSTEM_ERROR                ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|14)))
+#define SIM_ERR_FILE_WRITE_ERROR            ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|15)))
+#define SIM_ERR_INVALID_ASPI_DATASIZE       ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|16)))
+#define SIM_ERR_INVALID_ASPI_STATE          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|17)))
+#define SIM_ERR_INVALID_ASPI_PORTTYPE       ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|18)))
+#define SIM_ERR_INTERNAL_ERROR              ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|19)))
+#define SIM_ERR_TIMER_EVENT_NOT_CREATED     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|20)))
+#define SIM_ERR_FILE_READ_ERROR             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|21)))
+#define SIM_ERR_INVALID_NODE_ID             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|22)))
+#define SIM_ERR_TOO_MANY_CLIENTS            ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|23)))
+#define SIM_ERR_INVALID_UNIT                ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|24)))
+#define SIM_ERR_INVALID_PORT                ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|25)))
+#define SIM_ERR_INVALID_BLOCK               ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|26)))
+#define SIM_ERR_INVALID_ADDRESS             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|27)))
+#define SIM_ERR_TIMEOUT                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|28)))
+#define SIM_ERR_CRC_ERROR                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|29)))
+#define SIM_WRN_ALREADY_CONNECTED           ((NYCE_STATUS)((NYCE_OK_MASK   )|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|30)))
+#define SIM_ERR_AXIS_IN_USE                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|31)))
+#define SIM_ERR_INVALID_INDRADRIVE_TYPE     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|32)))
+#define SIM_ERR_INVALID_INDRADRIVE_ERROR_CODE   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|33)))
+#define SIM_ERR_INVALID_INDRADRIVE_STATE    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|34)))
+#define SIM_ERR_INVALID_SERCOS_ADDRESS      ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|35)))
+#define SIM_ERR_INVALID_SERCOS_DEVICE_ID    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|36)))
+#define SIM_ERR_INVALID_FIRMWARE_TYPE       ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|37)))
+
+/**
+ *  @brief  The path to n4ksim.exe could not be generated for WOW64.
+ *
+ *  The 64-bits version of n4ksim.exe is expected relative to the loaded 32-bits n4ksimapi.dll.
+ *  The 32-bits n4ksimapi.dll is expected in a path "<CustomPath>\x86\bin"
+ *  Relative to the 32-bits n4ksimapi.dll the 64-bits n4ksim.exe is expected in "<CustomPath>\amd64\bin"
+*/
+#define SIM_ERR_INVALID_N4KSIM_WOW64_PATH   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|38)))
+#define SIM_ERR_UNKNOWN_ENUM_STRING         ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|39)))
+/**
+ *  @brief  The size of the output buffer is too small to fit the actual output parameters
+ *
+ *  Increase the size of the output buffer.
+ */
+#define SIM_ERR_OUTPUT_SIZE_TOO_SMALL       ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NYCESIM<<NYCE_SUBSYS_SHIFT)|40)))
+
+
+/* SEQ status codes */
+#define SEQ_ERR_FILE_CONTENTS_ERROR         ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)| 1)))
+#define SEQ_ERR_INVALID_SYMBOL              ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)| 2)))
+#define SEQ_ERR_NOT_ENOUGH_MEMORY           ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)| 3)))
+#define SEQ_ERR_ILLEGAL_AREA_NR             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)| 4)))
+#define SEQ_ERR_INVALID_NODE_ID             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)| 5)))
+#define SEQ_ERR_INTERNAL_ERROR              ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)| 6)))
+#define SEQ_ERR_MAX_NODES_CONNECTED         ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)| 7)))
+#define SEQ_WRN_ALREADY_CONNECTED           ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_SEQ<<NYCE_SUBSYS_SHIFT)| 8)))
+#define SEQ_ERR_INVALID_PARAMETER           ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)| 9)))
+#define SEQ_WRN_SYMBOL_IS_AUXILS            ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_SEQ<<NYCE_SUBSYS_SHIFT)|10)))
+#define SEQ_ERR_INVALID_NR_OF_AREAS         ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|11)))
+#define SEQ_ERR_GENERATE_FAILED             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|12)))
+#define SEQ_ERR_INVALID_FILE_VERSION        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|13)))
+#define SEQ_WRN_INVALID_FILE_VERSION        ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_SEQ<<NYCE_SUBSYS_SHIFT)|14)))
+#define SEQ_ERR_INVALID_NAME_LENGTH         ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|15)))
+#define SEQ_WRN_FILE_NOT_PRESENT            ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_SEQ<<NYCE_SUBSYS_SHIFT)|16)))
+#define SEQ_ERR_NO_SEQUENCE_LOADED          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|17)))
+#define SEQ_ERR_SEQUENCES_RUNNING           ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|18)))
+#define SEQ_ERR_NOT_SIMULATION_FUNCTION     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|19)))
+#define SEQ_ERR_INVALID_AREA_SIZE           ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|20)))
+#define SEQ_ERR_AREA_DEFINITION_MISMATCH    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|21)))
+#define SEQ_ERR_LOAD_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|22)))
+#define SEQ_ERR_NOT_REAL_FUNCTION           ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|23)))
+#define SEQ_ERR_DBG_MSG_BOX_NOT_FOUND       ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|24)))
+#define SEQ_ERR_DBG_NO_MSG_BOX_AVAILABLE    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|25)))
+#define SEQ_ERR_DBG_UNEXPECTED_MSG          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|26)))
+#define SEQ_ERR_DBG_INVALID_RSP_SIZE        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|27)))
+#define SEQ_ERR_WRONG_VERSION               ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|28)))
+#define SEQ_ERR_INVALID_AREA_TYPE           ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|29)))
+#define SEQ_ERR_ALREADY_RUNNING             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|30)))
+#define SEQ_ERR_DUPLICATE_NODENAME          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|31)))
+#define SEQ_ERR_FILE_OPEN_ERROR             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|32)))
+#define SEQ_ERR_SECTION_NOT_FOUND           ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|33)))
+#define SEQ_ERR_INVALID_OUTPUT_ARGUMENT     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|34)))
+#define SEQ_ERR_UNKNOWN_ENUM_STRING         ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|35)))
+/**
+ *  @brief  Only major version of a sequence is the same.
+ */
+#define SEQ_WRN_WRONG_VERSION               ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_SEQ<<NYCE_SUBSYS_SHIFT)|36)))
+/** @brief  The Seq subsystem is already initialized. */
+#define SEQ_WRN_ALREADY_INITIALIZED         ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_SEQ<<NYCE_SUBSYS_SHIFT)|37)))
+/** @brief  The Seq subsystem is not initialized. */
+#define SEQ_ERR_NOT_INITIALIZED             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|38)))
+/** @brief  Invalid sequence event ID used. */
+#define SEQ_ERR_INVALID_EVENT_ID            ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_SEQ<<NYCE_SUBSYS_SHIFT)|39)))
+
+/* DEH status codes */
+#define DEH_ERR_SYSTEM_ERROR                ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_DEH<<NYCE_SUBSYS_SHIFT)|1)))
+#define DEH_ERR_INVALID_PARAMETER           ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_DEH<<NYCE_SUBSYS_SHIFT)|2)))
+#define DEH_WRN_NO_LOGGING_DATA             ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_DEH<<NYCE_SUBSYS_SHIFT)|3)))
+#define DEH_ERR_INVALID_OUTPUT_ARGUMENT     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_DEH<<NYCE_SUBSYS_SHIFT)|4)))
+#define DEH_ERR_INVALID_NAME                ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_DEH<<NYCE_SUBSYS_SHIFT)|5)))
+#define DEH_ERR_NOT_INIT                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_DEH<<NYCE_SUBSYS_SHIFT)|6)))
+/**
+ *  @brief  The application failed to find the resources to communicate with n4kservice.
+ *
+ *  Make sure n4kservice is running as a service.
+ */
+#define DEH_ERR_N4KSERVICE_NOT_AVAILABLE     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_DEH<<NYCE_SUBSYS_SHIFT)|7)))
+
+/* OSAL status codes */
+#define OSAL_ERR_SYSTEM_ERROR               ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|1)))
+#define OSAL_ERR_INVALID_PARAMETER          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|2)))
+#define OSAL_ERR_TIMEOUT                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|3)))
+#define OSAL_ERR_MUTEX_ERROR                ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|4)))
+#define OSAL_ERR_MUTEX_INVALID_PARAMETER    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|5)))
+#define OSAL_WRN_MUTEX_ALREADY_EXIST        ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_OSAL<<NYCE_SUBSYS_SHIFT)|6)))
+#define OSAL_ERR_EVENT_ERROR                ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|7)))
+#define OSAL_ERR_EVENT_INVALID_PARAMETER    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|8)))
+#define OSAL_WRN_EVENT_ALREADY_EXIST        ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_OSAL<<NYCE_SUBSYS_SHIFT)|9)))
+#define OSAL_ERR_SEM_ERROR                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|10)))
+#define OSAL_ERR_SEM_INVALID_PARAMETER      ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|11)))
+#define OSAL_WRN_SEM_ALREADY_EXIST          ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_OSAL<<NYCE_SUBSYS_SHIFT)|12)))
+#define OSAL_ERR_SHM_ERROR                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|13)))
+#define OSAL_ERR_SHM_INVALID_PARAMETER      ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|14)))
+#define OSAL_WRN_SHM_ALREADY_EXIST          ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_OSAL<<NYCE_SUBSYS_SHIFT)|15)))
+#define OSAL_ERR_SHM_NO_MEM                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|16)))
+#define OSAL_ERR_MBOX_ERROR                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|17)))
+#define OSAL_ERR_MBOX_INVALID_PARAMETER     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|18)))
+#define OSAL_WRN_MBOX_ALREADY_EXIST         ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_OSAL<<NYCE_SUBSYS_SHIFT)|19)))
+#define OSAL_ERR_MBOX_NO_MEM                ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|20)))
+#define OSAL_ERR_MBOX_FULL                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|21)))
+#define OSAL_ERR_MBOX_INVALID_HANDLE        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|22)))
+#define OSAL_ERR_MBOX_MSG_TOO_BIG           ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|23)))
+#define OSAL_WRN_MBOX_NO_MSG                ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_OSAL<<NYCE_SUBSYS_SHIFT)|24)))
+#define OSAL_ERR_OS_ERROR                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|28)))
+#define OSAL_ERR_CRITSECT_INVALID_PARAMETER ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|29)))
+#define OSAL_ERR_CRITSECT_NOT_ENTERED       ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|30)))
+#define OSAL_ERR_STOPW_INVALID_PARAMETER    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|31)))
+#define OSAL_ERR_INVALID_OUTPUT_ARGUMENT    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|32)))
+#define OSAL_ERR_ALREADY_INIT               ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|33)))
+#define OSAL_ERR_NOT_INIT                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|34)))
+#define OSAL_WRN_SYSTEM_PROCESS             ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_OSAL<<NYCE_SUBSYS_SHIFT)|35)))
+#define OSAL_WRN_MUTEX_OWNED_THREAD_KILLED  ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_OSAL<<NYCE_SUBSYS_SHIFT)|36)))
+#define OSAL_WRN_DIFFERENT_PROCESS_MODE     ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_OSAL<<NYCE_SUBSYS_SHIFT)|37)))
+/**
+ *  @brief  The application has not enough privileges to create shared memory.
+ *
+ *  Make sure n4kservice is running as a service.
+ */
+#define OSAL_ERR_SHM_ACCESS_DENIED          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|38)))
+/**
+ *  @brief  The space in the string is too small.
+ *
+ *  Make sure that the size of the string is large enough
+ */
+#define OSAL_ERR_STRING_SIZE_TOO_SMALL      ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|39)))
+/**
+ *  @brief  The application has not enough privileges to create the directory.
+ *
+ *  Make sure that the application has write privileges in the directory.
+ */
+#define OSAL_ERR_FAILED_TO_CREATE_DIRECTORY ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|40)))
+/**
+ *  @brief  The connection was lost
+ *  
+ *  Make sure that the server or client application is (still) running. 
+ * 
+ */
+#define OSAL_ERR_CMD_CONNECTION_LOST  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|41)))
+/**
+ *  @brief  The connection could not be made 
+ *  
+ *  Make sure that the server (n4kservice) application is running. 
+ * 
+ */
+#define OSAL_ERR_CMD_NO_CONNECTION  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|42)))
+/**
+ *  @brief  A memory allocation failed
+ */
+#define OSAL_ERR_OUT_OF_MEMORY  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|43)))
+/**
+ *  @brief The server endpoint is already in use
+ *  
+ *  Make sure that the server application is not still running during a restart, or that the server communication endpoint (for TCP port number)
+ *  is not already in use.
+ *  
+ */
+#define OSAL_ERR_CMD_SRV_ENDPOINT_IN_USE  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_OSAL<<NYCE_SUBSYS_SHIFT)|44)))
+
+
+/* UTILS status codes */
+#define UTILS_ERR_XML_INTERNAL_ERROR            ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|1)))
+#define UTILS_ERR_XML_INVALID_PARAMETER         ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|2)))
+#define UTILS_ERR_XML_INVALID_OUTPUT_ARGUMENT   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|3)))
+#define UTILS_ERR_XML_FILE_NOT_FOUND            ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|4)))
+#define UTILS_ERR_XML_FILE_WRITE_ERROR          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|5)))
+#define UTILS_ERR_XML_FILE_CONTENTS_ERROR       ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|6)))
+#define UTILS_ERR_XML_NODE_NOT_FOUND            ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|7)))
+#define UTILS_ERR_XML_PROPERTY_NOT_FOUND        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|8)))
+/**
+ *  @brief  Not the expected number of nodes found
+*/
+#define UTILS_ERR_WRONG_NR_OF_NODES             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|9)))
+/**
+ *  @brief  Unexpected fatal error
+*/
+#define UTILS_ERR_SYSTEM_ERROR                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|10)))
+/**
+ *  @brief  Axis is not idle
+*/
+#define UTILS_ERR_AXIS_NOT_IDLE                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|11)))
+/**
+ *  @brief  Not supported firmware type
+*/
+#define UTILS_ERR_NOT_SUPPORTED_FIRMWARE        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|12)))
+/**
+ *  @brief  File not found
+*/
+#define UTILS_ERR_FILE_NOT_FOUND                ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|13)))
+/**
+ *  @brief  Node configuration not same as stored node configuration (file or flash)
+*/
+#define UTILS_WRN_NODE_CONFIG_CHANGED           ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_UTILS<<NYCE_SUBSYS_SHIFT)|14)))
+/**
+ *  @brief  Axis configuration not same as stored node configuration (file or flash)
+*/
+#define UTILS_WRN_AXIS_CONFIG_CHANGED           ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_UTILS<<NYCE_SUBSYS_SHIFT)|15)))
+/**
+ *  @brief  Create directory failed
+*/
+#define UTILS_ERR_CREATE_DIRECTORY_FAILED       ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|16)))
+/**
+ *  @brief  Directory not found
+*/
+#define UTILS_ERR_DIRECTORY_NOT_FOUND           ((NYCE_STATUS)(NYCE_ERROR_MASK|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|17)))
+/**
+ *  @brief  NYCe4000 host software not upgradeable
+*/
+#define UTILS_ERR_NOT_UPGRADEABLE_HOST          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|18)))
+/**
+ *  @brief  NYCe4000 node software not upgradeable
+*/
+#define UTILS_ERR_NOT_UPGRADEABLE_NODE          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|19)))
+/**
+*  @brief  File open error
+*/
+#define UTILS_ERR_FILE_OPEN_ERROR               ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|20)))
+/**
+ *  @brief  File read error
+*/
+#define UTILS_ERR_FILE_READ_ERROR               ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|21)))
+/**
+ *  @brief  Not expected file contents found
+*/
+#define UTILS_ERR_FILE_CONTENTS_ERROR           ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|22)))
+/**
+ *  @brief Warning during upgrade, indicating that API has changed
+ */
+#define UTILS_WRN_INCOMPATIBLE_API              ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_UTILS<<NYCE_SUBSYS_SHIFT)|23)))
+/**
+ *  @brief Warning during upgrade, indicating that API has changed
+ */
+#define UTILS_ERR_DLL_FUNCTION_NOT_FOUND        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|24)))
+/**
+ *  @brief  Not supported MCU unit type
+*/
+#define UTILS_ERR_NOT_SUPPORTED_MCU_UNIT_TYPE   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|25)))
+/**
+ *  @brief  Download of Zynq bootloader or firmware failed
+*/
+#define UTILS_ERR_ZYNQ_DOWNLOAD_FAILED          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|26)))
+/**
+ *  @brief  Communication error during Zynq firmware download
+*/
+#define UTILS_ERR_COMMUNICATION_ERROR           ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|27)))
+/**
+ *  @brief  Child process creation error during Zynq firmware download
+*/
+#define UTILS_ERR_CHILDPROCESS_ERROR            ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|28)))
+/**
+ *  @brief  No sequence bootstrap active
+*/
+#define UTILS_WRN_NO_SEQUENCE_BOOTSTRAP_ACTIVE  ((NYCE_STATUS)((NYCE_OK_MASK)|((SS_UTILS<<NYCE_SUBSYS_SHIFT)|29)))
+
+/* NHI status codes */
+#define NHI_ERR_INTERNAL_ERROR                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|1))
+#define NHI_ERR_INVALID_NODE_ID                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|2))
+#define NHI_ERR_INVALID_SLOT_ID                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|3))
+#define NHI_ERR_INVALID_BIT_NR                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|4))
+#define NHI_ERR_INVALID_ANALOGIO_NR             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|5))
+#define NHI_ERR_INVALID_AXIS_NR                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|6))
+#define NHI_ERR_INVALID_PARAMETER               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|7))
+#define NHI_ERR_INVALID_OUTPUT_ARGUMENT         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|8))
+#define NHI_WRN_ALREADY_CONNECTED               ((NYCE_STATUS)((NYCE_OK_MASK)   |(SS_NHI<<NYCE_SUBSYS_SHIFT)|10))
+#define NHI_ERR_TOO_MANY_CLIENTS                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|11))
+#define NHI_ERR_TOO_MANY_AXES                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|12))
+#define NHI_ERR_TOO_MANY_NODES                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|13))
+#define NHI_ERR_FILE_OPEN_ERROR                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|14))
+#define NHI_ERR_FILE_READ_ERROR                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|15))
+#define NHI_ERR_FILE_CONTENTS_ERROR             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|16))
+#define NHI_ERR_NO_FIRMWARE_LOADED              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|17))
+#define NHI_ERR_LATCH_ALREADY_DEFINED           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|20))
+#define NHI_ERR_INVALID_MCU_UNIT_TYPE           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|21))
+#define NHI_ERR_INVALID_UNIT_TYPE               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|22))
+#define NHI_ERR_PARAMETER_NOT_SPECIFIED         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|23))
+#define NHI_ERR_INVALID_PORT_ID                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|24))
+#define NHI_ERR_INVALID_PORT_TYPE               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|25))
+#define NHI_ERR_INVALID_DATA_SIZE               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|26))
+#define NHI_ERR_TIMEOUT                         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|27))
+#define NHI_ERR_INVALID_ASPI_STATE              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|28))
+#define NHI_ERR_NOT_SUPPORTED                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|29))
+#define NHI_ERR_NODE_REMOVED                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|30))
+#define NHI_ERR_NO_DIG_IO                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|31))
+#define NHI_ERR_INSUFFICIENT_MEMORY_AVAILABLE   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|32))
+#define NHI_ERR_ECG_INVALID_XML_ROOT_NAME       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|33))
+#define NHI_ERR_ECG_INCOMPLETE_TABLE            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|34))
+#define NHI_ERR_ECG_INVALID_NR_OF_POINTS        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|35))
+#define NHI_ERR_ECG_INVALID_CAM_TYPE            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|36))
+#define NHI_ERR_ECG_INVALID_NR_OF_TABLES        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|37))
+#define NHI_ERR_ECG_INVALID_CAM_DATA            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|38))
+#define NHI_ERR_DUPLICATE_NODENAME              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|39))
+#define NHI_ERR_FILE_WRITE_ERROR                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|40))
+#define NHI_ERR_INVALID_DATA_ID                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|41))
+#define NHI_ERR_UNKNOWN_ENUM_STRING             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|42))
+#define NHI_ERR_PARAMETER_OUT_OF_RANGE          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|43))
+#define NHI_ERR_INVALID_STRING                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|44))
+#define NHI_ERR_SERCOS_NETWORK_NOT_READY        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NHI<<NYCE_SUBSYS_SHIFT)|45))
+
+/* SAC status codes */
+#define SAC_ERR_IO_FUNCTION_ALREADY_DEFINED ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|1))
+#define SAC_ERR_TOO_MANY_CLIENTS            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|2))
+#define SAC_ERR_DISCONNECT_ERROR            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|3))
+#define SAC_ERR_AXIS_NOT_RESPONDING         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|4))
+#define SAC_ERR_FILE_OPEN_ERROR             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|5))
+#define SAC_ERR_FILE_READ_ERROR             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|6))
+#define SAC_ERR_FILE_CONTENTS_ERROR         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|7))
+#define SAC_ERR_FILE_WRITE_ERROR            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|8))
+#define SAC_ERR_ECG_INVALID_MASTER_AXIS_ID  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|9))
+#define SAC_ERR_ECG_SLAVE_ID_IS_MASTER_ID   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|10))
+#define SAC_ERR_ECG_SLAVE_ALREADY_LINKED    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|11))
+#define SAC_ERR_ECG_NO_MASTER_LINKED        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|12))
+#define SAC_ERR_INVALID_AXIS_ID             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|13))
+#define SAC_ERR_INVALID_MOTOR_TYPE          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|14))
+#define SAC_ERR_INVALID_AXIS_TYPE           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|15))
+#define SAC_ERR_INVALID_PARAMETER           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|16))
+#define SAC_ERR_INVALID_PAR_ID              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|17))
+#define SAC_ERR_INVALID_PARAM_SET_ID        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|18))
+#define SAC_ERR_INVALID_VAR_ID              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|19))
+#define SAC_ERR_INVALID_PARAMETER_TYPE      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|20))
+#define SAC_ERR_INVALID_EVENT_ID            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|21))
+#define SAC_ERR_INVALID_ACTION              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|22))
+#define SAC_ERR_TOO_MANY_AXES               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|23))
+#define MAC_ERR_INVALID_GROUP_ID            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|24))
+#define MAC_ERR_TOO_MANY_SYNC_GROUPS        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|25))
+#define MAC_ERR_TOO_MANY_ERROR_GROUPS       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|26))
+#define MAC_ERR_ERROR_GROUP_CONFLICT        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|27))
+#define SAC_WRN_ALREADY_CONNECTED           ((NYCE_STATUS)((NYCE_OK_MASK)   |(SS_SAC<<NYCE_SUBSYS_SHIFT)|28))
+#define SAC_ERR_NOT_SUPPORTED               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|29))
+#define SAC_ERR_NO_FIRMWARE_LOADED          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|30))
+#define SAC_ERR_PARAMETER_NOT_SPECIFIED     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|31))
+#define SAC_ERR_NOT_A_MONITOR               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|32))
+#define SAC_ERR_NOT_ALL_MONITORS_FOUND      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|33))
+//code not used------------------------------------------------------------------------------------------34                                                                                                 
+#define SAC_ERR_INVALID_DATA_SET_SIZE       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|35))
+#define SAC_ERR_INVALID_OUTPUT_SIZE         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|36))
+#define SAC_ERR_INVALID_OUTPUT_ARGUMENT     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|37))
+//code not used------------------------------------------------------------------------------------------38                                                                                                 
+#define SAC_ERR_AXIS_REMOVED                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|39))
+#define SAC_ERR_AXIS_NAME_NOT_FOUND         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|40))
+#define SAC_ERR_MAX_NR_OF_POINTS_EXCEEDED   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|41))
+#define SAC_ERR_INVALID_LIN_LUT_DATA        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|42))
+#define SAC_ERR_TIMEOUT_ON_OTHER_PROCESS    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|43))
+#define SAC_WRN_COMPLETED_ON_OTHER_PROCESS  ((NYCE_STATUS)((NYCE_OK_MASK)   |(SS_SAC<<NYCE_SUBSYS_SHIFT)|44))
+#define SAC_ERR_ASYNC_VAR_NOT_FOR_TRACE     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|45))
+#define SAC_ERR_ASYNC_VAR_NOT_FOR_VAR_SET   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|46))
+//code not used------------------------------------------------------------------------------------------47                                                                                                 
+#define SAC_ERR_INVALID_ENCODER_TYPE        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|48))
+#define SAC_ERR_INVALID_BIT_NR              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|49))
+#define SAC_ERR_INVALID_ANOUT_ID            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|50))
+#define SAC_ERR_DUPLICATE_AXISNAME          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|52))
+#define SAC_ERR_OUT_OF_MEMORY               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|53))
+#define SAC_ERR_INVALID_DATA_ID             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|54))
+#define SAC_ERR_UNKNOWN_ENUM_STRING         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|55))
+#define SAC_ERR_PARAMETER_OUT_OF_RANGE      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|56))
+#define SAC_ERR_INVALID_STRING              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|57))
+/** @brief  The Sac subsystem is already initialized. */
+#define SAC_WRN_ALREADY_INITIALIZED         ((NYCE_STATUS)((NYCE_OK_MASK)   |(SS_SAC<<NYCE_SUBSYS_SHIFT)|58))
+/** @brief  The Sac subsystem is not initialized. */
+#define SAC_ERR_NOT_INITIALIZED             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|59))
+/** @brief  Unexpected internal code flow (internal software bug) */
+#define SAC_ERR_INTERNAL_ERROR              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|60))
+
+/* DWN status codes */
+#define DWN_ERR_INVALID_PARAMETER           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_DWN<<NYCE_SUBSYS_SHIFT)|2))
+#define DWN_ERR_INVALID_OUTPUT_ARGUMENT     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_DWN<<NYCE_SUBSYS_SHIFT)|4))
+#define DWN_ERR_FILE_OPEN_ERROR             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_DWN<<NYCE_SUBSYS_SHIFT)|6))
+#define DWN_ERR_FILE_READ_ERROR             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_DWN<<NYCE_SUBSYS_SHIFT)|7))
+#define DWN_ERR_FILE_CONTENTS_ERROR         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_DWN<<NYCE_SUBSYS_SHIFT)|8))
+#define DWN_ERR_FILE_CLOSE_ERROR            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_DWN<<NYCE_SUBSYS_SHIFT)|9))
+#define DWN_ERR_SYSTEM_ERROR                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_DWN<<NYCE_SUBSYS_SHIFT)|10))
+#define DWN_ERR_NOT_IMPLEMENTED             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_DWN<<NYCE_SUBSYS_SHIFT)|11))
+#define DWN_ERR_STATE_ERROR                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_DWN<<NYCE_SUBSYS_SHIFT)|13))
+#define DWN_ERR_FILE_SIZE_ERROR             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_DWN<<NYCE_SUBSYS_SHIFT)|14))
+#define DWN_ERR_INVALID_FILE_HEADER         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_DWN<<NYCE_SUBSYS_SHIFT)|15))
+#define DWN_ERR_INVALID_FILE_TYPE           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_DWN<<NYCE_SUBSYS_SHIFT)|16))
+/**
+ *  @brief  Flash data download error.
+ */
+#define DWN_ERR_FLASH_DATA_DOWNLOAD_ERROR   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_DWN<<NYCE_SUBSYS_SHIFT)|17))
+/**
+ *  @brief  Error writing to file.
+ */
+#define DWN_ERR_FILE_WRITE_ERROR            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_DWN<<NYCE_SUBSYS_SHIFT)|18))
+/**
+ *  @brief  Not supported DWN action.
+ */
+#define DWN_ERR_NOT_SUPPORTED               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_DWN<<NYCE_SUBSYS_SHIFT)|19))
+/**
+ *  @brief  Still sequences running.
+ */
+#define DWN_ERR_STILL_SEQUENCES_RUNNING     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_DWN<<NYCE_SUBSYS_SHIFT)|20))
+/**
+ *  @brief  Not all axes are idle (idle or inactive state).
+ */
+#define DWN_ERR_NOT_ALL_AXES_ARE_IDLE       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_DWN<<NYCE_SUBSYS_SHIFT)|21))
+
+/* PPI status codes */
+#define PPI_ERR_STATE_ERROR                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PPI<<NYCE_SUBSYS_SHIFT)|1))
+#define PPI_ERR_FLASH_WRITE_ERROR           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PPI<<NYCE_SUBSYS_SHIFT)|2))
+#define PPI_ERR_FLASH_ERASE_ERROR           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PPI<<NYCE_SUBSYS_SHIFT)|3))
+#define PPI_ERR_CHECKSUM_FAILED             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PPI<<NYCE_SUBSYS_SHIFT)|5))
+#define PPI_ERR_WRITING_MCU_EEPROM          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PPI<<NYCE_SUBSYS_SHIFT)|6))
+#define PPI_ERR_WRITING_DRIVE_EEPROM        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PPI<<NYCE_SUBSYS_SHIFT)|7))
+#define PPI_ERR_MCU_EEPROM_CRC_CORRUPT      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PPI<<NYCE_SUBSYS_SHIFT)|8))
+#define PPI_WRN_DRIVE_EEPROM_CRC_CORRUPT    ((NYCE_STATUS)((NYCE_OK_MASK)   |(SS_PPI<<NYCE_SUBSYS_SHIFT)|9))
+#define PPI_ERR_INVALID_TASK_PAR_SIZE       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PPI<<NYCE_SUBSYS_SHIFT)|10))
+#define PPI_ERR_INVALID_PARAMETER           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PPI<<NYCE_SUBSYS_SHIFT)|11))
+#define PPI_ERR_INVALID_DATA_SET_SIZE       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PPI<<NYCE_SUBSYS_SHIFT)|12))
+#define PPI_ERR_INVALID_DATA_SET_ID         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PPI<<NYCE_SUBSYS_SHIFT)|13))
+#define PPI_ERR_INTERNAL_ERROR              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PPI<<NYCE_SUBSYS_SHIFT)|14))
+#define PPI_ERR_MCU_WRONG_HW_VERSION        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PPI<<NYCE_SUBSYS_SHIFT)|15))
+#define PPI_ERR_DRIVE_WRONG_HW_VERSION      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PPI<<NYCE_SUBSYS_SHIFT)|16))
+#define PPI_ERR_NO_NY415X_AVAILABLE         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PPI<<NYCE_SUBSYS_SHIFT)|17))
+#define PPI_ERR_MICROWARE_SIZE_ERROR        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PPI<<NYCE_SUBSYS_SHIFT)|18))
+#define PPI_ERR_SERCONGATEWARE_SIZE_ERROR   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PPI<<NYCE_SUBSYS_SHIFT)|19))
+
+/* TSK status codes */
+#define TSK_ERR_INVALID_AXIS                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_TSK<<NYCE_SUBSYS_SHIFT)|1))
+#define TSK_ERR_INVALID_AXIS_TASK_ID        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_TSK<<NYCE_SUBSYS_SHIFT)|2))
+#define TSK_ERR_INVALID_DATA_ID             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_TSK<<NYCE_SUBSYS_SHIFT)|3))
+#define TSK_ERR_INVALID_NODE_TASK_ID        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_TSK<<NYCE_SUBSYS_SHIFT)|4))
+#define TSK_ERR_INVALID_TASK_SIZE           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_TSK<<NYCE_SUBSYS_SHIFT)|5))
+#define TSK_ERR_INVALID_TASK_PAR_SIZE       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_TSK<<NYCE_SUBSYS_SHIFT)|6))
+#define TSK_ERR_NO_WRITE_ACCESS             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_TSK<<NYCE_SUBSYS_SHIFT)|7))
+#define TSK_ERR_SAVE_TO_FLASH               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_TSK<<NYCE_SUBSYS_SHIFT)|8))
+#define TSK_ERR_STACK_OVERFLOW              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_TSK<<NYCE_SUBSYS_SHIFT)|9))
+#define TSK_ERR_INCONSISTENT_FLASH_DATA     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_TSK<<NYCE_SUBSYS_SHIFT)|10))
+#define TSK_ERR_INVALID_DATA_SET_SIZE       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_TSK<<NYCE_SUBSYS_SHIFT)|11))
+#define TSK_ERR_INTERNAL_ERROR              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_TSK<<NYCE_SUBSYS_SHIFT)|12))
+#define TSK_ERR_NODE_TASK_NOT_ALLOWED       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_TSK<<NYCE_SUBSYS_SHIFT)|13))
+#define TSK_ERR_AXIS_TASK_NOT_ALLOWED       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_TSK<<NYCE_SUBSYS_SHIFT)|14))
+#define TSK_ERR_INVALID_FW_VERSION          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_TSK<<NYCE_SUBSYS_SHIFT)|15))
+/**
+ *  @brief  The task has not been executed yet.
+ */
+#define TSK_ERR_TASK_NOT_EXECUTED           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_TSK<<NYCE_SUBSYS_SHIFT)|16))
+/**
+ *  @brief  The size of the output parameters is too large.
+ */
+#define TSK_ERR_TASK_OUT_PAR_SIZE_TOO_LARGE ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_TSK<<NYCE_SUBSYS_SHIFT)|17))
+/**
+ *  @brief  Not supported data ID encountered.
+ */
+#define TSK_ERR_DATA_ID_NOT_SUPPORTED       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_TSK<<NYCE_SUBSYS_SHIFT)|18))
+/**
+ *  @brief  Not supported axis task ID encountered.
+ */
+#define TSK_ERR_AXIS_TASK_ID_NOT_SUPPORTED  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_TSK<<NYCE_SUBSYS_SHIFT)|19))
+
+/* STD status codes */
+#define STD_ERR_INVALID_PARAMETER           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_STD<<NYCE_SUBSYS_SHIFT)|1))
+#define STD_ERR_INVALID_TASK_PAR_SIZE       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_STD<<NYCE_SUBSYS_SHIFT)|2))
+#define STD_ERR_STATE_ERROR                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_STD<<NYCE_SUBSYS_SHIFT)|3))
+#define STD_ERR_INVALID_AXIS                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_STD<<NYCE_SUBSYS_SHIFT)|4))
+#define STD_ERR_INVALID_DATA_ID             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_STD<<NYCE_SUBSYS_SHIFT)|5))
+#define STD_ERR_BLAC_NOT_ALIGNED            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_STD<<NYCE_SUBSYS_SHIFT)|6))
+#define STD_ERR_INTERNAL_ERROR              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_STD<<NYCE_SUBSYS_SHIFT)|7))
+#define STD_ERR_INDRA_BLAC_NOT_ALIGNED      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_STD<<NYCE_SUBSYS_SHIFT)|9))
+#define STD_ERR_INVALID_AXIS_TYPE           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_STD<<NYCE_SUBSYS_SHIFT)|10))
+
+/* EDH status codes */
+#define EDH_ERR_INVALID_PARAMETER             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EDH<<NYCE_SUBSYS_SHIFT)|1))
+#define EDH_ERR_INVALID_TASK_PAR_SIZE         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EDH<<NYCE_SUBSYS_SHIFT)|2))
+#define EDH_ERR_INVALID_AXIS                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EDH<<NYCE_SUBSYS_SHIFT)|4))
+#define EDH_ERR_INVALID_DATA_ID               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EDH<<NYCE_SUBSYS_SHIFT)|5))
+#define EDH_ERR_INVALID_GROUP_ID              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EDH<<NYCE_SUBSYS_SHIFT)|6))
+#define EDH_ERR_HANDLER_SEVERITY_TOO_LOW      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EDH<<NYCE_SUBSYS_SHIFT)|7))
+#define EDH_ERR_GROUP_ID_ALREADY_DEFINED      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EDH<<NYCE_SUBSYS_SHIFT)|8))
+#define EDH_ERR_INTERNAL_ERROR                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EDH<<NYCE_SUBSYS_SHIFT)|9))
+#define EDH_ERR_POS_SERVO_VOLTAGE_TOO_LOW     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EDH<<NYCE_SUBSYS_SHIFT)|10))
+#define EDH_ERR_POS_SERVO_VOLTAGE_TOO_HIGH    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EDH<<NYCE_SUBSYS_SHIFT)|11))
+#define EDH_ERR_NEG_SERVO_VOLTAGE_TOO_LOW     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EDH<<NYCE_SUBSYS_SHIFT)|12))
+#define EDH_ERR_NEG_SERVO_VOLTAGE_TOO_HIGH    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EDH<<NYCE_SUBSYS_SHIFT)|13))
+#define EDH_ERR_NOT_SUPPORTED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EDH<<NYCE_SUBSYS_SHIFT)|14))
+#define EDH_ERR_SERVICE_MODE_ACTIVE           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EDH<<NYCE_SUBSYS_SHIFT)|15))
+#define EDH_ERR_NON_CONFIGURABLE_ERROR        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EDH<<NYCE_SUBSYS_SHIFT)|16))
+
+/* EVH status codes */
+#define EVH_ERR_INVALID_PARAMETER                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EVH<<NYCE_SUBSYS_SHIFT)|1))
+#define EVH_ERR_INVALID_TASK_PAR_SIZE            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EVH<<NYCE_SUBSYS_SHIFT)|2))
+#define EVH_ERR_STATE_ERROR                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EVH<<NYCE_SUBSYS_SHIFT)|3))
+#define EVH_ERR_INVALID_AXIS                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EVH<<NYCE_SUBSYS_SHIFT)|4))
+#define EVH_ERR_INVALID_DATA_ID                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EVH<<NYCE_SUBSYS_SHIFT)|5))
+#define EVH_WRN_REQUEST_ALREADY_DEFINED          ((NYCE_STATUS)((NYCE_OK_MASK)   |(SS_EVH<<NYCE_SUBSYS_SHIFT)|6))
+#define EVH_ERR_SYSTEM_ERROR                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EVH<<NYCE_SUBSYS_SHIFT)|7))
+#define EVH_ERR_REQUEST_TIMEOUT                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EVH<<NYCE_SUBSYS_SHIFT)|8))
+#define EVH_ERR_BLAC_NOT_ALIGNED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EVH<<NYCE_SUBSYS_SHIFT)|9))
+#define EVH_ERR_INVALID_EVENT_ID                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EVH<<NYCE_SUBSYS_SHIFT)|10))
+#define EVH_ERR_INVALID_ACTION_ID                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EVH<<NYCE_SUBSYS_SHIFT)|11))
+#define EVH_ERR_TOO_MANY_MARKERS_DEFINED         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EVH<<NYCE_SUBSYS_SHIFT)|12))
+#define EVH_ERR_INVALID_DATA_SET_ID              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EVH<<NYCE_SUBSYS_SHIFT)|13))
+#define EVH_ERR_INVALID_DATA_SET_SIZE            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EVH<<NYCE_SUBSYS_SHIFT)|14))
+#define EVH_ERR_MARKER_ID_ALREADY_DEFINED        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EVH<<NYCE_SUBSYS_SHIFT)|15))
+#define EVH_ERR_INVALID_MARKER_REPEAT_DISTANCE   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EVH<<NYCE_SUBSYS_SHIFT)|16))
+#define EVH_ERR_INTERNAL_ERROR                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EVH<<NYCE_SUBSYS_SHIFT)|17))
+#define EVH_ERR_TOO_MANY_SYNC_GROUPS             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EVH<<NYCE_SUBSYS_SHIFT)|18))
+#define EVH_ERR_INVALID_MARKER_ID                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EVH<<NYCE_SUBSYS_SHIFT)|19))
+#define EVH_ERR_NOT_SUPPORTED                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EVH<<NYCE_SUBSYS_SHIFT)|20))
+#define EVH_ERR_INVALID_MARKER_POSITION          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EVH<<NYCE_SUBSYS_SHIFT)|21))
+#define EVH_ERR_AXIS_NOT_HOMED                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EVH<<NYCE_SUBSYS_SHIFT)|22))
+#define EVH_ERR_INVALID_SLOT_ID                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_EVH<<NYCE_SUBSYS_SHIFT)|23))
+
+/* SPG status codes */
+#define SPG_ERR_INVALID_PARAMETER               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|1))
+#define SPG_ERR_INVALID_TASK_PAR_SIZE           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|2))
+#define SPG_ERR_STATE_ERROR                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|3))
+#define SPG_ERR_INVALID_AXIS                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|4))
+#define SPG_ERR_INVALID_DATA_ID                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|5))
+#define SPG_ERR_SPLINE_BUFFER_OVERFLOW          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|6))
+#define SPG_ERR_SPLINE_BUFFER_EMPTY             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|7))
+#define SPG_ERR_LAST_SPLINE_VEL_NON_ZERO        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|8))
+#define SPG_ERR_INTERNAL_ERROR                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|9))
+#define SPG_ERR_POSITION_OUT_OF_RANGE           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|10))
+#define SPG_ERR_VELOCITY_TOO_HIGH_FOR_SAFE_STOP ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|11))
+#define SPG_ERR_HOME_MODE_NOT_SUPPORTED         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|12))
+#define SPG_WRN_HOMED_SINGLE_TURN_ABSOLUTE_ONLY ((NYCE_STATUS)((NYCE_OK_MASK   )|(SS_SPG<<NYCE_SUBSYS_SHIFT)|13))
+#define SPG_ERR_VALUE_OUT_OF_RANGE              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|14))
+#define SPG_ERR_HOME_MODE_ACTIVE                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|15))
+#define SPG_ERR_LMS_NO_NEW_SETPOINT             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|16))
+#define SPG_ERR_LMS_CAR_SWITCH_ERROR            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|17))
+#define SPG_ERR_INVALID_DATA_SIZE               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|18))
+#define SPG_ERR_INVALID_AXIS_TYPE               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|19))
+#define SPG_ERR_BROADCAST_ERROR                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|20))
+#define SPG_ERR_BROADCAST_ENABLED               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|21))
+#define SPG_ERR_INVALID_ENDVELOCITY             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|22))
+#define SPG_ERR_LMS_MEV_GAP_ERROR               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|23))
+#define SPG_ERR_LMS_MTC_GAP_ERROR               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|24))
+#define SPG_ERR_EXT_STEPPER_VELOCITY_TOO_HIGH   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|25))
+
+/* ECG status codes */
+#define ECG_ERR_INVALID_PARAMETER               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|32))
+#define ECG_ERR_INVALID_TASK_PAR_SIZE           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|33))
+#define ECG_ERR_INVALID_AXIS                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|35))
+#define ECG_ERR_INVALID_DATA_ID                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|36))
+#define ECG_ERR_INVALID_DATA                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|37))
+#define ECG_ERR_NO_MASTER_LINKED                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|38))
+#define ECG_ERR_DIRECTION_ERROR                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|39))
+#define ECG_ERR_SLAVE_ALREADY_LINKED            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|40))
+#define ECG_ERR_INVALID_MASTER_ID               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|41))
+#define ECG_ERR_INTERNAL_ERROR                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|42))
+#define ECG_ERR_INVALID_CAM_TYPE                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|43))
+#define ECG_ERR_INVALID_NR_OF_TABLES            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|44))
+#define ECG_ERR_TOO_MANY_TABLES                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|45))
+#define ECG_ERR_INVALID_NR_OF_POINTS            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|46))
+#define ECG_ERR_MEMORY_OVERFLOW                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|47))
+#define ECG_ERR_UNEXPECTED_TASK_MESSAGE_NR      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|48))
+#define ECG_ERR_INVALID_NR_OF_POINTS_IN_TASK    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|49))
+#define ECG_ERR_INVALID_NR_OF_TASK_MESSAGES     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|50))
+#define ECG_ERR_NO_CAM_DATA_AVAILABLE           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|51))
+#define ECG_ERR_INCONSISTENT_CAM_TYPE           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|52))
+#define ECG_ERR_INCONSISTENT_NR_OF_POINTS       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|53))
+#define ECG_ERR_INVALID_CAM_DATA                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|54))
+#define ECG_ERR_NO_UNIQUE_TABLE_ID              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|55))
+#define ECG_ERR_INVALID_TABLE_ID                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|56))
+#define ECG_ERR_TABLE_IN_USE                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|57))
+#define ECG_ERR_INVALID_AXIS_TYPE               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|58))
+#define ECG_ERR_NOT_SUPPORTED                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SPG<<NYCE_SUBSYS_SHIFT)|59))
+
+/* CTR status codes */
+#define CTR_ERR_INVALID_PARAMETER                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|1))
+#define CTR_ERR_INVALID_TASK_PAR_SIZE                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|2))
+#define CTR_ERR_STATE_ERROR                             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|3))
+#define CTR_ERR_INVALID_AXIS                            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|4))
+#define CTR_ERR_INVALID_DATA_ID                         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|5))
+#define CTR_ERR_TEST_SIGNAL_GENERATOR_ACTIVE            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|6))
+#define CTR_ERR_INVALID_MOTOR_TYPE                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|7))
+#define CTR_ERR_SERVICE_MODE_ACTIVE                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|8))
+#define CTR_ERR_INVALID_CONTROLLER                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|9))
+#define CTR_ERR_AUTO_TWEAK_NOT_DISABLED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|10))
+#define CTR_ERR_FFW_TABLE_NOT_DOWNLOADED                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|11))
+#define CTR_ERR_INVALID_FFW_TABLE_SIZE                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|12))
+#define CTR_ERR_FFW_TABLE_NOT_ENABLED                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|13))
+#define CTR_ERR_INVALID_NR_OF_PERIODS                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|14))
+#define CTR_ERR_INVALID_TIME                            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|15))
+#define CTR_ERR_INTERNAL_ERROR                          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|16))
+#define CTR_ERR_LIN_LUT_NOT_DISABLED                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|17))
+#define CTR_ERR_INVALID_LIN_LUT_TABLE_SIZE              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|18))
+#define CTR_ERR_LIN_LUT_DOWNLOAD_IN_PROGRESS            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|19))
+#define CTR_ERR_LIN_LUT_NOT_DOWNLOADED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|20))
+#define CTR_ERR_AXIS_NOT_HOMED                          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|21))
+#define CTR_ERR_COMMUTATION_CORRECTION_ENABLED          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|22))
+#define CTR_ERR_BLAC_NOT_ALIGNED                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|23))
+#define CTR_ERR_INVALID_CORRECTIVE_AXIS                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|24))
+#define CTR_ERR_CORRECTIVE_AXIS_NOT_HOMED               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|25))
+#define CTR_ERR_CORRECTIVE_AXIS_STATE_ERROR             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|26))
+#define CTR_ERR_CORRECTIVE_AXIS_NOT_ON_SAME_NODE        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|27))
+#define CTR_ERR_INVALID_DATA_SIZE                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|28))
+#define CTR_ERR_OUTPUT_IS_EXTERNAL_DRIVE                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|29))
+#define CTR_ERR_INVALID_AAF_SAMPLE_RATIO                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|30))
+#define CTR_ERR_INVALID_AXIS_TYPE                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|31))
+#define CTR_ERR_POS_SWITCH_DEFINED                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|32))
+#define CTR_ERR_INVALID_POSITION_RANGE                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|33))
+#define CTR_ERR_NOT_SUPPORTED                           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|34))
+#define CTR_ERR_INVALID_SLOT_ID                         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|35))
+#define CTR_ERR_INVALID_AN_IN_NR                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|36))
+#define CTR_ERR_INVALID_INDRA_RESOLUTION                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|37))
+#define CTR_ERR_SIMULTANEOUS_DMF_AND_AAF_NOT_SUPPORTED  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|38))
+#define CTR_ERR_VALUE_OUT_OF_RANGE                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|39))
+#define CTR_ERR_HOME_MODE_ACTIVE                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|40))
+#define CTR_ERR_LMS_INVALID_SENSOR_ID                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|41))
+#define CTR_ERR_LMS_INVALID_IPL_FACTOR                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|42))
+#define CTR_WRN_LMS_CAR_NOT_BETTER_IN_RANGE             ((NYCE_STATUS)((NYCE_OK_MASK)   |(SS_CTR<<NYCE_SUBSYS_SHIFT)|43))
+#define CTR_WRN_LMS_CAR_NOT_IN_SENSOR_RANGE             ((NYCE_STATUS)((NYCE_OK_MASK)   |(SS_CTR<<NYCE_SUBSYS_SHIFT)|44))
+#define CTR_WRN_LMS_SENSOR_NOT_DETECTED                 ((NYCE_STATUS)((NYCE_OK_MASK)   |(SS_CTR<<NYCE_SUBSYS_SHIFT)|45))
+#define CTR_WRN_LMS_COIL_CONFIGURATION_ALREADY_DEFINED  ((NYCE_STATUS)((NYCE_OK_MASK)   |(SS_CTR<<NYCE_SUBSYS_SHIFT)|46))
+#define CTR_ERR_LMS_TOO_MANY_COIL_CONFIGURATIONS        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|47))
+#define CTR_ERR_LMS_COIL_CONFIGURATION_DOES_NOT_EXIST   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|48))
+#define CTR_WRN_NO_ALIGNMENT_REQUIRED                   ((NYCE_STATUS)((NYCE_OK_MASK)   |(SS_CTR<<NYCE_SUBSYS_SHIFT)|49))
+#define CTR_ERR_LMS_CPA_NOT_DISABLED                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|50))
+#define CTR_ERR_LMS_CARRIER_LINKED_TO_CPA_TABLE         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|51))
+#define CTR_ERR_LMS_INVALID_CPA_TABLE_SIZE              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|52))
+#define CTR_ERR_LMS_CPA_TABLE_NOT_AVAILABLE             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|53))
+#define CTR_WRN_LMS_CARRIER_NOT_LINKED_TO_CPA_TABLE     ((NYCE_STATUS)((NYCE_OK_MASK   )|(SS_CTR<<NYCE_SUBSYS_SHIFT)|54))
+
+#define CTR_ERR_LMS_CAR_ALREADY_DETECTED                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CTR<<NYCE_SUBSYS_SHIFT)|56))
+/**
+    @brief  The given carrier index is invalid.
+
+    This warning is returned when the carrier index to perform a task for is not the carrier index 
+    that is controlled by the coil.
+*/
+#define CTR_WRN_LMS_INVALID_CARRIER_INDEX               ((NYCE_STATUS)((NYCE_OK_MASK)   |(SS_CTR<<NYCE_SUBSYS_SHIFT)|57))
+
+
+/* UDC status codes */
+#define UDC_ERR_INVALID_PARAMETER            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_UDC<<NYCE_SUBSYS_SHIFT)|1))
+#define UDC_ERR_INVALID_AXIS                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_UDC<<NYCE_SUBSYS_SHIFT)|3))
+#define UDC_ERR_INVALID_DATA_ID              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_UDC<<NYCE_SUBSYS_SHIFT)|4))
+#define UDC_ERR_INTERNAL_ERROR               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_UDC<<NYCE_SUBSYS_SHIFT)|6))
+
+/* PDS status codes */
+#define PDS_ERR_MAX_NR_OF_VARS_PER_NODE_REACHED     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|2))
+#define PDS_ERR_INVALID_TASK_PAR_SIZE               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|3))
+#define PDS_ERR_INVALID_PARAMETER                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|4))
+#define PDS_ERR_INVALID_DATA_ID                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|6))
+#define PDS_ERR_INVALID_AXIS                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|7))
+#define PDS_ERR_TOO_MANY_BC_MASTERS                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|8))
+#define PDS_ERR_NO_FREE_BC_CHANNEL                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|9))
+#define PDS_ERR_OUTPUT_IS_EXTERNAL_DRIVE            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|10))
+#define PDS_ERR_OUTPUT_ALREADY_CONFIGURED           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|11))
+#define PDS_ERR_OUTPUT_NOT_CONFIGURED               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|12))
+#define PDS_ERR_INVALID_SLOT_ID                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|13))
+#define PDS_ERR_INTERNAL_ERROR                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|14))
+#define PDS_ERR_INVALID_LATCH_SET_ID                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|15))
+#define PDS_ERR_INVALID_LATCH_SET_STATE             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|16))
+#define PDS_ERR_LATCH_SET_VARIABLE_ALREADY_DEFINED  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|17))
+#define PDS_ERR_LATCH_SET_FULL                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|18))
+#define PDS_ERR_INVALID_ANALOG_OUT_NR               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|19))
+#define PDS_ERR_INVALID_AXIS_TYPE                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|20))
+#define PDS_ERR_STATE_ERROR                         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|21))
+#define PDS_WRN_SCHEMA_NOT_CHANGED                  ((NYCE_STATUS)((NYCE_OK_MASK)   |(SS_PDS<<NYCE_SUBSYS_SHIFT)|22))
+#define PDS_WRN_HSD_VAR_DATA_NOT_AVAILABLE          ((NYCE_STATUS)((NYCE_OK_MASK)   |(SS_PDS<<NYCE_SUBSYS_SHIFT)|23))
+#define PDS_ERR_OUT_OF_HSD_RESOURCES                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|24))
+#define PDS_ERR_TASK_OUTPUT_SIZE_TOO_SMALL          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|25))
+#define PDS_ERR_TRACE_PACKET_NOT_FOUND              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|26))
+#define PDS_ERR_ISOCH_CHANNEL_NOT_DEFINED           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_PDS<<NYCE_SUBSYS_SHIFT)|27))
+
+
+/* CML status codes */
+#define CML_ERR_INVALID_PARAMETER                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|1))
+#define CML_ERR_INVALID_TASK_PAR_SIZE                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|2))
+#define CML_ERR_STATE_ERROR                             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|3))
+#define CML_ERR_INVALID_AXIS                            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|4))
+#define CML_ERR_INVALID_DATA_ID                         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|5))
+#define CML_ERR_EXT_STEPPER_ALREADY_CONFIGURED          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|6))
+#define CML_ERR_UNDEFINED_IO_FUNCTION                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|7))
+#define CML_ERR_INVALID_SLOT_ID                         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|8))
+#define CML_ERR_INVALID_AXIS_TYPE                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|9))
+#define CML_ERR_INVALID_MOTOR_TYPE                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|10))
+#define CML_ERR_INVALID_POS_SENSOR_TYPE                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|11))
+#define CML_ERR_AXIS_UNIT_IN_USE                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|12))
+#define CML_ERR_INVALID_DRIVE_TYPE                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|13))
+#define CML_ERR_AXIS_ALREADY_CONFIGURED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|14))
+#define CML_ERR_INVALID_SERVO_VOLTAGE                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|15))
+#define CML_ERR_NO_LATCH                                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|16))
+#define CML_ERR_LATCH_IN_USE                            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|17))
+#define CML_ERR_LATCH_ALREADY_DEFINED                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|18))
+#define CML_ERR_LATCH_IO_ALREADY_USED                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|19))
+#define CML_ERR_OUTPUT_TYPE_IS_ACTIVE                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|20))
+#define CML_ERR_INVALID_AXIS_UNIT_NR                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|21))
+#define CML_ERR_INVALID_DIG_IO_NR                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|22))
+#define CML_ERR_INVALID_FREQ_COMBINATION                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|23))
+#define CML_ERR_MONITOR_OUTPUT_ACTIVE                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|24))
+#define CML_ERR_INVALID_DATA_SIZE                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|25))
+#define CML_ERR_INVALID_UNIT_NR                         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|26))
+#define CML_ERR_ASPI_NOT_CONFIGURED                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|27))
+#define CML_ERR_ASPI_INVALID_DATA                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|28))
+#define CML_ERR_ASPI_INVALID_PORT_TYPE                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|29))
+#define CML_ERR_ASPI_INVALID_STATE                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|30))
+#define CML_ERR_ASPI_INVALID_DATA_SIZE                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|31))
+#define CML_ERR_INTERNAL_ERROR                          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|32))
+#define CML_ERR_DRIVE_GW_NOT_LOADED                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|33))
+#define CML_ERR_INVALID_ASYNC_VARIABLE_ID               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|34))
+#define CML_ERR_ALREADY_COUNTING                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|35))
+#define CML_ERR_NY4199_UNAVAILABLE                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|36))
+#define CML_ERR_ENCODER_ERROR                           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|37))
+#define CML_ERR_ENCODER_COMMUNICATION_ERROR             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|38))
+#define CML_ERR_INVALID_PVL_FREQUENCY                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|39))
+#define CML_ERR_INVALID_CCL_FREQUENCY                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|40))
+#define CML_ERR_INVALID_PWM_FREQUENCY                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|41))
+#define CML_ERR_INVALID_ANALOG_IO_NR                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|42))
+#define CML_ERR_NOT_AVAILABLE                           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|45))
+#define CML_ERR_DMF_OUTPUT_ACTIVE                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|46))
+#define CML_ERR_NOM_POS_DRIVE_VOLTAGE_TOO_HIGH          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|47))
+#define CML_ERR_NOM_POS_DRIVE_VOLTAGE_TOO_LOW           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|48))
+#define CML_ERR_DRIVE_INVALID_CALIBRATION_MARGIN        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|49))
+#define CML_ERR_CRC_ERROR                               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|50))
+#define CML_ERR_TIMEOUT                                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|51))
+#define CML_ERR_INVALID_PORT_ID                         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|52))
+#define CML_ERR_INVALID_CHANNEL_ID                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|53))
+#define CML_ERR_INVALID_BLOCK_ID                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|54))
+#define CML_ERR_INVALID_ADDRESS                         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|55))
+#define CML_ERR_MEMORY_BLOCK_READ_ONLY                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|56))
+#define CML_ERR_NOT_SUPPORTED                           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|57))
+#define CML_ERR_DIGITAL_INTERFACE_IN_USE                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|58))
+#define CML_ERR_NR_OF_DATA_BITS_NOT_SUPPORTED           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|59))
+#define CML_ERR_INVALID_COMMUTATION_PARAMETER           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|60))
+#define CML_ERR_DRIVE_CONFIGURE_ERROR                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|61))
+#define CML_ERR_DRIVE_STARTUP_ERROR                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|62))
+#define CML_ERR_DRIVE_COMMUNICATION_ERROR               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|64))
+#define CML_ERR_MICROWARE_VERSION_ERROR                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|65))
+#define CML_ERR_SERCON100M_UNAVAILABLE                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|66))
+#define CML_ERR_INDRADRIVE_CONNECT_FAILED               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|67))
+#define CML_ERR_INDRADRIVE_RESET_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|68))
+#define CML_ERR_INDRADRIVE_LOCK_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|69))
+#define CML_ERR_INDRADRIVE_OPEN_LOOP_FAILED             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|70))
+#define CML_ERR_INDRADRIVE_DISCONNECT_FAILED            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|71))
+#define CML_ERR_INDRADRIVE_ESTOP_ACTIVE_HIGH            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|72))
+#define CML_ERR_INDRADRIVE_IO_ALREADY_USED              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|73))
+#define CML_ERR_POS_SWITCH_NOT_CONFIGURED               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|74))
+#define CML_ERR_INDRADRIVE_W_SERCOS_PARAMETER_FAILED    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|75))
+#define CML_ERR_INDRADRIVE_R_SERCOS_PARAMETER_FAILED    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|76))
+#define CML_ERR_INDRADRIVE_W_CC_PARS_FAILED             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|77))
+#define CML_ERR_INDRADRIVE_W_COMMUTATION_DIR_FAILED     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|78))
+#define CML_ERR_INDRADRIVE_W_MS_DIR_FAILED              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|79))
+#define CML_ERR_INDRADRIVE_W_LATCH_FAILED               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|80))
+#define CML_ERR_INDRADRIVE_W_ESTOP_FAILED               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|81))
+#define CML_ERR_INDRADRIVE_W_POS_SWITCH_FAILED          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|82))
+#define CML_ERR_INDRADRIVE_FUNC_IO_FAILED               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|83))
+#define CML_ERR_INDRADRIVE_W_INERTIA_FAILED             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|84))
+#define CML_ERR_INDRADRIVE_W_FILTER_PARS_FAILED         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|85))
+#define CML_ERR_INDRADRIVE_W_MAX_CURRENT_FAILED         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|86))
+#define CML_ERR_INDRADRIVE_W_PVL_PARS_FAILED            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|87))
+#define CML_ERR_INDRADRIVE_W_MAX_AXIS_VEL_FAILED        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|89))
+#define CML_ERR_INDRADRIVE_ACT_PROBE_FAILED             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|90))
+#define CML_ERR_INDRADRIVE_W_ANOUT_FAILED               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|91))
+#define CML_ERR_INDRADRIVE_LED_BLINK_FAILED             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|92))
+#define CML_ERR_INDRADRIVE_R_ENCODER_DATA_FAILED        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|93))
+#define CML_ERR_INDRADRIVE_R_INDRADRIVE_INFO_FAILED     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|94))
+#define CML_ERR_INDRADRIVE_MOTOR_WITH_ENC_MEMORY        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|95))
+#define CML_ERR_INDRADRIVE_MOTOR_WITHOUT_ENC_MEMORY     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|96))
+#define CML_ERR_INDRADRIVE_SWITCH_TO_OM_FAILED          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|98))
+#define CML_ERR_INDRADRIVE_SWITCH_TO_PM_FAILED          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|99))
+#define CML_ERR_CURRENT_CALIBRATION_FAILED              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|100))
+#define CML_ERR_CC_KP_TOO_HIGH                          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|101))
+#define CML_ERR_CC_KI_TOO_HIGH                          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|102))
+#define CML_ERR_AAF_IS_ENABLED                          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|103))
+#define CML_ERR_DRIVE_INIT_ERROR                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|104))
+#define CML_ERR_AXIS_TYPE_REDEFINED                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|105))
+#define CML_ERR_INDRADRIVE_LOAD_CC_PARS_FAILED          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|106))
+#define CML_ERR_INDRADRIVE_LOAD_PID_LLF_PARS_FAILED     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|107))
+#define CML_ERR_DRIVE_COMMUNICATION_TIMEOUT_ERROR       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|108))
+
+#define CML_ERR_LMS_INVALID_AN_IN_NR                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|110))
+#define CML_ERR_LMS_INVALID_MUX_ID                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|111))
+#define CML_ERR_NOT_PVL_ON_DRIVE                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|112))
+#define CML_ERR_NOT_SUPPORTED_SLOT_ID                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|113))
+#define CML_ERR_PARAMETER_OUT_OF_RANGE                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|114))
+#define CML_ERR_NOT_DEFINED                             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|115))
+#define CML_ERR_INVALID_DIGOUT_TYPE                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|116))
+#define CML_ERR_ALREADY_DEFINED                         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|117))
+#define CML_ERR_HSD_NOT_ENABLED                         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|118))
+#define CML_ERR_HSD_NOT_SUPPORTED_WITH_NY4150           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|119))
+#define CML_ERR_ENCODER_NOT_SUPPORTED                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|120))
+#define CML_ERR_MSM_ENCODER_INIT_ERROR                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|121))
+#define CML_ERR_HW_GW_FW_INCONSISTENT                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CML<<NYCE_SUBSYS_SHIFT)|122))
+
+/* CMD status codes */
+/**
+ *  @brief  The maximum number of command sets has been reached.
+ */
+#define CMD_ERR_MAX_NR_OF_COMMAND_SETS_REACHED          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CMD<<NYCE_SUBSYS_SHIFT)|1))
+/**
+ *  @brief  The maximum number of exceptions has been reached.
+ */
+#define CMD_ERR_MAX_NR_OF_EXEPTIONS_REACHED             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CMD<<NYCE_SUBSYS_SHIFT)|2))
+/**
+ *  @brief  The folder name length is too large.
+ *
+ *  Reduce size to fit the max folder name length.
+ */
+#define CMD_ERR_FOLDER_NAME_TOO_LARGE                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CMD<<NYCE_SUBSYS_SHIFT)|3))
+/**
+ *  @brief  Empty cmd line buffer.
+ */
+#define CMD_WRN_EMPTY_CMD_LINE                          ((NYCE_STATUS)((NYCE_OK_MASK)   |(SS_CMD<<NYCE_SUBSYS_SHIFT)|4))
+/**
+ *  @brief  The command was not found.
+ */
+#define CMD_ERR_CMD_NOT_FOUND                           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CMD<<NYCE_SUBSYS_SHIFT)|5))
+/**
+ *  @brief  Command syntax error.
+ */
+#define CMD_ERR_SYNTAX_ERROR                            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CMD<<NYCE_SUBSYS_SHIFT)|6))
+/**
+ *  @brief  Ambiguous command.
+ */
+#define CMD_ERR_AMBIGUOUS_COMMAND                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CMD<<NYCE_SUBSYS_SHIFT)|7))
+
+/* CMLFLASH status codes */
+#define CMLFLASH_ERR_INVALID_VERSION        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CMLFLASH<<NYCE_SUBSYS_SHIFT)|2))
+#define CMLFLASH_ERR_INVALID_NR_OF_CFG_DATA ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CMLFLASH<<NYCE_SUBSYS_SHIFT)|3))
+#define CMLFLASH_ERR_SAVE_TO_FLASH          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CMLFLASH<<NYCE_SUBSYS_SHIFT)|4))
+#define CMLFLASH_ERR_INTERNAL_ERROR         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CMLFLASH<<NYCE_SUBSYS_SHIFT)|5))
+#define CMLFLASH_ERR_ERASE_FLASH            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CMLFLASH<<NYCE_SUBSYS_SHIFT)|6))
+#define CMLFLASH_ERR_INVALID_DATA_SIZE      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CMLFLASH<<NYCE_SUBSYS_SHIFT)|7))
+#define CMLFLASH_ERR_FLASH_BUSY             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CMLFLASH<<NYCE_SUBSYS_SHIFT)|8))
+#define CMLFLASH_ERR_READ_FLASH             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CMLFLASH<<NYCE_SUBSYS_SHIFT)|9))
+#define CMLFLASH_ERR_PARAMETER_ERROR        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CMLFLASH<<NYCE_SUBSYS_SHIFT)|10))
+#define CMLFLASH_ERR_BOOTLOADER_SIZE_ERROR  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CMLFLASH<<NYCE_SUBSYS_SHIFT)|11))
+#define CMLFLASH_ERR_FIRMWARE_SIZE_ERROR    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CMLFLASH<<NYCE_SUBSYS_SHIFT)|12))
+#define CMLFLASH_ERR_GATEWARE_SIZE_ERROR    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CMLFLASH<<NYCE_SUBSYS_SHIFT)|13))
+/**
+ *  @brief  Not supported CMLFLASH action.
+ */
+#define CMLFLASH_ERR_NOT_SUPPORTED          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CMLFLASH<<NYCE_SUBSYS_SHIFT)|14))
+
+/* GEN status codes */
+#define GEN_ERR_INVALID_AXIS                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_GEN<<NYCE_SUBSYS_SHIFT)|1))
+#define GEN_ERR_INVALID_COMMAND             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_GEN<<NYCE_SUBSYS_SHIFT)|2))
+#define GEN_ERR_INVALID_GROUP               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_GEN<<NYCE_SUBSYS_SHIFT)|3))
+#define GEN_ERR_INVALID_SYNC_COMMAND        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_GEN<<NYCE_SUBSYS_SHIFT)|4))
+#define GEN_ERR_INVALID_DATA_ID             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_GEN<<NYCE_SUBSYS_SHIFT)|5))
+#define GEN_ERR_INTERNAL_ERROR              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_GEN<<NYCE_SUBSYS_SHIFT)|6))
+#define GEN_ERR_INVALID_DATA_SIZE           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_GEN<<NYCE_SUBSYS_SHIFT)|7))
+#define GEN_ERR_INVALID_TASK_PAR_SIZE       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_GEN<<NYCE_SUBSYS_SHIFT)|8))
+
+/* NNI status codes */
+#define NNI_ERR_EVENT_QUEUE_FULL                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NNI<<NYCE_SUBSYS_SHIFT)|1))
+#define NNI_ERR_SYSTEM_ERROR                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NNI<<NYCE_SUBSYS_SHIFT)|2))
+#define NNI_WRN_NO_MESSAGE                          ((NYCE_STATUS)((NYCE_OK_MASK)   |(SS_NNI<<NYCE_SUBSYS_SHIFT)|3))
+#define NNI_WRN_STATE_ERROR                         ((NYCE_STATUS)((NYCE_OK_MASK)   |(SS_NNI<<NYCE_SUBSYS_SHIFT)|4))
+#define NNI_ERR_REQUEST_BUFFER_FULL                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NNI<<NYCE_SUBSYS_SHIFT)|5))
+#define NNI_ERR_NETWORK_NOT_INITIALIZED             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NNI<<NYCE_SUBSYS_SHIFT)|6))
+#define NNI_ERR_PACKET_TOO_LARGE                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NNI<<NYCE_SUBSYS_SHIFT)|7))
+#define NNI_ERR_TRANSMIT_BUFFER_FULL                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NNI<<NYCE_SUBSYS_SHIFT)|8))
+#define NNI_ERR_NOT_SUPPORTED                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NNI<<NYCE_SUBSYS_SHIFT)|9))
+/**
+ *  @brief  The application failed to find the resources to communicate with n4kservice.
+ *
+ *  Make sure n4kservice is running as a service.
+*/
+#define NNI_ERR_N4KSERVICE_NOT_AVAILABLE            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NNI<<NYCE_SUBSYS_SHIFT)|10))
+/**
+ *  @brief  We are in the phase of reconstructing a message and the current packet is has not completed the message.
+ *
+ *  Wait until the next packet which might complete the message.
+ */
+#define NNI_WRN_MESSAGE_INCOMPLETE                  ((NYCE_STATUS)((NYCE_OK_MASK   )|(SS_NNI<<NYCE_SUBSYS_SHIFT)|11))
+/**
+ *   @brief  While reconstructing a multi packet message no available request was found.
+ */
+#define NNI_ERR_NO_REQUEST_AVALABLE                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NNI<<NYCE_SUBSYS_SHIFT)|12))
+/**
+ *  @brief  No places available in the request queue.
+ */
+#define NNI_ERR_REQUEST_QUEUE_FULL                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NNI<<NYCE_SUBSYS_SHIFT)|13))
+/**
+ *  @brief  The send message is too large.
+ *
+ *  Send a smaller message the max size of a message is NNI_MAX_MSG_SIZE
+ */
+#define NNI_ERR_MESSAGE_TOO_LARGE                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NNI<<NYCE_SUBSYS_SHIFT)|14))
+/**
+ *  @brief  The request has been send and is pending completion.
+ *
+ *  Wait for the result to be passed to the result function.
+ */
+#define NNI_WRN_PENDING_COMPLETION                  ((NYCE_STATUS)((NYCE_OK_MASK   )|(SS_NNI<<NYCE_SUBSYS_SHIFT)|15))
+/**
+ *   @brief  The request is not found in the request store.
+ */
+#define NNI_ERR_REQUEST_NOT_FOUND                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NNI<<NYCE_SUBSYS_SHIFT)|16))
+/**
+ *   @brief  A bus reset occurred during the execution of the task.
+ */
+#define NNI_ERR_BUSRESET_DURING_TASK_EXECUTION      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_NNI<<NYCE_SUBSYS_SHIFT)|17))
+/**
+ *  @brief  Operation is not successful.
+ */
+#define NNI_ERR_MMQ_E_FAIL                          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NNI<<NYCE_SUBSYS_SHIFT)| 18)))
+/**
+ *  @brief  Operation resulted in memory failure.
+ */
+#define NNI_ERR_MMQ_E_MEMORY                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NNI<<NYCE_SUBSYS_SHIFT)| 19)))
+/**
+ *  @brief  Operation timed out.
+ */
+#define NNI_WRN_MMQ_E_TIMEOUT                       ((NYCE_STATUS)((NYCE_OK_MASK    )|((SS_NNI<<NYCE_SUBSYS_SHIFT)| 20)))
+/**
+ *  @brief  No endpoint for a message.
+ */
+#define NNI_ERR_MMQ_E_NOENDPT                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NNI<<NYCE_SUBSYS_SHIFT)| 21)))
+/**
+ *  @brief  The message queue was unblocked.
+ */
+#define NNI_ERR_MMQ_E_UNBLOCKED                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NNI<<NYCE_SUBSYS_SHIFT)| 22)))
+/**
+ *  @brief  A callback connection was requested but this already exists.
+ */
+#define NNI_WRN_BACKCONNECTION_ALREADY_EXISTS       ((NYCE_STATUS)((NYCE_OK_MASK)|((SS_NNI<<NYCE_SUBSYS_SHIFT)| 23)))
+/**
+ *  @brief  A callback connection was requested but this already exists.
+ */
+#define NNI_ERR_BACKCONNECTION_SETUP_FAILED         ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NNI<<NYCE_SUBSYS_SHIFT)| 23)))
+/**
+ *  @brief  A required callback connection does not exist.
+ */
+#define NNI_ERR_NO_BACKCONNECTION                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_NNI<<NYCE_SUBSYS_SHIFT)| 24)))
+/* SQC status codes */
+#define SQC_ERR_INVALID_AREA                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|1))
+#define SQC_ERR_MAX_ACTIVATED                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|2))
+#define SQC_ERR_NOT_ACTIVATED                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|3))
+#define SQC_ERR_INVALID_VAR                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|4))
+#define SQC_ERR_INVALID_LENGTH                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|5))
+#define SQC_WRN_NO_MESSAGE                         ((NYCE_STATUS)((NYCE_OK_MASK)   |(SS_SQC<<NYCE_SUBSYS_SHIFT)|6))
+#define SQC_ERR_NOT_ENOUGH_MEMORY                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|7))
+#define SQC_ERR_FLASH                              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|8))
+#define SQC_ERR_CONFIG_CHANGED                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|9))
+#define SQC_ERR_TIMEOUT                            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|10))
+#define SQC_ERR_INTERNAL_ERROR                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|11))
+#define SQC_ERR_NOT_LOADED                         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|12))
+#define SQC_ERR_ALREADY_RUNNING                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|13))
+#define SQC_ERR_INVALID_TASK_PAR_SIZE              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|14))
+#define SQC_ERR_INVALID_NODE_ID                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|15))
+#define SQC_ERR_AREA_IN_USE                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|16))
+#define SQC_ERR_WRONG_AREA_TYPE                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|17))
+#define SQC_WRN_SHARED_DATA_AREA_ALREADY_ALLOCATED ((NYCE_STATUS)((NYCE_OK_MASK)   |(SS_SQC<<NYCE_SUBSYS_SHIFT)|18))
+#define SQC_ERR_PARAMETER_ERROR                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|19))
+#define SQC_ERR_AREA_NOT_IN_USE                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|20))
+#define SQC_WRN_BOOTSTRAP_NOT_ACTIVE               ((NYCE_STATUS)((NYCE_OK_MASK)   |(SS_SQC<<NYCE_SUBSYS_SHIFT)|21))
+#define SQC_WRN_BOOT_AREA_0_MISSING                ((NYCE_STATUS)((NYCE_OK_MASK)   |(SS_SQC<<NYCE_SUBSYS_SHIFT)|22))
+#define SQC_WRN_BOOTSTRAP_REMOVED                  ((NYCE_STATUS)((NYCE_OK_MASK)   |(SS_SQC<<NYCE_SUBSYS_SHIFT)|23))
+#define SQC_ERR_INVALID_HANDLE                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|24))
+#define SQC_ERR_INVALID_OUTPUT_ARGUMENT            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|25))
+#define SQC_ERR_DATA_READ_ONLY                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|26))
+#define SQC_ERR_NOT_SUPPORTED                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|27))
+#define SQC_ERR_OUTPUT_SIZE_TOO_SMALL              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|28))
+#define SQC_ERR_FIRMWARE_INCOMPATIBLE              ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|29))
+//code not used-------------------------------------------------------------------------------------------------30                                                                                                 
+
+/**
+ *  @brief  SQC RPC not all open sockets could be closed
+ */
+#define SQC_ERR_UNABLE_TO_CLOSE_ALL_OPEN_SOCKETS   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SQC<<NYCE_SUBSYS_SHIFT)|31))
+
+/* CM status codes */
+#define CM_ERR_NO_REQUEST                               ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|1)))
+#define CM_ERR_INVALID_TRACK_ID                         ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|2)))
+#define CM_ERR_INVALID_CARRIER_ID                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|3)))
+#define CM_ERR_PARAMETER_ERROR                          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|4)))
+#define CM_ERR_TRACK_STATE_ERROR                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|5)))
+#define CM_ERR_CARRIER_STATE_ERROR                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|6)))
+#define CM_ERR_NOT_SUPPORTED                            ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|7)))
+#define CM_ERR_FILE_OPEN_ERROR                          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|8)))
+#define CM_ERR_FILE_CONTENTS_ERROR                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|9)))
+#define CM_ERR_NOT_END_OF_STROKE                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|10)))
+#define CM_ERR_ORPHAN_CARRIER                           ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|11)))
+#define CM_ERR_SYSTEM_ERROR                             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|12)))
+#define CM_ERR_HOME_TRACK_EXECUTING                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|13)))
+#define CM_ERR_HOME_MODE_7_IMPOSSIBLE                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|14)))
+#define CM_ERR_TIME_OUT                                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|15)))
+#define CM_ERR_INVALID_POSITION                         ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|16)))
+#define CM_ERR_HOME_MODE_9_FAILED                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|17)))
+#define CM_ERR_HOME_MODE_8_IMPOSSIBLE                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|18)))
+#define CM_ERR_HOME_MODE_8_FAILED                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|19)))
+#define CM_ERR_SENSOR_STATUS_CRITERION                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|20)))
+#define CM_ERR_TOO_MANY_CARRIERS_ON_TRACK               ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|21)))
+#define CM_ERR_PRECONDITION_NOT_OK                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|22)))
+#define CM_ERR_CARRIER_ID_NOT_FOUND                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|23)))
+#define CM_ERR_CARRIER_POSITION_OUTSIDE_SENSOR_RANGE    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|24)))
+#define CM_ERR_HOME_MODE_10_FAILED                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|25)))
+#define CM_ERR_INVALID_BUMPER_ID                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|26)))
+#define CM_ERR_INACTIVE_SENSOR                          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|27)))
+#define CM_ERR_CARRIER_BUMPER_INTERSECTION              ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|28)))
+#define CM_ERR_SYSTEM_STATE_ERROR                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|29)))
+#define CM_ERR_COIL_ALREADY_REMOVED                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|30)))
+#define CM_ERR_COIL_ALREADY_ADDED                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|31)))
+#define CM_ERR_TOO_MANY_CARRIERS_ABOVE_COIL             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|32)))
+#define CM_ERR_NO_FREE_SENSORS_TO_MOVE                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|33)))
+#define CM_ERR_NO_FREE_COIL_BETWEEN_CARRIERS            ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|34)))
+#define CM_ERR_CARRIER_AGAINST_END_STOP                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|35)))
+#define CM_ERR_NR_OF_CARRIERS_INCONSISTENT              ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|36)))
+#define CM_ERR_UNABLE_TO_REMOVE_COIL                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|37)))
+#define CM_ERR_NO_COIL_IN_AREA                          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|38)))
+#define CM_ERR_NO_SENSOR_IN_AREA                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|39)))
+#define CM_ERR_NO_MOVING_CARRIER_IN_AREA                ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|40)))
+#define CM_ERR_NO_FREE_SENSOR_OUTSIDE_AREA              ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|41)))
+#define CM_ERR_CARRIER_MOVED_OUTSIDE_AREA               ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|42)))
+#define CM_ERR_INVALID_COIL_ALTERNATIVE                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|43)))
+#define CM_ERR_INVALID_PARAMETER                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|44)))
+#define CM_ERR_UNKNOWN_ENUM_STRING                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|45)))
+#define CM_ERR_FILENAME_TOO_LONG                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|46)))
+#define CM_ERR_CARRIER_ALREADY_DETECTED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|47)))
+#define CM_ERR_MOVE_TO_ENDSTOP_EXECUTING                ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|48)))
+#define CM_WRN_ALREADY_CONNECTED                        ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_CM<<NYCE_SUBSYS_SHIFT)|49)))
+#define CM_WRN_ALREADY_DISCONNECTED                     ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_CM<<NYCE_SUBSYS_SHIFT)|50)))
+#define CM_ERR_TOO_MANY_CLIENTS                         ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|51)))
+#define CM_ERR_CLIENT_NOT_CONNECTED                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|52)))
+#define CM_ERR_SVC_COMMUNICATION_ERROR                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|53)))
+#define CM_ERR_SVC_CMDSKT_ALREADY_RUNNING               ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|54)))
+#define CM_ERR_SVC_CMDSKT_NOT_RUNNING                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|55)))
+#define CM_ERR_REQUEST_TIMEOUT                          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|56)))
+#define CM_ERR_INVALID_VAR_ID                           ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|57)))
+#define CM_ERR_INVALID_COIL_INDEX                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|58)))
+#define CM_WRN_LOG_SOCKET_CLOSE_FAILED                  ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_CM<<NYCE_SUBSYS_SHIFT)|59)))
+#define CM_ERR_LOG_SOCKET_SETUP_ERROR                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|60)))
+#define CM_ERR_PARAMETER_OUT_OF_RANGE                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|61)))
+#define CM_ERR_INVALID_STRING                           ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|62)))
+#define CM_ERR_NUMBER_CARRIERS_UNKNOWN                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|63)))
+#define CM_WRN_CARRIER_IDS_NOT_ASSIGNED                 ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_CM<<NYCE_SUBSYS_SHIFT)|64)))
+#define CM_ERR_ADD_MOVING_CARRIER_ALREADY_PENDING       ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|65)))
+#define CM_ERR_INVALID_EVENT_ID                         ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|66)))
+#define CM_ERR_ENROLMENT_NOT_DEFINED                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|67)))
+#define CM_WRN_ENROLMENT_ALREADY_DEFINED                ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_CM<<NYCE_SUBSYS_SHIFT)|68)))
+#define CM_ERR_MAX_NR_OF_ENROLMENTS_REACHED             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|69)))
+#define CM_ERR_NO_COILS_IN_TRACK                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|70)))
+#define CM_ERR_REQUEST_ABORTED                          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|71)))
+#define CM_ERR_INVALID_SYNC_GROUP_ID                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|72)))
+#define CM_ERR_CARRIER_ALREADY_BELONGS_TO_A_SYNC_GROUP  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|73)))
+#define CM_ERR_TOO_MANY_SYNC_GROUPS                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|74)))
+#define CM_ERR_TOO_MANY_COILS_IN_SYNC_GROUP             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|75)))
+#define CM_ERR_SENSOR_DETECTION_NOT_DISABLED            ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|76)))
+#define CM_ERR_SHUTDOWN_IN_PROGRESS                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|77)))
+#define CM_ERR_CMSERVICE_NOT_AVAILABLE                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|78)))
+#define CM_ERR_PRF_INVALID_NR_OF_PROFILE_POINTS         ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|79)))
+#define CM_ERR_PRF_ALL_VELOCITIES_ZERO                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|80)))
+#define CM_ERR_PRF_INVALID_START_POSITION               ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|81)))
+#define CM_ERR_PRF_INVALID_POSITION                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|82)))
+#define CM_ERR_PRF_MOVEMENT_DIRECTION_NOT_CONSISTENT    ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|83)))
+#define CM_ERR_PRF_VELOCITY_LIMIT_EXCEEDED              ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|84)))
+#define CM_ERR_PRF_ACCELERATION_LIMIT_EXCEEDED          ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|85)))
+#define CM_ERR_ASYNC_ERROR_OCCURRED                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CM<<NYCE_SUBSYS_SHIFT)|86)))
+
+/** Wrong axis index. */
+#define CFG_ERR_INVALID_AXIS_INDEX                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CFG<<NYCE_SUBSYS_SHIFT)|1)))
+/** Unknown parameter ID. */
+#define CFG_ERR_INVALID_PARAMETER_ID                ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CFG<<NYCE_SUBSYS_SHIFT)|2)))
+/** Specified parameter ID is not supported in the current configuration. */
+#define CFG_ERR_PARAMETER_NOT_SUPPORTED             ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CFG<<NYCE_SUBSYS_SHIFT)|3)))
+/** Specified parameter ID is not supported in the current configuration. */
+#define CFG_WRN_PARAMETER_NOT_SUPPORTED             ((NYCE_STATUS)((NYCE_OK_MASK)|((SS_CFG<<NYCE_SUBSYS_SHIFT)|3)))
+/** Attempt to write a parameter that is marked as read only. */
+#define CFG_ERR_READONLY_PARAMETER                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CFG<<NYCE_SUBSYS_SHIFT)|4)))
+/** Size of the buffer does not match the expected size. */
+#define CFG_ERR_INCORRECT_DATA_SIZE                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CFG<<NYCE_SUBSYS_SHIFT)|5)))
+/** Specified parameter value is out of range. */
+#define CFG_ERR_PARAMETER_OUT_OF_RANGE              ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CFG<<NYCE_SUBSYS_SHIFT)|6)))
+/** Unexpected internal code flow (internal software bug). */
+#define CFG_ERR_INTERNAL_ERROR                      ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CFG<<NYCE_SUBSYS_SHIFT)|7)))
+/** Runtime data is changed by another subsystem. This could lead to floating point rounding errors. */
+#define CFG_WRN_RUNTIME_DATA_CHANGED                ((NYCE_STATUS)((NYCE_OK_MASK)|((SS_CFG<<NYCE_SUBSYS_SHIFT)|7)))
+/** Unknown variable ID. */
+#define CFG_ERR_INVALID_VARIABLE_ID                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CFG<<NYCE_SUBSYS_SHIFT)|8)))
+/** Specified variable ID is not supported in the current configuration. */
+#define CFG_WRN_VARIABLE_NOT_SUPPORTED              ((NYCE_STATUS)((NYCE_OK_MASK)|((SS_CFG<<NYCE_SUBSYS_SHIFT)|9)))
+/** Specified data ID is not supported in the current configuration. */
+#define CFG_ERR_INVALID_NYCE_DATA_ID                ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CFG<<NYCE_SUBSYS_SHIFT)|10)))
+/** The initialization of a node or axis is interrupted by another process. */
+#define CFG_ERR_INITIALIZE_INTERRUPTED              ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CFG<<NYCE_SUBSYS_SHIFT)|11)))
+/** Another process was initializing a node or axis but is interrupted by this action. */
+#define CFG_WRN_UNFINISHED_INITIALIZE_INTERRUPTED   ((NYCE_STATUS)((NYCE_OK_MASK)|((SS_CFG<<NYCE_SUBSYS_SHIFT)|11)))
+/** Default value is used. */
+#define CFG_WRN_PARAMETER_DEFAULT_USED              ((NYCE_STATUS)((NYCE_OK_MASK)|((SS_CFG<<NYCE_SUBSYS_SHIFT)|12)))
+/** Specified function argument value is out of range. */
+#define CFG_ERR_ARGUMENT_OUT_OF_RANGE               ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CFG<<NYCE_SUBSYS_SHIFT)|13)))
+/** The parameter value specified is not used during initialization. (only used internally) */
+#define CFG_WRN_PARAMETER_VALUE_IGNORED             ((NYCE_STATUS)((NYCE_OK_MASK)|((SS_CFG<<NYCE_SUBSYS_SHIFT)|13)))
+/** Slot Id is not valid or slot contains no drive. */
+#define CFG_ERR_INVALID_SLOT_ID                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CFG<<NYCE_SUBSYS_SHIFT)|14)))
+/** No data was specified. (only used internally) */
+#define CFG_WRN_PARAMETER_NOT_INITIALIZED           ((NYCE_STATUS)((NYCE_OK_MASK)|((SS_CFG<<NYCE_SUBSYS_SHIFT)|14)))
+/** One or more axes are not IDLE. Shutdown all axes and try again. */
+#define CFG_ERR_AXIS_IN_USE                         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CFG<<NYCE_SUBSYS_SHIFT)|16))
+/** The specified value is not accepted as is. A different value is used instead. */
+#define CFG_WRN_PARAMETER_VALUE_CHANGED             ((NYCE_STATUS)((NYCE_OK_MASK)|(SS_CFG<<NYCE_SUBSYS_SHIFT)|16))
+/** The drive configuration in flash is incompatible with the current drive configuration. */
+#define CFG_ERR_FLASH_INCONSISTENT_DRIVE_CONFIGURATION  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_CFG<<NYCE_SUBSYS_SHIFT)|17))
+
+/* CUSTOM status codes */
+#define CUSTOM_ERROR_BASE                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|((SS_CUSTOM<<NYCE_SUBSYS_SHIFT)|1)))
+#define CUSTOM_WARNING_BASE                 ((NYCE_STATUS)((NYCE_OK_MASK)   |((SS_CUSTOM<<NYCE_SUBSYS_SHIFT)|1)))
+
+/* SERC status codes */
+#define SERC_ERR_INTERNAL_ERROR                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|1))
+#define SERC_ERR_SVC_ERROR                          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|2))
+#define SERC_ERR_UNEXPECTED_PHASE_CHANGE_ERROR      ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|3))
+#define SERC_ERR_DOUBLE_ADDRESS_DETECTED            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|4))
+#define SERC_ERR_RING_NOT_CLOSED                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|5))
+#define SERC_ERR_TOO_MANY_DEVICES                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|6))
+#define SERC_ERR_WRONG_FW_VERSION                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|7))
+#define SERC_ERR_CLP_NOT_LOADED                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|8))
+#define SERC_ERR_UNKNOWN_DEVICE                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|9))
+#define SERC_ERR_SVC_COMMAND_NOT_STARTED            ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|10))
+#define SERC_ERR_SVC_INIT_FAILED                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|11))
+#define SERC_WRN_DEVICE_COUNT_CHANGED               ((NYCE_STATUS)((NYCE_OK_MASK   )|(SS_SERC<<NYCE_SUBSYS_SHIFT)|12))
+#define SERC_ERR_INIT_FIXED_VALUES_FAILED           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|13))
+#define SERC_ERR_INVALID_DEVICE_ADDRESS             ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|14))
+#define SERC_ERR_VALUE_OUT_OF_RANGE                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|15))
+
+#define SERC_ERR_SWITCH_TO_OM_FAILED                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|16))
+#define SERC_ERR_SWITCH_TO_PM_FAILED                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|17))
+
+#define SERC_ERR_READ_P0018_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|18))
+#define SERC_ERR_READ_P0051_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|19))
+#define SERC_ERR_READ_P0074_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|20))
+#define SERC_ERR_READ_P0077_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|21))
+#define SERC_ERR_READ_P0512_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|22))
+#define SERC_ERR_READ_P0525_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|23))
+#define SERC_ERR_READ_P4014_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|24))
+#define SERC_ERR_READ_P4016_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|25))
+#define SERC_ERR_READ_P4017_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|26))
+#define SERC_ERR_READ_P4048_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|27))
+#define SERC_ERR_READ_S0106_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|28))
+#define SERC_ERR_READ_S0107_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|29))
+#define SERC_ERR_READ_S0109_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|30))
+#define SERC_ERR_READ_S0110_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|31))
+#define SERC_ERR_READ_S0110_OR_P0051_FAILED         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|32))
+#define SERC_ERR_READ_S0111_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|33))
+#define SERC_ERR_READ_S0113_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|34))
+#define SERC_ERR_READ_S0116_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|35))
+#define SERC_ERR_READ_S0141_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|36))
+#define SERC_ERR_READ_S0201_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|37))
+#define SERC_ERR_READ_S0204_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|38))
+#define SERC_ERR_READ_S0206_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|39))
+#define SERC_ERR_READ_S0207_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|40))
+#define SERC_ERR_WRITE_P0018_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|41))
+#define SERC_ERR_WRITE_P0051_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|42))
+#define SERC_ERR_WRITE_P0074_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|43))
+#define SERC_ERR_WRITE_P0077_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|44))
+#define SERC_ERR_WRITE_P0512_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|45))
+#define SERC_ERR_WRITE_P0513_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|46))
+#define SERC_ERR_WRITE_P0525_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|47))
+#define SERC_ERR_WRITE_P0566_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|48))
+#define SERC_ERR_WRITE_P4014_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|49))
+#define SERC_ERR_WRITE_P4016_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|50))
+#define SERC_ERR_WRITE_P4017_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|51))
+#define SERC_ERR_WRITE_P4048_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|52))
+#define SERC_ERR_WRITE_S0044_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|53))
+#define SERC_ERR_WRITE_S0076_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|54))
+#define SERC_ERR_WRITE_S0086_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|55))
+#define SERC_ERR_WRITE_S0103_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|56))
+#define SERC_ERR_WRITE_S0109_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|57))
+#define SERC_ERR_WRITE_S0111_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|58))
+#define SERC_ERR_WRITE_S0113_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|59))
+#define SERC_ERR_WRITE_S0116_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|60))
+#define SERC_ERR_WRITE_S0141_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|61))
+#define SERC_ERR_WRITE_S0159_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|62))
+#define SERC_ERR_WRITE_S0160_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|63))
+#define SERC_ERR_WRITE_S0201_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|64))
+#define SERC_ERR_WRITE_S0204_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|65))
+#define SERC_ERR_WRITE_S0206_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|66))
+#define SERC_ERR_WRITE_S0207_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|67))
+#define SERC_ERR_WRITE_S0277_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|68))
+#define SERC_ERR_WRITE_S0278_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|69))
+#define SERC_ERR_WRITE_S0091_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|70))
+#define SERC_ERR_WRITE_S0611_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|71))
+#define SERC_ERR_INVALID_PWM_FREQ                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|72))
+#define SERC_ERR_INVALID_PVL_FREQ                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|73))
+#define SERC_ERR_INVALID_CC_FREQ                    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|74))
+#define SERC_ERR_ENABLE_POWER_FAILED                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|75))
+#define SERC_ERR_READY_FOR_OPERATION                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|76))
+#define SERC_ERR_ALIGNMENT_FAILED                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|77))
+#define SERC_ERR_SINE_WAVE_ALIGNMENT_NOT_ALLOWED    ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|78))
+#define SERC_ERR_READ_P0508_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|79))
+#define SERC_ERR_WRITE_P0508_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|80))
+#define SERC_ERR_READ_P4046_FAILED                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|81))
+#define SERC_ERR_WRITE_S0094_FAILED                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_SERC<<NYCE_SUBSYS_SHIFT)|82))
+
+
+/* NyceRocks status codes */
+#define ROCKS_ERR_TOO_MANY_SPLINES                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_ROCKS<<NYCE_SUBSYS_SHIFT)|1))
+#define ROCKS_ERR_NO_PATH                           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_ROCKS<<NYCE_SUBSYS_SHIFT)|2))
+#define ROCKS_ERR_ANGLE_TOO_LARGE                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_ROCKS<<NYCE_SUBSYS_SHIFT)|3))
+#define ROCKS_ERR_TOO_MANY_MECHANISMS               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_ROCKS<<NYCE_SUBSYS_SHIFT)|4))
+#define ROCKS_ERR_ILLEGAL_TRAJECTORY                ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_ROCKS<<NYCE_SUBSYS_SHIFT)|6))
+#define ROCKS_ERR_MAX_ACCELERATION_EXCEEDED         ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_ROCKS<<NYCE_SUBSYS_SHIFT)|7))
+#define ROCKS_ERR_ALLOC_FAILURE                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_ROCKS<<NYCE_SUBSYS_SHIFT)|8))
+#define ROCKS_ERR_NO_VALID_PATH                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_ROCKS<<NYCE_SUBSYS_SHIFT)|9))
+#define ROCKS_ERR_NO_VALID_INV_KINEMATICS           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_ROCKS<<NYCE_SUBSYS_SHIFT)|10))
+#define ROCKS_ERR_NO_GROUP                          ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_ROCKS<<NYCE_SUBSYS_SHIFT)|11))
+#define ROCKS_ERR_INVALID_LATCH                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_ROCKS<<NYCE_SUBSYS_SHIFT)|12))
+#define ROCKS_ERR_PROBE_ERROR                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_ROCKS<<NYCE_SUBSYS_SHIFT)|13))
+#define ROCKS_ERR_WRONG_VERSION                     ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_ROCKS<<NYCE_SUBSYS_SHIFT)|14))
+#define ROCKS_ERR_AXIS_ERROR                        ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_ROCKS<<NYCE_SUBSYS_SHIFT)|15))
+#define ROCKS_ERR_COMMUNICATION_ERROR               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_ROCKS<<NYCE_SUBSYS_SHIFT)|16))
+#define ROCKS_ERR_ALREADY_IN_GROUP                  ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_ROCKS<<NYCE_SUBSYS_SHIFT)|17))
+#define ROCKS_ERR_NO_AXIS                           ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_ROCKS<<NYCE_SUBSYS_SHIFT)|18))
+#define ROCKS_ERR_STATE_ERROR                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_ROCKS<<NYCE_SUBSYS_SHIFT)|19))
+#define ROCKS_ERR_START_ERROR                       ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_ROCKS<<NYCE_SUBSYS_SHIFT)|20))
+#define ROCKS_ERR_INVALID_PARAMETER                 ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_ROCKS<<NYCE_SUBSYS_SHIFT)|21))
+#define ROCKS_ERR_UNKNOWN_ENUM_STRING               ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_ROCKS<<NYCE_SUBSYS_SHIFT)|22))
+#define ROCKS_ERR_NOT_IMPLEMENTED                   ((NYCE_STATUS)((NYCE_ERROR_MASK)|(SS_ROCKS<<NYCE_SUBSYS_SHIFT)|100)) /* temporary */
+
+
+/**
+ *  @addtogroup sac_error_and_service_handling
+ *  @{
+ */
+
+/* SAC error codes */
+#define SAC_AX_NO_ERROR                             ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|0))
+#define SAC_AX_ERR_CABLE_ALARM                      ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|1))
+#define SAC_AX_ERR_POSITION_ERROR_EXCEEDED          ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|2))
+#define SAC_AX_ERR_POS_SW_END_SWITCH                ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|3))
+#define SAC_AX_ERR_NEG_SW_END_SWITCH                ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|4))
+#define SAC_AX_ERR_STEADY_STATE_ERROR               ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|5))
+#define SAC_AX_ERR_SPLINE_BUFFER_EMPTY              ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|6))
+#define SAC_AX_ERR_COLLISION_DETECTION              ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|7))
+#define SAC_AX_ERR_STOP_AXES_INPUT                  ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|8))
+#define SAC_AX_ERR_ERROR_0_INPUT                    ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|9))
+#define SAC_AX_ERR_ERROR_1_INPUT                    ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|10))
+#define SAC_AX_ERR_ERROR_2_INPUT                    ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|11))
+#define SAC_AX_ERR_ERROR_3_INPUT                    ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|12))
+#define SAC_AX_ERR_ERROR_4_INPUT                    ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|13))
+#define SAC_AX_ERR_ERROR_5_INPUT                    ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|14))
+#define SAC_AX_ERR_STOP_ALARM                       ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|15))
+#define SAC_AX_ERR_POS_LIMIT_SWITCH_INPUT           ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|16))
+#define SAC_AX_ERR_NEG_LIMIT_SWITCH_INPUT           ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|17))
+#define SAC_AX_ERR_PEER_WARNING                     ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|18))
+#define SAC_AX_ERR_PEER_SMOOTH_STOP                 ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|19))
+#define SAC_AX_ERR_PEER_QUICK_STOP                  ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|20))
+#define SAC_AX_ERR_PEER_FULL_STOP                   ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|21))
+#define SAC_AX_ERR_PEER_QSTOP_OPEN_LOOP             ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|22))
+#define SAC_AX_ERR_PEER_OPEN_LOOP                   ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|23))
+#define SAC_AX_ERR_PEER_DISABLE_DRIVE               ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|24))
+#define SAC_AX_ERR_PEER_POS_CORRUPTED               ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|25))
+#define SAC_AX_ERR_PEER_COMMUNICATION_LOST          ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|26))
+#define SAC_AX_ERR_PHASE_ALARM                      ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|27))
+#define SAC_AX_ERR_MASTER_DIRECTION_ERROR           ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|28))
+#define SAC_AX_ERR_MASTER_POSITION_OVERFLOW         ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|29))
+#define SAC_AX_ERR_MASTER_POSITION_LOSS             ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|30))
+#define SAC_AX_ERR_SETTLING_TIME_ERROR              ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|31))
+#define SAC_AX_ERR_POS_SERVO_OVER_VOLTAGE           ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|32))
+#define SAC_AX_ERR_POS_SERVO_UNDER_VOLTAGE          ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|33))
+#define SAC_AX_ERR_NEG_SERVO_UNDER_VOLTAGE          ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|34))
+#define SAC_AX_ERR_NEG_SERVO_OVER_VOLTAGE           ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|35))
+#define SAC_AX_ERR_OVER_TEMPERATURE                 ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|36))
+#define SAC_AX_ERR_MAX_VELOCITY_EXCEEDED            ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|37))
+#define SAC_AX_ERR_MAX_ACCELERATION_EXCEEDED        ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|38))
+#define SAC_AX_ERR_MAX_JERK_EXCEEDED                ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|39))
+#define SAC_AX_ERR_OVER_CURRENT                     ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|40))
+#define SAC_AX_ERR_INVALID_HALL_SENSOR              ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|41))
+#define SAC_AX_ERR_COMMUNICATION_ERROR              ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|42))
+#define SAC_AX_ERR_NETWORK_ERROR                    ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|43))
+#define SAC_AX_ERR_MARKER_MISSED                    ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|44))
+#define SAC_AX_ERR_MAX_CURRENT_LEVEL_EXCEEDED       ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|45))
+#define SAC_AX_ERR_DRIVE_MAX_I2T_LEVEL_EXCEEDED     ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|46))
+#define SAC_AX_ERR_SHORT_CIRCUIT                    ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|47))
+#define SAC_AX_ERR_GENERAL_ENCODER_ERROR            ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|48))
+#define SAC_AX_ERR_MSM_COUNT_ERROR_1                ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|49))
+#define SAC_AX_ERR_MSM_COUNT_ERROR_2                ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|50))
+#define SAC_AX_ERR_MSM_Z_ERROR                      ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|51))
+#define SAC_AX_ERR_MSM_CS_ERROR                     ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|52))
+#define SAC_AX_ERR_MOTOR_MAX_I2T_LEVEL_EXCEEDED     ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|53))
+#define SAC_AX_ERR_MSM_OVER_SPEED                   ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|54))
+#define SAC_AX_ERR_MSM_FULL_ABSOLUTE_STATUS         ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|55))
+#define SAC_AX_ERR_MSM_COUNT_ERROR                  ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|56))
+#define SAC_AX_ERR_MSM_MULTIPLE_REVOLUTION_ERROR    ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|57))
+#define SAC_AX_ERR_MSM_SYSTEM_DOWN                  ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|58))
+#define SAC_AX_ERR_ENCODER_BATTERY_WARNING          ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|59))
+#define SAC_AX_ERR_SINCOS_SIGNAL_TOO_WEAK           ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|60))
+#define SAC_AX_ERR_SINCOS_SIGNAL_TOO_STRONG         ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|61))
+#define SAC_AX_ERR_ENCODER_COMMUNICATION_LOST       ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|62))
+#define SAC_AX_ERR_MAX_AXIS_VELOCITY_EXCEEDED       ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|63))
+#define SAC_AX_ERR_SETPOINT_OVERFLOW                ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|64))
+#define SAC_AX_ERR_COMMUTATION_CORRECTION_ERROR     ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|65))
+#define SAC_AX_ERR_EXT_STEPPER_VELOCITY_ERROR       ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|66))
+#define SAC_AX_ERR_SAMPLE_OVERRUN                   ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|67))
+#define SAC_AX_ERR_POSITION_ERROR_OVERFLOW          ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|68))
+#define SAC_AX_ERR_DRIVE_TEMPERATURE_TOO_HIGH       ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|69))
+#define SAC_AX_ERR_POS_DRIVE_VOLTAGE_TOO_HIGH       ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|70))
+#define SAC_AX_ERR_POS_DRIVE_VOLTAGE_TOO_LOW        ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|71))
+#define SAC_AX_ERR_NEG_DRIVE_VOLTAGE_TOO_LOW        ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|72))
+#define SAC_AX_ERR_NEG_DRIVE_VOLTAGE_TOO_HIGH       ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|73))
+#define SAC_AX_ERR_INDRA_ERROR                      ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|74))
+#define SAC_AX_ERR_INDRA_WARNING                    ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|75))
+#define SAC_AX_ERR_SERCOS_ERROR                     ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|76))
+#define SAC_AX_ERR_MICROWARE_ERROR                  ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|77))
+#define SAC_AX_ERR_DRIVELINK_ERROR                  ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|78))
+#define SAC_AX_ERR_DL_SYNC_READ_ERROR               ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|79))
+#define SAC_AX_ERR_DISABLE_DRIVE                    ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|80))
+#define SAC_AX_ERR_USER_ERROR_0                     ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|81))
+#define SAC_AX_ERR_USER_ERROR_1                     ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|82))
+#define SAC_AX_ERR_USER_ERROR_2                     ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|83))
+#define SAC_AX_ERR_USER_ERROR_3                     ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|84))
+#define SAC_AX_ERR_USER_ERROR_4                     ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|85))
+#define SAC_AX_ERR_USER_ERROR_5                     ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|86))
+#define SAC_AX_ERR_USER_ERROR_6                     ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|87))
+#define SAC_AX_ERR_USER_ERROR_7                     ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|88))
+#define SAC_AX_ERR_LMS_LEFT_SENSOR_ACTIVE           ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|89))
+#define SAC_AX_ERR_LMS_LEFT_SENSOR_INACTIVE         ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|90))
+#define SAC_AX_ERR_LMS_MIDDLE_SENSOR_ACTIVE         ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|91))
+#define SAC_AX_ERR_LMS_MIDDLE_SENSOR_INACTIVE       ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|92))
+#define SAC_AX_ERR_LMS_RIGHT_SENSOR_ACTIVE          ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|93))
+#define SAC_AX_ERR_LMS_RIGHT_SENSOR_INACTIVE        ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|94))
+#define SAC_AX_ERR_LMS_SETPOINT_ERROR               ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|95))
+#define SAC_AX_ERR_LMS_CAR_SWITCH_ERROR             ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|96))
+#define SAC_AX_ERR_LMS_GAP_ERROR                    ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|97))
+#define SAC_AX_ERR_LMS_SENSOR_SUPPLY_ERROR          ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|98))
+#define SAC_AX_ERR_LMS_COMMUTATION_ANGLE_ERROR      ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|99))
+#define SAC_AX_ERR_PTP_BUFFER_OVERRUN               ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|100))
+
+/** Maximum number of SAC error codes */
+#define NYCE_MAX_NR_OF_SAC_ERROR_CODES 101    /* The value of the specific error identification of the last SAC
+                                                 error code plus 1 (one). */
+// End group sac_error
+/**
+ *  @}
+ */
+
+/**
+ *  @addtogroup sac
+ *  @{
+ */
+
+/******************************************************************************************/
+/* SEQUENCER error codes are not configurable.                                            */
+/* SERVICE error codes are handled SEPARATELY from the other error codes                   */
+/******************************************************************************************/
+#define SAC_AX_ERR_SERVICE_INPUT                       ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|104))
+#define SAC_AX_ERR_MAX_SERVICE_VELOCITY_EXCEEDED       ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|105))
+#define SAC_AX_ERR_MAX_SERVICE_ACCELERATION_EXCEEDED   ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|106))
+#define SAC_AX_ERR_MAX_SERVICE_JERK_EXCEEDED           ((NYCE_ERROR_CODE)((NYCE_ERROR_MASK)|(SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|107))
+
+// End group sac
+/**
+ *  @}
+ */
+
+/* END NYCE_STATUS and NYCE_ERROR_CODE section (leave this comment here and in tact for automatic parsing) */
+
+/**
+ *  @addtogroup nyce
+ *  @{
+ */
+
+/**
+ *  @brief  Prototype for an event enrolment (callback) function.
+ *
+ *  The client can implement a function corresponding to this prototype. Using SacDefineEventEnrolment(), NhiDefineEventEnrolment(),
+ *  SysDefineEventEnrolment() or SeqDefineEventEnrolment() this client function can be registered to be called when an event occurs.
+ *
+ *  @param[in]  nyceId      Connection ID.
+ *  @param[in]  eventId     Event ID.
+ *  @param[in]  pEventData  Additional event data provided by the system.
+ *  @param[in]  pUserData   UserData provided on the define of the event enrolment.
+ */
+typedef void (*NYCE_EVENT_HANDLER)( NYCE_ID         nyceId,
+                                    NYCE_EVENT      eventId,
+                                    NYCE_EVENT_DATA *pEventData,
+                                    void            *pUserData );
+
+
+/** This definition contains a "quiet NaN" (not a number, not signaling), which is the value of a
+ *  variable set member at an index to which no variable has been assigned.
+ */
+#define NYCE_NAN    ((double)0xFFFFFFFFFFFFFFFF)
+
+/**
+ *  @}
+ */
+
+/**
+ *  @addtogroup nhi_events
+ *  @{
+ */
+
+/* START NHI_EVENT section (leave this comment here and in tact for automatic parsing) */
+
+/* Node events */
+#define NHI_EV_SERVICE_INPUT_CHANGED     ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_MCU_SLOT<<NYCE_SLOT_SHIFT)|0))
+#define NHI_EV_STOP_AXES_INPUT_CHANGED   ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_MCU_SLOT<<NYCE_SLOT_SHIFT)|1))
+
+#define NHI_EV_NETWORK_ERROR             ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_MCU_SLOT<<NYCE_SLOT_SHIFT)|3))
+#define NHI_EV_COMMUNICATION_ERROR       ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_MCU_SLOT<<NYCE_SLOT_SHIFT)|4))
+
+#define NHI_EV_HEARTBEAT                 ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_MCU_SLOT<<NYCE_SLOT_SHIFT)|6))
+#define NHI_EV_SAMPLE_OVERRUN            ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_MCU_SLOT<<NYCE_SLOT_SHIFT)|7))
+
+/* Slot event #1 */
+#define NHI_EV_DIG_IO_STATE_CHANGE_SLOT0 ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT0<<NYCE_SLOT_SHIFT)|0))
+#define NHI_EV_DIG_IO_STATE_CHANGE_SLOT1 ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT1<<NYCE_SLOT_SHIFT)|0))
+#define NHI_EV_DIG_IO_STATE_CHANGE_SLOT2 ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT2<<NYCE_SLOT_SHIFT)|0))
+#define NHI_EV_DIG_IO_STATE_CHANGE_SLOT3 ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT3<<NYCE_SLOT_SHIFT)|0))
+#define NHI_EV_DIG_IO_STATE_CHANGE_SLOT4 ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT4<<NYCE_SLOT_SHIFT)|0))
+
+/* Slot event #2 */
+#define NHI_EV_AN_IN0_LEVEL_CROSSING_SLOT0      ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT0<<NYCE_SLOT_SHIFT)|1))
+#define NHI_EV_AN_IN0_LEVEL_CROSSING_SLOT1      ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT1<<NYCE_SLOT_SHIFT)|1))
+#define NHI_EV_AN_IN0_LEVEL_CROSSING_SLOT2      ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT2<<NYCE_SLOT_SHIFT)|1))
+#define NHI_EV_AN_IN0_LEVEL_CROSSING_SLOT3      ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT3<<NYCE_SLOT_SHIFT)|1))
+#define NHI_EV_AN_IN0_LEVEL_CROSSING_SLOT4      ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT4<<NYCE_SLOT_SHIFT)|1))
+
+/* Slot event #3 */
+#define NHI_EV_AN_IN1_LEVEL_CROSSING_SLOT0      ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT0<<NYCE_SLOT_SHIFT)|2))
+#define NHI_EV_AN_IN1_LEVEL_CROSSING_SLOT1      ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT1<<NYCE_SLOT_SHIFT)|2))
+#define NHI_EV_AN_IN1_LEVEL_CROSSING_SLOT2      ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT2<<NYCE_SLOT_SHIFT)|2))
+#define NHI_EV_AN_IN1_LEVEL_CROSSING_SLOT3      ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT3<<NYCE_SLOT_SHIFT)|2))
+#define NHI_EV_AN_IN1_LEVEL_CROSSING_SLOT4      ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT4<<NYCE_SLOT_SHIFT)|2))
+
+/* Slot event #4 */
+#define NHI_EV_DIGIN_COUNTER0_SLOT0         ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT0<<NYCE_SLOT_SHIFT)|3))
+#define NHI_EV_DIGIN_COUNTER0_SLOT1         ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT1<<NYCE_SLOT_SHIFT)|3))
+#define NHI_EV_DIGIN_COUNTER0_SLOT2         ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT2<<NYCE_SLOT_SHIFT)|3))
+#define NHI_EV_DIGIN_COUNTER0_SLOT3         ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT3<<NYCE_SLOT_SHIFT)|3))
+#define NHI_EV_DIGIN_COUNTER0_SLOT4         ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT4<<NYCE_SLOT_SHIFT)|3))
+
+/* Slot event #5 */
+#define NHI_EV_DIGIN_COUNTER1_SLOT0         ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT0<<NYCE_SLOT_SHIFT)|4))
+#define NHI_EV_DIGIN_COUNTER1_SLOT1         ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT1<<NYCE_SLOT_SHIFT)|4))
+#define NHI_EV_DIGIN_COUNTER1_SLOT2         ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT2<<NYCE_SLOT_SHIFT)|4))
+#define NHI_EV_DIGIN_COUNTER1_SLOT3         ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT3<<NYCE_SLOT_SHIFT)|4))
+#define NHI_EV_DIGIN_COUNTER1_SLOT4         ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT4<<NYCE_SLOT_SHIFT)|4))
+
+/* Slot event #6 */
+#define NHI_EV_DIGIN_COUNTER2_SLOT0         ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT0<<NYCE_SLOT_SHIFT)|5))
+#define NHI_EV_DIGIN_COUNTER2_SLOT1         ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT1<<NYCE_SLOT_SHIFT)|5))
+#define NHI_EV_DIGIN_COUNTER2_SLOT2         ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT2<<NYCE_SLOT_SHIFT)|5))
+#define NHI_EV_DIGIN_COUNTER2_SLOT3         ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT3<<NYCE_SLOT_SHIFT)|5))
+#define NHI_EV_DIGIN_COUNTER2_SLOT4         ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT4<<NYCE_SLOT_SHIFT)|5))
+
+/* Slot event #7 */
+#define NHI_EV_DIGIN_COUNTER3_SLOT0         ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT0<<NYCE_SLOT_SHIFT)|6))
+#define NHI_EV_DIGIN_COUNTER3_SLOT1         ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT1<<NYCE_SLOT_SHIFT)|6))
+#define NHI_EV_DIGIN_COUNTER3_SLOT2         ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT2<<NYCE_SLOT_SHIFT)|6))
+#define NHI_EV_DIGIN_COUNTER3_SLOT3         ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT3<<NYCE_SLOT_SHIFT)|6))
+#define NHI_EV_DIGIN_COUNTER3_SLOT4         ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT4<<NYCE_SLOT_SHIFT)|6))
+
+/* Slot event #8 */
+#define NHI_EV_ASPI_READ_REQUESTED_PORT0_SLOT0            ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT0<<NYCE_SLOT_SHIFT)|7))
+#define NHI_EV_ASPI_READ_REQUESTED_PORT0_SLOT1            ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT1<<NYCE_SLOT_SHIFT)|7))
+#define NHI_EV_ASPI_READ_REQUESTED_PORT0_SLOT2            ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT2<<NYCE_SLOT_SHIFT)|7))
+#define NHI_EV_ASPI_READ_REQUESTED_PORT0_SLOT3            ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT3<<NYCE_SLOT_SHIFT)|7))
+#define NHI_EV_ASPI_READ_REQUESTED_PORT0_SLOT4            ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT4<<NYCE_SLOT_SHIFT)|7))
+
+/* Slot event #9 */
+#define NHI_EV_ASPI_READ_REQUESTED_PORT1_SLOT0            ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT0<<NYCE_SLOT_SHIFT)|8))
+#define NHI_EV_ASPI_READ_REQUESTED_PORT1_SLOT1            ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT1<<NYCE_SLOT_SHIFT)|8))
+#define NHI_EV_ASPI_READ_REQUESTED_PORT1_SLOT2            ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT2<<NYCE_SLOT_SHIFT)|8))
+#define NHI_EV_ASPI_READ_REQUESTED_PORT1_SLOT3            ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT3<<NYCE_SLOT_SHIFT)|8))
+#define NHI_EV_ASPI_READ_REQUESTED_PORT1_SLOT4            ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT4<<NYCE_SLOT_SHIFT)|8))
+
+/* Slot event #10 */
+#define NHI_EV_ASPI_READ_READY_PORT0_SLOT0                ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT0<<NYCE_SLOT_SHIFT)|9))
+#define NHI_EV_ASPI_READ_READY_PORT0_SLOT1                ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT1<<NYCE_SLOT_SHIFT)|9))
+#define NHI_EV_ASPI_READ_READY_PORT0_SLOT2                ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT2<<NYCE_SLOT_SHIFT)|9))
+#define NHI_EV_ASPI_READ_READY_PORT0_SLOT3                ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT3<<NYCE_SLOT_SHIFT)|9))
+#define NHI_EV_ASPI_READ_READY_PORT0_SLOT4                ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT4<<NYCE_SLOT_SHIFT)|9))
+
+/* Slot event #11 */
+#define NHI_EV_ASPI_READ_READY_PORT1_SLOT0                ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT0<<NYCE_SLOT_SHIFT)|10))
+#define NHI_EV_ASPI_READ_READY_PORT1_SLOT1                ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT1<<NYCE_SLOT_SHIFT)|10))
+#define NHI_EV_ASPI_READ_READY_PORT1_SLOT2                ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT2<<NYCE_SLOT_SHIFT)|10))
+#define NHI_EV_ASPI_READ_READY_PORT1_SLOT3                ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT3<<NYCE_SLOT_SHIFT)|10))
+#define NHI_EV_ASPI_READ_READY_PORT1_SLOT4                ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT4<<NYCE_SLOT_SHIFT)|10))
+
+/* Slot event #12 */
+#define NHI_EV_ASPI_WRITE_READY_PORT0_SLOT0               ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT0<<NYCE_SLOT_SHIFT)|11))
+#define NHI_EV_ASPI_WRITE_READY_PORT0_SLOT1               ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT1<<NYCE_SLOT_SHIFT)|11))
+#define NHI_EV_ASPI_WRITE_READY_PORT0_SLOT2               ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT2<<NYCE_SLOT_SHIFT)|11))
+#define NHI_EV_ASPI_WRITE_READY_PORT0_SLOT3               ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT3<<NYCE_SLOT_SHIFT)|11))
+#define NHI_EV_ASPI_WRITE_READY_PORT0_SLOT4               ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT4<<NYCE_SLOT_SHIFT)|11))
+
+/* Slot event #13 */
+#define NHI_EV_ASPI_WRITE_READY_PORT1_SLOT0               ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT0<<NYCE_SLOT_SHIFT)|12))
+#define NHI_EV_ASPI_WRITE_READY_PORT1_SLOT1               ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT1<<NYCE_SLOT_SHIFT)|12))
+#define NHI_EV_ASPI_WRITE_READY_PORT1_SLOT2               ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT2<<NYCE_SLOT_SHIFT)|12))
+#define NHI_EV_ASPI_WRITE_READY_PORT1_SLOT3               ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT3<<NYCE_SLOT_SHIFT)|12))
+#define NHI_EV_ASPI_WRITE_READY_PORT1_SLOT4               ((NYCE_EVENT)((SS_NHI<<NYCE_SUBSYS_SHIFT)|(NYCE_SLOT4<<NYCE_SLOT_SHIFT)|12))
+
+/**
+ *  @}
+ */
+
+/* END NHI_EVENT section (leave this comment here and in tact for automatic parsing) */
+
+/**
+ *  @addtogroup sac_events_and_actions
+ *  @{
+ */
+
+/* SAC events */
+
+/* Axis error group */
+#define SAC_EV_ERRH_WARNING                 ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|0))
+#define SAC_EV_ERRH_SMOOTH_STOP             ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|1))
+#define SAC_EV_ERRH_QUICK_STOP              ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|2))
+#define SAC_EV_ERRH_FULL_STOP               ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|3))
+#define SAC_EV_ERRH_QSTOP_OPEN_LOOP         ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|4))
+#define SAC_EV_ERRH_OPEN_LOOP               ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|5))
+#define SAC_EV_ERRH_DISABLE_DRIVE           ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|6))
+#define SAC_EV_ERRH_POS_CORRUPTED           ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|7))
+#define SAC_EV_ERRH_COMMUNICATION_LOST      ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|8))
+
+/* State transition group */
+#define SAC_EV_IDLE_STATE_EN                ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|9))
+#define SAC_EV_INACTIVE_STATE_EN            ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|10))
+#define SAC_EV_READY_STATE_EN               ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|11))
+#define SAC_EV_READY_STOPPED_STATE_EN       ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|12))
+#define SAC_EV_MOVING_STATE_EN              ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|13))
+#define SAC_EV_ERROR_STATE_EN               ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|14))
+#define SAC_EV_FREE_STATE_EN                ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|15))
+#define SAC_EV_FREE_STOPPED_STATE_EN        ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|16))
+#define SAC_EV_IDLE_STATE_LE                ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|17))
+#define SAC_EV_INACTIVE_STATE_LE            ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|18))
+#define SAC_EV_READY_STATE_LE               ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|19))
+#define SAC_EV_READY_STOPPED_STATE_LE       ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|20))
+#define SAC_EV_MOVING_STATE_LE              ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|21))
+#define SAC_EV_ERROR_STATE_LE               ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|22))
+#define SAC_EV_FREE_STATE_LE                ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|23))
+#define SAC_EV_FREE_STOPPED_STATE_LE        ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|24))
+
+/* Miscellaneous group */
+#define SAC_EV_HOMING_STARTED               ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|25))
+#define SAC_EV_HOMING_COMPLETED             ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|26))
+#define SAC_EV_CONTROLLER_READY             ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|27))
+#define SAC_EV_CONTROLLER_STEADY            ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|28))
+#define SAC_EV_PROBE0_DETECTED              ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|29))
+#define SAC_EV_PROBE1_DETECTED              ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|30))
+#define SAC_EV_PROBE2_DETECTED              ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|31))
+#define SAC_EV_PROBE3_DETECTED              ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|32))
+#define SAC_EV_INTERPOLANT_STARTED          ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|33))
+#define SAC_EV_START_TRIGGER                ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|34))
+#define SAC_EV_STOP_TRIGGER                 ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|35))
+#define SAC_EV_STOP_ALARM                   ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|36))
+#define SAC_EV_RECOVER_MODE_LE              ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|37))
+#define SAC_EV_DISABLE_DRIVE                ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|38))
+
+/**
+ *  @brief  SAC event in position.
+ *  
+ *  This event indicates that the controller transitions to steady and the motor is at a specified end position.
+*/
+#define SAC_EV_IN_POSITION                  ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|39))
+
+/* Marker group */
+#define SAC_EV_SINGLE_SHOT_MARKER           ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|40))
+#define SAC_EV_PERMANENT_MARKER             ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|41))
+#define SAC_EV_REPETITIVE_MARKER            ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|42))
+#define SAC_EV_TIME_MARKER                  ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|43))
+
+/* IndraDrive */
+#define SAC_EV_INDRA_AN_IN0_LEVEL_CROSSING  ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|44))
+#define SAC_EV_INDRA_DIG_IO_STATE_CHANGE    ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|45))
+
+/* PFC */
+#define SAC_EV_PFC_FORCE_THRESHOLD_CROSSED  ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|46))
+#define SAC_EV_PFC_FORCE_SEGMENT_STARTED    ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|47))
+#define SAC_EV_PFC_FORCE_PROFILE_COMPLETED  ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|48))
+
+/* LMS */
+#define SAC_EV_LMS_SETPOINT_STOPPED         ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|49))
+#define SAC_EV_LMS_CAR_JOGGING              ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|50))
+#define SAC_EV_LMS_FEED_OVERRIDE_STABLE     ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|51))
+#define SAC_EV_LMS_COIL_LEFT_IN_NEG_DIR     ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|52))
+#define SAC_EV_LMS_COIL_LEFT_IN_POS_DIR     ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|53))
+#define SAC_EV_LMS_COIL_EN_IN_NEG_DIR       ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|54))
+#define SAC_EV_LMS_COIL_EN_IN_POS_DIR       ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|55))
+#define SAC_EV_LMS_START_TRIGGER            ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|56))
+#define SAC_EV_LMS_SETPOINT_STARTED         ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|57))
+
+/* S0S90 Marker group */
+#define SAC_EV_SINGLE_SHOT_S0S90_MARKER     ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|70))
+#define SAC_EV_PERMANENT_S0S90_MARKER       ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|71))
+#define SAC_EV_REPETITIVE_S0S90_MARKER      ((NYCE_EVENT)((SS_SAC<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|72))
+
+/**
+ *  @}
+ */
+
+/**
+ *  @addtogroup sys_events
+ *  @{
+ */
+
+/* System level events */
+#define SYS_EV_NETWORK_CHANGED              ((NYCE_EVENT)((SS_SYS<<NYCE_SUBSYS_SHIFT)|(NO_SLOT<<NYCE_SLOT_SHIFT)|0))
+
+/**
+ *  @}
+ */
+
+/* START SEQ_EVENT section */
+
+/**
+ *  @addtogroup seq_events
+ *  @{
+ */
+
+/* Node events */
+#define SEQ_EV_HOST                         ((NYCE_EVENT)((SS_SEQ<<NYCE_SUBSYS_SHIFT)|(NYCE_MCU_SLOT<<NYCE_SLOT_SHIFT)|0))
+#define SEQ_EV_DBG                          ((NYCE_EVENT)((SS_SEQ<<NYCE_SUBSYS_SHIFT)|(NYCE_MCU_SLOT<<NYCE_SLOT_SHIFT)|1))
+#define SEQ_EV_CONFIG_CHANGED               ((NYCE_EVENT)((SS_SEQ<<NYCE_SUBSYS_SHIFT)|(NYCE_MCU_SLOT<<NYCE_SLOT_SHIFT)|2))
+
+/**
+ *  @}
+ */
+
+#ifdef __cplusplus
+}
+#endif
+
+#ifdef NT
+#pragma pack(pop)
+#endif
+
+#endif

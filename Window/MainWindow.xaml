@@ -1,0 +1,170 @@
+﻿<Controls:MetroWindow  x:Class="Window.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        Title="INTERPOLATING DIAGNOSTIC" Height="900" Width="1200"
+        ShowIconOnTitleBar="True" BorderBrush="{DynamicResource AccentColorBrush}"
+        BorderThickness="1" WindowStartupLocation="CenterScreen"
+        ShowMaxRestoreButton="False" ResizeMode="NoResize" FontFamily="Microsoft YaHei" FontSize="12">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="3*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/> 
+            <RowDefinition Height="25"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="2*"/>
+                <RowDefinition Height="3*"/>
+            </Grid.RowDefinitions>
+            <GroupBox Header="NYCe控制器" FontSize="12">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.ColumnSpan="3" Margin="20,5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Content="初始化 Initialize" Margin="5,0" FontFamily="Microsoft YaHei" FontSize="12" Click="Button_Click_Init" />
+                        <CheckBox Name="cb_Simulation" Content="仿真模式" Grid.Column="1" Margin="5,6" FontFamily="Microsoft YaHei" />
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="45,5" Grid.ColumnSpan="3">
+                        <Label Content="请选择轴 Chose Axis：" VerticalContentAlignment="Center" />
+                        <ComboBox Width="87" Height="23" />
+                    </StackPanel>
+                    <Button Content="寻相 Align" Margin="5,5" Grid.Row="2" Grid.Column="0" FontSize="12" FontFamily="Microsoft YaHei" />
+                    <Button Content="回原点 Home" Margin="5,5" Grid.Row="2" Grid.Column="1" FontSize="12" FontFamily="Microsoft YaHei" />
+                    <Button Content="复位轴 Reset" Margin="5,5" Grid.Row="2" Grid.Column="2" FontSize="12" FontFamily="Microsoft YaHei" />
+                    <Button Content="导入基代码文件 Load File" Margin="20,5" Grid.Row="3" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" />
+                    <Button Content="产生目标曲线图形 Draw Profile" Margin="20,5" Grid.Row="4" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" />
+                    <Button Content="开始插补运动 Start Interpolation" Margin="20,5" Grid.Row="5" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" />
+                    <Button Content="停止插补运动 Stop Interpolation" Margin="20,5" Grid.Row="6" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" />
+                </Grid>
+            </GroupBox>
+            <GroupBox Grid.Row="1" Header="命令执行结果" FontSize="12">
+                <Grid>
+                    <ListBox Margin="10" Name="listBox_result"  >
+                        <ListBoxItem Content="NYCe正在初始化......"/>
+                    </ListBox>
+                </Grid>
+            </GroupBox>
+        </Grid>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="2*"/>
+                <RowDefinition Height="3*"/>
+            </Grid.RowDefinitions>
+            <GroupBox Header="轴控制参数" FontSize="12">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="4*"/>
+                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="2*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="回零最大速度：" VerticalContentAlignment="Center" HorizontalAlignment="Right" Grid.Row="1" Grid.Column="0"/>
+                    <Controls:NumericUpDown Minimum = "0" Maximum = "10000" Interval = "10" StringFormat=".00" Value="20" Name="home_speed" Width="Auto" Height="20" Grid.Row="1" Grid.Column="1" HorizontalContentAlignment="Center" />
+                    <Label Content="mm/s" VerticalContentAlignment="Center" Grid.Row="1" Grid.Column="2" />
+                    <Label Content="回零最大加速度：" VerticalContentAlignment="Center" HorizontalAlignment="Right" Grid.Row="2" Grid.Column="0"/>
+                    <Controls:NumericUpDown Minimum = "0" Maximum = "10000" Interval = "10" StringFormat=".00" Value="200" Width="Auto" Name="home_acceleration" Height="20" Grid.Row="2" Grid.Column="1" HorizontalContentAlignment="Center" />
+                    <Label Content="mm/s2" VerticalContentAlignment="Center" Grid.Row="2" Grid.Column="2" />
+                    <Label Content="回零最大加加速度：" VerticalContentAlignment="Center" HorizontalAlignment="Right" Grid.Row="3" Grid.Column="0"/>
+                    <Controls:NumericUpDown Minimum = "0" Maximum = "10000" Interval = "10" StringFormat=".00" Value="2000" Width="Auto" Name="home_jerk" Height="20" Grid.Row="3" Grid.Column="1" HorizontalContentAlignment="Center" VerticalAlignment="Top" />
+                    <Label Content="mm/s3" VerticalContentAlignment="Center" Grid.Row="3" Grid.Column="2" />
+
+                    <Label Content="运动最大速度：" VerticalContentAlignment="Center" HorizontalAlignment="Right" Grid.Row="5" Grid.Column="0"/>
+                    <Controls:NumericUpDown Minimum = "0" Maximum = "10000" Interval = "10" StringFormat=".00" Value="20" Width="Auto" Name="motion_speed" Height="20" Grid.Row="5" Grid.Column="1" HorizontalContentAlignment="Center" />
+                    <Label Content="mm/s" VerticalContentAlignment="Center" Grid.Row="5" Grid.Column="2" />
+                    <Label Content="运动最大加速度：" VerticalContentAlignment="Center" HorizontalAlignment="Right" Grid.Row="6" Grid.Column="0"/>
+                    <Controls:NumericUpDown Minimum = "0" Maximum = "10000" Interval = "10" StringFormat=".00" Value="200" Width="Auto" Name="motion_acceleration" Height="20" Grid.Row="6" Grid.Column="1" HorizontalContentAlignment="Center" />
+                    <Label Content="mm/s2" VerticalContentAlignment="Center" Grid.Row="6" Grid.Column="2" />
+                    <Label Content="运动最大加加速度：" VerticalContentAlignment="Center" HorizontalAlignment="Right" Grid.Row="7" Grid.Column="0"/>
+                    <Controls:NumericUpDown Minimum = "0" Maximum = "10000" Interval = "10" StringFormat=".00" Value="2000" Width="Auto" Name="motion_jerk" Height="20" Grid.Row="7" Grid.Column="1" HorizontalContentAlignment="Center" />
+                    <Label Content="mm/s3" VerticalContentAlignment="Center" Grid.Row="7" Grid.Column="2" />
+
+                    <Label Content="急停最大加速度：" VerticalContentAlignment="Center" HorizontalAlignment="Right" Grid.Row="9" Grid.Column="0"/>
+                    <Controls:NumericUpDown Minimum = "0" Maximum = "10000" Interval = "10" StringFormat=".00" Value="300" Name="emergency_acceleration" Width="Auto" Height="20" Grid.Row="9" Grid.Column="1" HorizontalContentAlignment="Center" />
+                    <Label Content="mm/s2" VerticalContentAlignment="Center" Grid.Row="9" Grid.Column="2" />
+                </Grid>
+            </GroupBox>
+            <GroupBox Header="基代码列表" Grid.Row="1" FontSize="12">
+                <Grid>
+                    <DataGrid Name="GcodeDataGrid" Grid.ColumnSpan="1" Grid.RowSpan="1" AutoGenerateColumns="True" Style="{StaticResource AzureDataGrid}" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" MinColumnWidth="60" Grid.Column="5"  />
+                </Grid>
+            </GroupBox>
+        </Grid>
+        <Grid Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <GroupBox Header="目标轨迹曲线图形" FontSize="12">
+                <Canvas></Canvas>
+            </GroupBox>
+            <GroupBox Header="运行轨迹曲线图形" Grid.Row="1" FontSize="12">
+                <Canvas></Canvas>
+            </GroupBox>
+        </Grid>
+        <Grid Grid.Row="1" Grid.ColumnSpan="3" Background="#FF41B1E1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBox Text="X轴状态:" FlowDirection="LeftToRight" HorizontalContentAlignment="Right" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="1" Name="XStatus" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="2" Text="X轴位置:" FlowDirection="LeftToRight" HorizontalContentAlignment="Right" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="3" Name="XPos" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="4" Text="Y轴状态:" FlowDirection="LeftToRight" HorizontalContentAlignment="Right" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="5" Name="YStatus" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="6" Text="Y轴位置:" FlowDirection="LeftToRight" HorizontalContentAlignment="Right" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="7" Name="YPos" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="8" Text="Z轴状态:" FlowDirection="LeftToRight" HorizontalContentAlignment="Right" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="9" Name="ZStatus" BorderThickness="0" Grid.ColumnSpan="1" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="10" Text="Z轴位置:" FlowDirection="LeftToRight" HorizontalContentAlignment="Right" BorderThickness="0" Grid.ColumnSpan="1" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="11" Name="ZPos" BorderThickness="0" Grid.ColumnSpan="1" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="12" Text="运动时间:" FlowDirection="LeftToRight" HorizontalContentAlignment="Right" BorderThickness="0" Grid.ColumnSpan="1" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="13" Name="Time" BorderThickness="0" Grid.ColumnSpan="1" Background="#FF41B1E1" Foreground="White" />
+        </Grid>
+    </Grid>
+</Controls:MetroWindow >
