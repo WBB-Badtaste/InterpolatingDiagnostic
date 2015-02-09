@@ -85,6 +85,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Backstage.cs" />
+    <Compile Include="Draw.cs" />
+    <Compile Include="FileOper.cs" />
+    <Compile Include="Gcode.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

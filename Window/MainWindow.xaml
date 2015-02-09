@@ -52,8 +52,8 @@
                     <Button Content="寻相 Align" Margin="5,5" Grid.Row="2" Grid.Column="0" FontSize="12" FontFamily="Microsoft YaHei" />
                     <Button Content="回原点 Home" Margin="5,5" Grid.Row="2" Grid.Column="1" FontSize="12" FontFamily="Microsoft YaHei" />
                     <Button Content="复位轴 Reset" Margin="5,5" Grid.Row="2" Grid.Column="2" FontSize="12" FontFamily="Microsoft YaHei" />
-                    <Button Content="导入基代码文件 Load File" Margin="20,5" Grid.Row="3" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" />
-                    <Button Content="产生目标曲线图形 Draw Profile" Margin="20,5" Grid.Row="4" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" />
+                    <Button Content="导入基代码文件 Load File" Margin="20,5" Grid.Row="3" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" Click="Button_Click" />
+                    <Button Content="产生目标曲线图形 Draw Profile" Margin="20,5" Grid.Row="4" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" Click="Button_Click_1" />
                     <Button Content="开始插补运动 Start Interpolation" Margin="20,5" Grid.Row="5" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" />
                     <Button Content="停止插补运动 Stop Interpolation" Margin="20,5" Grid.Row="6" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" />
                 </Grid>
@@ -61,7 +61,7 @@
             <GroupBox Grid.Row="1" Header="命令执行结果" FontSize="12">
                 <Grid>
                     <ListBox Margin="10" Name="listBox_result"  >
-                        <ListBoxItem Content="NYCe正在初始化......"/>
+                        <ListBoxItem Content="NYCe正在初始化......" />
                     </ListBox>
                 </Grid>
             </GroupBox>
@@ -118,7 +118,7 @@
             </GroupBox>
             <GroupBox Header="基代码列表" Grid.Row="1" FontSize="12">
                 <Grid>
-                    <DataGrid Name="GcodeDataGrid" Grid.ColumnSpan="1" Grid.RowSpan="1" AutoGenerateColumns="True" Style="{StaticResource AzureDataGrid}" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" MinColumnWidth="60" Grid.Column="5"  />
+                    <DataGrid Name="GcodeDataGrid" Grid.ColumnSpan="1" Grid.RowSpan="1" AutoGenerateColumns="True" Style="{StaticResource AzureDataGrid}" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" MinColumnWidth="60" Grid.Column="5" ItemsSource="{Binding}"/>
                 </Grid>
             </GroupBox>
         </Grid>
@@ -128,10 +128,10 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <GroupBox Header="目标轨迹曲线图形" FontSize="12">
-                <Canvas></Canvas>
+                <Canvas x:Name="canvas_o"/>
             </GroupBox>
             <GroupBox Header="运行轨迹曲线图形" Grid.Row="1" FontSize="12">
-                <Canvas></Canvas>
+                <Canvas x:Name="canvas_f"/>
             </GroupBox>
         </Grid>
         <Grid Grid.Row="1" Grid.ColumnSpan="3" Background="#FF41B1E1">
