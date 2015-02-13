@@ -14,7 +14,6 @@ NyceSystem::~NyceSystem(void)
 
 bool NyceSystem::Initialize(const bool &bSim)
 {
-	int a = NyceInit(NYCE_SIM);
  	if (NyceInit(bSim ? NYCE_SIM : NYCE_NET) == NYCE_OK )
  	{
  		m_status = SYSTEM_INITIALIZED;
@@ -73,7 +72,7 @@ unsigned NyceSystem::GetNodeSum()
 	return m_nodeMap.size();
 }
 
-const NyceNode* const NyceSystem::GetNode(const string &name)
+NyceNode* const NyceSystem::GetNode(const string &name)
 {
 	return m_nodeMap[name];
 }

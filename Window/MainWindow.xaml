@@ -5,7 +5,7 @@
         Title="INTERPOLATING DIAGNOSTIC" Height="900" Width="1200"
         ShowIconOnTitleBar="True" BorderBrush="{DynamicResource AccentColorBrush}"
         BorderThickness="1" WindowStartupLocation="CenterScreen"
-        ShowMaxRestoreButton="False" ResizeMode="NoResize" FontFamily="Microsoft YaHei" FontSize="12">
+        ShowMaxRestoreButton="False" ResizeMode="NoResize" FontFamily="Microsoft YaHei" FontSize="12" Closing="Window_Closing">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
@@ -47,22 +47,25 @@
                     </Grid>
                     <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="45,5" Grid.ColumnSpan="3">
                         <Label Content="请选择轴 Chose Axis：" VerticalContentAlignment="Center" />
-                        <ComboBox Width="87" Height="23" />
+                        <ComboBox Name="combox_axis" Width="87" Height="23" SelectedIndex="0">
+                            <ComboBoxItem Content="X轴"/>
+                            <ComboBoxItem Content="Y1轴"/>
+                            <ComboBoxItem Content="Y2轴"/>
+                            <ComboBoxItem Content="Z轴"/>
+                        </ComboBox>
                     </StackPanel>
-                    <Button Content="寻相 Align" Margin="5,5" Grid.Row="2" Grid.Column="0" FontSize="12" FontFamily="Microsoft YaHei" />
-                    <Button Content="回原点 Home" Margin="5,5" Grid.Row="2" Grid.Column="1" FontSize="12" FontFamily="Microsoft YaHei" />
-                    <Button Content="复位轴 Reset" Margin="5,5" Grid.Row="2" Grid.Column="2" FontSize="12" FontFamily="Microsoft YaHei" />
-                    <Button Content="导入基代码文件 Load File" Margin="20,5" Grid.Row="3" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" Click="Button_Click" />
-                    <Button Content="产生目标曲线图形 Draw Profile" Margin="20,5" Grid.Row="4" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" Click="Button_Click_1" />
-                    <Button Content="开始插补运动 Start Interpolation" Margin="20,5" Grid.Row="5" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" />
+                    <Button Content="寻相 Align" Margin="5,5" Grid.Row="2" Grid.Column="0" FontSize="12" FontFamily="Microsoft YaHei" Click="Button_Click_Align" />
+                    <Button Content="回零 Home" Margin="5,5" Grid.Row="2" Grid.Column="1" FontSize="12" FontFamily="Microsoft YaHei" Click="Button_Click_Home" />
+                    <Button Content="复位 Reset" Margin="5,5" Grid.Row="2" Grid.Column="2" FontSize="12" FontFamily="Microsoft YaHei" Click="Button_Click_Reset" />
+                    <Button Content="导入基代码文件 Load File" Margin="20,5" Grid.Row="3" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" Click="Button_Click_ReadFile" />
+                    <Button Content="产生目标曲线图形 Draw Profile" Margin="20,5" Grid.Row="4" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" Click="Button_Click_Draw" />
+                    <Button Content="开始插补运动 Start Interpolation" Margin="20,5" Grid.Row="5" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" Click="Button_Click_Interpolate" />
                     <Button Content="停止插补运动 Stop Interpolation" Margin="20,5" Grid.Row="6" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" />
                 </Grid>
             </GroupBox>
             <GroupBox Grid.Row="1" Header="命令执行结果" FontSize="12">
                 <Grid>
-                    <ListBox Margin="10" Name="listBox_result"  >
-                        <ListBoxItem Content="NYCe正在初始化......" />
-                    </ListBox>
+                    <ListBox Margin="10" Name="listBox_result" />
                 </Grid>
             </GroupBox>
         </Grid>
@@ -150,21 +153,29 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <TextBox Text="X轴状态:" FlowDirection="LeftToRight" HorizontalContentAlignment="Right" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
             <TextBox Grid.Column="1" Name="XStatus" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
             <TextBox Grid.Column="2" Text="X轴位置:" FlowDirection="LeftToRight" HorizontalContentAlignment="Right" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
             <TextBox Grid.Column="3" Name="XPos" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
-            <TextBox Grid.Column="4" Text="Y轴状态:" FlowDirection="LeftToRight" HorizontalContentAlignment="Right" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
-            <TextBox Grid.Column="5" Name="YStatus" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
-            <TextBox Grid.Column="6" Text="Y轴位置:" FlowDirection="LeftToRight" HorizontalContentAlignment="Right" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
-            <TextBox Grid.Column="7" Name="YPos" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
-            <TextBox Grid.Column="8" Text="Z轴状态:" FlowDirection="LeftToRight" HorizontalContentAlignment="Right" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
-            <TextBox Grid.Column="9" Name="ZStatus" BorderThickness="0" Grid.ColumnSpan="1" Background="#FF41B1E1" Foreground="White" />
-            <TextBox Grid.Column="10" Text="Z轴位置:" FlowDirection="LeftToRight" HorizontalContentAlignment="Right" BorderThickness="0" Grid.ColumnSpan="1" Background="#FF41B1E1" Foreground="White" />
-            <TextBox Grid.Column="11" Name="ZPos" BorderThickness="0" Grid.ColumnSpan="1" Background="#FF41B1E1" Foreground="White" />
-            <TextBox Grid.Column="12" Text="运动时间:" FlowDirection="LeftToRight" HorizontalContentAlignment="Right" BorderThickness="0" Grid.ColumnSpan="1" Background="#FF41B1E1" Foreground="White" />
-            <TextBox Grid.Column="13" Name="Time" BorderThickness="0" Grid.ColumnSpan="1" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="4" Text="Y1轴状态:" FlowDirection="LeftToRight" HorizontalContentAlignment="Right" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="5" Name="Y1Status" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="6" Text="Y1轴位置:" FlowDirection="LeftToRight" HorizontalContentAlignment="Right" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="7" Name="Y1Pos" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="8" Text="Y2轴状态:" FlowDirection="LeftToRight" HorizontalContentAlignment="Right" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="9" Name="Y2Status" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="10" Text="Y2轴位置:" FlowDirection="LeftToRight" HorizontalContentAlignment="Right" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="11" Name="Y2Pos" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="12" Text="Z轴状态:" FlowDirection="LeftToRight" HorizontalContentAlignment="Right" Grid.ColumnSpan="1" BorderThickness="0" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="13" Name="ZStatus" BorderThickness="0" Grid.ColumnSpan="1" Background="#FF41B1E1" Foreground="White"/>
+            <TextBox Grid.Column="14" Text="Z轴位置:" FlowDirection="LeftToRight" HorizontalContentAlignment="Right" BorderThickness="0" Grid.ColumnSpan="1" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="15" Name="ZPos" BorderThickness="0" Grid.ColumnSpan="1" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="16" Text="运动时间:" FlowDirection="LeftToRight" HorizontalContentAlignment="Right" BorderThickness="0" Grid.ColumnSpan="1" Background="#FF41B1E1" Foreground="White" />
+            <TextBox Grid.Column="17" Name="MoveTime" BorderThickness="0" Grid.ColumnSpan="1" Background="#FF41B1E1" Foreground="White" />
         </Grid>
     </Grid>
 </Controls:MetroWindow >

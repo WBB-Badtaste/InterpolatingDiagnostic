@@ -17,7 +17,7 @@ public:
 	bool							DelAxis(const string&);
 	bool							DelAllAxis();
 	unsigned						GetAxisSum();
-	const NyceAxis* const			GetAxis(const string&);
+	NyceAxis* const					GetAxis(const string&);
 private:
 	const string					m_name;
 	NHI_NODE						m_id;

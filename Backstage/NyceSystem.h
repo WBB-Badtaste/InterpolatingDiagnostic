@@ -17,7 +17,7 @@ public:
  	bool							DelNode(const string&);
  	bool							DelAllNode();
  	unsigned						GetNodeSum();
- 	const NyceNode* const			GetNode(const string&);
+ 	NyceNode* const					GetNode(const string&);
 private:
 	SYSTEM_STATUS					m_status;
 	map<string, NyceNode*>			m_nodeMap;

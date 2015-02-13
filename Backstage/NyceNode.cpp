@@ -78,7 +78,7 @@ unsigned NyceNode::GetAxisSum()
 	return m_axisMap.size();
 }
 
-const NyceAxis* const NyceNode::GetAxis(const string& axisName)
+NyceAxis* const NyceNode::GetAxis(const string& axisName)
 {
 	return m_axisMap[axisName];
 }
