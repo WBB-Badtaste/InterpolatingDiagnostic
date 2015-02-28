@@ -6,14 +6,7 @@
 #define BACKSTAGE_API __declspec(dllimport)
 #endif
 
-typedef struct InSeg
-{
-	int iNo;
-	double dPosX;
-	double dPosY;
-	double dVel;
-	double dTime;
-}IN_SEG,*IN_SED_PRT;
+
 
 // 初始化
 EXTERN_C BACKSTAGE_API int WINAPI Initialize(const bool* const);
@@ -38,4 +31,4 @@ EXTERN_C BACKSTAGE_API int WINAPI GetAxisHomePars(double*,double*,double*);
 //设置HomePars
 EXTERN_C BACKSTAGE_API int WINAPI SetAxisHomePars(double,double,double);
 //插补运动
-EXTERN_C BACKSTAGE_API int WINAPI MoveInCircle(const double * dCurX, const double *dCurY, const double *dRadius,IN_SED_PRT const pSegments,const int * segSum);
+EXTERN_C BACKSTAGE_API int WINAPI MoveInterpolating(const double *dCurX, const double *dCurY, const double *dRadius,IN_SED_PRT const pSegments,const int *segSum);

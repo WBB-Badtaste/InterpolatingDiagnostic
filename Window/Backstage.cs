@@ -6,6 +6,15 @@ using System.Runtime.InteropServices;
 
 namespace Window
 {
+    public struct InSeg
+    {
+        public int iNo;
+        public double dPosX;
+        public double dPosY;
+        public double dVel;
+        public double dTime;
+    };
+
     class Backstage
     {
         [DllImport("Backstage.dll", EntryPoint = "Initialize", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
@@ -25,7 +34,7 @@ namespace Window
         [DllImport("Backstage.dll", EntryPoint = "GetAxisStatus", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public extern static int GetAxisStatus(IntPtr axName, IntPtr strState);
         [DllImport("Backstage.dll", EntryPoint = "MoveInterpolating", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        public extern static int MoveInterpolating();
+        unsafe public extern static int MoveInterpolating(ref double dCurX, ref double dCurY, ref double dRadius, InSeg* pSeg, ref int iSegSum);
 
         public static int OK                = 10000;
         public static int INITALIZE_FAIL    = 10001;

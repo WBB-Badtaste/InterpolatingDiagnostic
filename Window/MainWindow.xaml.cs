@@ -241,7 +241,30 @@ namespace Window
         private void Button_Click_Interpolate(object sender, RoutedEventArgs e)
         {
             bMoving = true;
-            int a = Backstage.MoveInterpolating();
+            InSeg[] inSeg = new InSeg[200];
+            unsafe
+            {
+                fixed (InSeg* p = &inSeg[0])
+                {
+                    double dCurX = 10;
+                    double dCurY = -20;
+                    double dRadius = 150;
+                    int sum = inSeg.Length;
+                    int a = Backstage.MoveInterpolating(ref dCurX, ref dCurY, ref dRadius, p, ref sum);
+                }
+            }
+            List<GcodeSegment> gc = new List<GcodeSegment>();
+            foreach(InSeg seg in inSeg)
+            {
+                GcodeSegment Segment = new GcodeSegment();
+                Segment.X坐标 = seg.dPosX;
+                Segment.Y坐标 = seg.dPosY;
+                Segment.段号 = (uint)seg.iNo;
+                Segment.段末速度 = seg.dVel;
+                Segment.运动时间 = seg.dTime;
+                gc.Add(Segment);
+            }
+            gcode.Value = gc;
         }
     }
     

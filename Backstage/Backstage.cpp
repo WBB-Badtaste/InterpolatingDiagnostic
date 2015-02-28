@@ -154,40 +154,11 @@ BACKSTAGE_API int WINAPI SetAxisHomePars(char* name,double dMaxSpeed,double dMax
 
 BACKSTAGE_API int WINAPI MoveInterpolating(const double *dCurX, const double *dCurY, const double *dRadius,IN_SED_PRT const pSegments,const int * segSum)
 {
-	IN_SED_PRT ptr(nullptr);
-	double dDistance_x(*dCurX),dDistance_y(*dCurY),dVel_x(0.0),dVel_y(0.0),dTime(0.0),dTime_x(0.0),dTime_y(0.0),dAcc_x(0.0),dAcc_y(0.0);
-	const string &nodeName(g_mapNode2Axis.begin()->first);
-	const string &axisName_x(g_mapAxis2Node.begin()->first);
-	const string &axisName_y((g_mapAxis2Node.begin()++)->first);
-	double dAngle(0.0),dLastVel_x(0.0),dLastVel_y(0.0);
-	for (int i = 0; i < *segSum; ++i)
-	{
-		dAngle = 2.0 * M_PI / *segSum * ((double)i + 1.0);
-		dDistance_x = *dCurX - *dRadius * cos(dAngle) - dDistance_x;
-		dDistance_y = *dCurY + *dRadius * sin(dAngle) - dDistance_y;
-		dLastVel_x = dVel_x;
-		dLastVel_y = dVel_y;
-		g_pNyce->GetNode(nodeName)->GetAxis(axisName_x)->GetInSegPars(dDistance_x,dVel_x,dAcc_x,dTime_x);
-		g_pNyce->GetNode(nodeName)->GetAxis(axisName_x)->GetInSegPars(dDistance_y,dVel_y,dAcc_y,dTime_y);
-		dTime = dTime_x;
-		if (dTime_x > dTime_y)
-		{
-			dTime = dTime_x;
-			dVel_y = dVel_x * atan(dAngle);
-			dAcc_y = (dVel_y - dLastVel_y) / dTime;
-		}
-		if (dTime_y > dTime_x)
-		{
-			dTime = dTime_y;
-			dVel_x = dVel_y * atan(dAngle);
-			dAcc_x = (dVel_x - dLastVel_x) / dTime;
-		}
-		ptr = pSegments + i;
-		ptr->iNo = i;
-		ptr->dPosX = dDistance_x;
-		ptr->dPosY = dDistance_y;
-		ptr->dTime = dTime;
-		ptr->dVel = sqrt(dVel_x * dVel_x + dVel_y * dVel_y);
-	}
+	AXIS_INFO axisArray[2];
+	axisArray[0].nodeName = axisArray[1].nodeName = g_mapNode2Axis.begin()->first;
+	axisArray[0].axisName = g_mapAxis2Node.begin()->first;
+	axisArray[1].axisName = (g_mapAxis2Node.begin()++)->first;
+	g_pNyce->SetInAxis(axisArray,2);
+	g_pNyce->GetInSeg_Cicle_xy(dCurX,dCurY,dRadius,pSegments,segSum);
 	return BACKSTAGE_OK;
 }

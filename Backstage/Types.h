@@ -25,3 +25,12 @@ enum SYSTEM_STATUS
 	SYSTEM_TERMINATING		= 3,
 	SYSTEM_TERMINATED		= 4
 };
+
+typedef struct InSeg
+{
+	int iNo;
+	double dPosX;
+	double dPosY;
+	double dVel;
+	double dTime;
+}IN_SEG,*IN_SED_PRT;
