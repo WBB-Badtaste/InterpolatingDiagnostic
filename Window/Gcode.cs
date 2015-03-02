@@ -11,7 +11,8 @@ namespace Window
         public uint 段号 { get; set; }
         public double X坐标 { get; set; }
         public double Y坐标 { get; set; }
-        public double 段末速度 { get; set; }
+        public double X轴段末速度 { get; set; }
+        public double Y轴段末速度 { get; set; }
         public double 运动时间 { get; set; }
     }
 

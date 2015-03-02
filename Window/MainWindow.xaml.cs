@@ -28,6 +28,7 @@ namespace Window
         private bool bWorking = false;
         private Gcode gcode = new Gcode();
         private SysInfo sysInfo = new SysInfo();
+        InSeg[] inSeg = new InSeg[200];
 
         private string nodeName = "NY4112_node";
         private string axisName1 = "DEF_AXIS_1";
@@ -82,9 +83,11 @@ namespace Window
             bool bMoveBegined = false;
             DateTime timeBeginMove = DateTime.Now;
             DateTime timeCurrent = timeBeginMove;
+            double buffer = 0.0;
+            double offset = 0.0;
             while (bWorking)
             {
-                Thread.CurrentThread.Join(100);
+                Thread.CurrentThread.Join(500);
                 if (!bInit)
                     continue;
                 Backstage.GetAxisPosition(pAxisName1, ref posBuffer);
@@ -108,7 +111,15 @@ namespace Window
                     if (bMoveBegined)
                     {
                         timeCurrent = DateTime.Now;
-                        sysInfo.TimeMove = timeCurrent.Second + (double)timeCurrent.Millisecond / 1000 - timeBeginMove.Second - (double)timeBeginMove.Millisecond / 1000;
+                        buffer =timeCurrent.Minute * 60 + timeCurrent.Second + (double)timeCurrent.Millisecond / 1000 - timeBeginMove.Minute * 60 - timeBeginMove.Second - (double)timeBeginMove.Millisecond / 1000 + offset;
+                        if(buffer < 0)
+                        {
+                            timeBeginMove = DateTime.Now;
+                            offset += sysInfo.TimeMove;
+                            sysInfo.TimeMove = Math.Round(timeCurrent.Minute * 60 + timeCurrent.Second + (double)timeCurrent.Millisecond / 1000 - timeBeginMove.Minute * 60 - timeBeginMove.Second - (double)timeBeginMove.Millisecond / 1000 + offset);
+                        }
+                        else
+                            sysInfo.TimeMove = Math.Round(buffer);
                     }
                     else
                     {
@@ -148,11 +159,11 @@ namespace Window
             }
         }
 
-        private void Button_Click_ReadFile(object sender, RoutedEventArgs e)
+        private void Button_Click_LoadFile(object sender, RoutedEventArgs e)
         {
-            string path = "Circle_200_200.txt";
-            gcode.Value = FileOper.Read(ref path);
-            listBox_result.Items.Add(new TextBox() { Text = "完成基代码读取。" });
+            //string path = "Circle_200_200.txt";
+            //gcode.Value = FileOper.Read(ref path);
+            //listBox_result.Items.Add(new TextBox() { Text = "完成基代码读取。" });
         }
 
         private void Button_Click_Draw(object sender, RoutedEventArgs e)
@@ -177,11 +188,6 @@ namespace Window
             Marshal.FreeHGlobal(pAxisName2);
             Marshal.FreeHGlobal(pAxisName3);
             Marshal.FreeHGlobal(pAxisName4);
-        }
-
-        private void sleep()
-        {
-            throw new NotImplementedException();
         }
 
         private void Button_Click_Align(object sender, RoutedEventArgs e)
@@ -237,11 +243,22 @@ namespace Window
                 listBox_result.Items.Add(new TextBox() { Text = "完成复位。" });
             }
         }
-
+         
         private void Button_Click_Interpolate(object sender, RoutedEventArgs e)
         {
             bMoving = true;
-            InSeg[] inSeg = new InSeg[200];
+            unsafe
+            {
+                fixed (InSeg* p = &inSeg[0])
+                {
+                    int sum = inSeg.Length;
+                    int a = Backstage.MoveInterpolating(p, sum, true);
+                }
+            }
+        }
+
+        private void Button_Click_GenerateFile(object sender, RoutedEventArgs e)
+        {
             unsafe
             {
                 fixed (InSeg* p = &inSeg[0])
@@ -250,17 +267,18 @@ namespace Window
                     double dCurY = -20;
                     double dRadius = 150;
                     int sum = inSeg.Length;
-                    int a = Backstage.MoveInterpolating(ref dCurX, ref dCurY, ref dRadius, p, ref sum);
+                    int a = Backstage.GetInSeg_Circle(ref dCurX, ref dCurY, ref dRadius, p, ref sum);
                 }
             }
             List<GcodeSegment> gc = new List<GcodeSegment>();
-            foreach(InSeg seg in inSeg)
+            foreach (InSeg seg in inSeg)
             {
                 GcodeSegment Segment = new GcodeSegment();
                 Segment.X坐标 = seg.dPosX;
                 Segment.Y坐标 = seg.dPosY;
                 Segment.段号 = (uint)seg.iNo;
-                Segment.段末速度 = seg.dVel;
+                Segment.X轴段末速度 = seg.dVelX;
+                Segment.Y轴段末速度 = seg.dVelY;
                 Segment.运动时间 = seg.dTime;
                 gc.Add(Segment);
             }

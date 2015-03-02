@@ -9,7 +9,7 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="3*"/>
             <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -45,19 +45,12 @@
                         <Button Content="初始化 Initialize" Margin="5,0" FontFamily="Microsoft YaHei" FontSize="12" Click="Button_Click_Init" />
                         <CheckBox Name="cb_Simulation" Content="仿真模式" Grid.Column="1" Margin="5,6" FontFamily="Microsoft YaHei" />
                     </Grid>
-                    <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="45,5" Grid.ColumnSpan="3">
-                        <Label Content="请选择轴 Chose Axis：" VerticalContentAlignment="Center" />
-                        <ComboBox Name="combox_axis" Width="87" Height="23" SelectedIndex="0">
-                            <ComboBoxItem Content="X轴"/>
-                            <ComboBoxItem Content="Y1轴"/>
-                            <ComboBoxItem Content="Y2轴"/>
-                            <ComboBoxItem Content="Z轴"/>
-                        </ComboBox>
-                    </StackPanel>
-                    <Button Content="寻相 Align" Margin="5,5" Grid.Row="2" Grid.Column="0" FontSize="12" FontFamily="Microsoft YaHei" Click="Button_Click_Align" />
-                    <Button Content="回零 Home" Margin="5,5" Grid.Row="2" Grid.Column="1" FontSize="12" FontFamily="Microsoft YaHei" Click="Button_Click_Home" />
-                    <Button Content="复位 Reset" Margin="5,5" Grid.Row="2" Grid.Column="2" FontSize="12" FontFamily="Microsoft YaHei" Click="Button_Click_Reset" />
-                    <Button Content="导入基代码文件 Load File" Margin="20,5" Grid.Row="3" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" Click="Button_Click_ReadFile" />
+                    
+                    <Button Content="寻相 Align" Margin="5,5" Grid.Row="1" Grid.Column="0" FontSize="12" FontFamily="Microsoft YaHei" Click="Button_Click_Align" />
+                    <Button Content="回零 Home" Margin="5,5" Grid.Row="1" Grid.Column="1" FontSize="12" FontFamily="Microsoft YaHei" Click="Button_Click_Home" />
+                    <Button Content="复位 Reset" Margin="5,5" Grid.Row="1" Grid.Column="2" FontSize="12" FontFamily="Microsoft YaHei" Click="Button_Click_Reset" />
+                    <Button Content="导入基代码文件 Load File" Margin="20,5" Grid.Row="2" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" Click="Button_Click_LoadFile" />
+                    <Button Content="生成基代码文件 Generate File" Margin="20,5" Grid.Row="3" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" Click="Button_Click_GenerateFile" />
                     <Button Content="产生目标曲线图形 Draw Profile" Margin="20,5" Grid.Row="4" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" Click="Button_Click_Draw" />
                     <Button Content="开始插补运动 Start Interpolation" Margin="20,5" Grid.Row="5" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" Click="Button_Click_Interpolate" />
                     <Button Content="停止插补运动 Stop Interpolation" Margin="20,5" Grid.Row="6" Grid.ColumnSpan="3" FontSize="12" FontFamily="Microsoft YaHei" />
@@ -94,29 +87,38 @@
                         <ColumnDefinition Width="3*"/>
                         <ColumnDefinition Width="2*"/>
                     </Grid.ColumnDefinitions>
-                    <Label Content="回零最大速度：" VerticalContentAlignment="Center" HorizontalAlignment="Right" Grid.Row="1" Grid.Column="0"/>
-                    <Controls:NumericUpDown Minimum = "0" Maximum = "10000" Interval = "10" StringFormat=".00" Value="20" Name="home_speed" Width="Auto" Height="20" Grid.Row="1" Grid.Column="1" HorizontalContentAlignment="Center" />
-                    <Label Content="mm/s" VerticalContentAlignment="Center" Grid.Row="1" Grid.Column="2" />
-                    <Label Content="回零最大加速度：" VerticalContentAlignment="Center" HorizontalAlignment="Right" Grid.Row="2" Grid.Column="0"/>
-                    <Controls:NumericUpDown Minimum = "0" Maximum = "10000" Interval = "10" StringFormat=".00" Value="200" Width="Auto" Name="home_acceleration" Height="20" Grid.Row="2" Grid.Column="1" HorizontalContentAlignment="Center" />
-                    <Label Content="mm/s2" VerticalContentAlignment="Center" Grid.Row="2" Grid.Column="2" />
-                    <Label Content="回零最大加加速度：" VerticalContentAlignment="Center" HorizontalAlignment="Right" Grid.Row="3" Grid.Column="0"/>
-                    <Controls:NumericUpDown Minimum = "0" Maximum = "10000" Interval = "10" StringFormat=".00" Value="2000" Width="Auto" Name="home_jerk" Height="20" Grid.Row="3" Grid.Column="1" HorizontalContentAlignment="Center" VerticalAlignment="Top" />
-                    <Label Content="mm/s3" VerticalContentAlignment="Center" Grid.Row="3" Grid.Column="2" />
+                    <StackPanel Grid.Row="0"  Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Label Content="请选择轴 Chose Axis：" VerticalContentAlignment="Center" />
+                        <ComboBox Name="combox_axis" Width="87" Height="23" SelectedIndex="0">
+                            <ComboBoxItem Content="X轴"/>
+                            <ComboBoxItem Content="Y1轴"/>
+                            <ComboBoxItem Content="Y2轴"/>
+                            <ComboBoxItem Content="Z轴"/>
+                        </ComboBox>
+                    </StackPanel>
+                    <Label Content="回零最大速度：" VerticalContentAlignment="Center" HorizontalAlignment="Right" Grid.Row="2" Grid.Column="0"/>
+                    <Controls:NumericUpDown Minimum = "0" Maximum = "10000" Interval = "10" StringFormat=".00" Value="20" Name="home_speed" Width="Auto" Height="20" Grid.Row="2" Grid.Column="1" HorizontalContentAlignment="Center" />
+                    <Label Content="mm/s" VerticalContentAlignment="Center" Grid.Row="2" Grid.Column="2" />
+                    <Label Content="回零最大加速度：" VerticalContentAlignment="Center" HorizontalAlignment="Right" Grid.Row="3" Grid.Column="0"/>
+                    <Controls:NumericUpDown Minimum = "0" Maximum = "10000" Interval = "10" StringFormat=".00" Value="200" Width="Auto" Name="home_acceleration" Height="20" Grid.Row="3" Grid.Column="1" HorizontalContentAlignment="Center" />
+                    <Label Content="mm/s2" VerticalContentAlignment="Center" Grid.Row="3" Grid.Column="2" />
+                    <Label Content="回零最大加加速度：" VerticalContentAlignment="Center" HorizontalAlignment="Right" Grid.Row="4" Grid.Column="0"/>
+                    <Controls:NumericUpDown Minimum = "0" Maximum = "10000" Interval = "10" StringFormat=".00" Value="2000" Width="Auto" Name="home_jerk" Height="20" Grid.Row="4" Grid.Column="1" HorizontalContentAlignment="Center" VerticalAlignment="Top" />
+                    <Label Content="mm/s3" VerticalContentAlignment="Center" Grid.Row="4" Grid.Column="2" />
 
-                    <Label Content="运动最大速度：" VerticalContentAlignment="Center" HorizontalAlignment="Right" Grid.Row="5" Grid.Column="0"/>
-                    <Controls:NumericUpDown Minimum = "0" Maximum = "10000" Interval = "10" StringFormat=".00" Value="20" Width="Auto" Name="motion_speed" Height="20" Grid.Row="5" Grid.Column="1" HorizontalContentAlignment="Center" />
-                    <Label Content="mm/s" VerticalContentAlignment="Center" Grid.Row="5" Grid.Column="2" />
-                    <Label Content="运动最大加速度：" VerticalContentAlignment="Center" HorizontalAlignment="Right" Grid.Row="6" Grid.Column="0"/>
-                    <Controls:NumericUpDown Minimum = "0" Maximum = "10000" Interval = "10" StringFormat=".00" Value="200" Width="Auto" Name="motion_acceleration" Height="20" Grid.Row="6" Grid.Column="1" HorizontalContentAlignment="Center" />
-                    <Label Content="mm/s2" VerticalContentAlignment="Center" Grid.Row="6" Grid.Column="2" />
-                    <Label Content="运动最大加加速度：" VerticalContentAlignment="Center" HorizontalAlignment="Right" Grid.Row="7" Grid.Column="0"/>
-                    <Controls:NumericUpDown Minimum = "0" Maximum = "10000" Interval = "10" StringFormat=".00" Value="2000" Width="Auto" Name="motion_jerk" Height="20" Grid.Row="7" Grid.Column="1" HorizontalContentAlignment="Center" />
-                    <Label Content="mm/s3" VerticalContentAlignment="Center" Grid.Row="7" Grid.Column="2" />
+                    <Label Content="运动最大速度：" VerticalContentAlignment="Center" HorizontalAlignment="Right" Grid.Row="6" Grid.Column="0"/>
+                    <Controls:NumericUpDown Minimum = "0" Maximum = "10000" Interval = "10" StringFormat=".00" Value="20" Width="Auto" Name="motion_speed" Height="20" Grid.Row="6" Grid.Column="1" HorizontalContentAlignment="Center" />
+                    <Label Content="mm/s" VerticalContentAlignment="Center" Grid.Row="6" Grid.Column="2" />
+                    <Label Content="运动最大加速度：" VerticalContentAlignment="Center" HorizontalAlignment="Right" Grid.Row="7" Grid.Column="0"/>
+                    <Controls:NumericUpDown Minimum = "0" Maximum = "10000" Interval = "10" StringFormat=".00" Value="200" Width="Auto" Name="motion_acceleration" Height="20" Grid.Row="7" Grid.Column="1" HorizontalContentAlignment="Center" />
+                    <Label Content="mm/s2" VerticalContentAlignment="Center" Grid.Row="7" Grid.Column="2" />
+                    <Label Content="运动最大加加速度：" VerticalContentAlignment="Center" HorizontalAlignment="Right" Grid.Row="8" Grid.Column="0"/>
+                    <Controls:NumericUpDown Minimum = "0" Maximum = "10000" Interval = "10" StringFormat=".00" Value="2000" Width="Auto" Name="motion_jerk" Height="20" Grid.Row="8" Grid.Column="1" HorizontalContentAlignment="Center" />
+                    <Label Content="mm/s3" VerticalContentAlignment="Center" Grid.Row="8" Grid.Column="2" />
 
-                    <Label Content="急停最大加速度：" VerticalContentAlignment="Center" HorizontalAlignment="Right" Grid.Row="9" Grid.Column="0"/>
-                    <Controls:NumericUpDown Minimum = "0" Maximum = "10000" Interval = "10" StringFormat=".00" Value="300" Name="emergency_acceleration" Width="Auto" Height="20" Grid.Row="9" Grid.Column="1" HorizontalContentAlignment="Center" />
-                    <Label Content="mm/s2" VerticalContentAlignment="Center" Grid.Row="9" Grid.Column="2" />
+                    <Label Content="急停最大加速度：" VerticalContentAlignment="Center" HorizontalAlignment="Right" Grid.Row="10" Grid.Column="0"/>
+                    <Controls:NumericUpDown Minimum = "0" Maximum = "10000" Interval = "10" StringFormat=".00" Value="300" Name="emergency_acceleration" Width="Auto" Height="20" Grid.Row="10" Grid.Column="1" HorizontalContentAlignment="Center" />
+                    <Label Content="mm/s2" VerticalContentAlignment="Center" Grid.Row="10" Grid.Column="2" />
                 </Grid>
             </GroupBox>
             <GroupBox Header="基代码列表" Grid.Row="1" FontSize="12">

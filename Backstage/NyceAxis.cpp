@@ -142,14 +142,12 @@ bool NyceAxis::GetPosition(double *value)
 	return true;
 }
 
-bool NyceAxis::MoveInterpolating()
+bool NyceAxis::SetInPars(const SAC_CUB_PARS *pInPars,const int &iSum)
 {
-	SAC_JOG_PARS a;
-	a.acceleration=1;
-	a.jerk=1;
-	a.velocity=10;
-	if(SacStartJog(m_id,&a) != NYCE_OK)
-		return false;
+	if( SacClearInterpolantBuffer(m_id)				!= NYCE_OK ||
+		SacWriteCubicIntBuffer(m_id,iSum,pInPars)	!= NYCE_OK ||
+		SacStartInterpolation(m_id)					!= NYCE_OK )
+		return false;		
 	return true;
 }
 
@@ -165,95 +163,3 @@ bool NyceAxis::GetMovePars(double &dMaxSpeed, double &dMaxAcc, double &dMaxJerk)
 	dMaxJerk	= 2000;
 	return true;
 }
-
-// bool NyceAxis::GetInSegPars(const double &dDist,double &dVel, double &dAcc, double &dTime)
-// {
-// 	double dDistance(dDist);
-// 	double dMaxJerk(m_move_pars.dMaxJerk * 2.0 / 3.0);
-// 	double dMaxAcc(m_move_pars.dMaxAcc);
-// 	double dMaxVel(m_move_pars.dMaxVel);
-// 	if (dDistance <= 0) 
-// 	{
-// 		dMaxJerk = -dMaxJerk;
-// 		dMaxAcc = -dMaxAcc;
-// 		dMaxVel = -dMaxVel;
-// 	}
-// 	double dTime_JerkUniformly(pow(dDistance * 6.0 /dMaxJerk, 1.0 / 3.0 ));//匀加加速时间
-// 	double dTime_Up2MaxAcc((dMaxAcc - dAcc) / dMaxJerk);//达到最大加速度时间
-// 	if (dTime_JerkUniformly > dTime_Up2MaxAcc)
-// 	{ 
-// 		dTime_JerkUniformly = dTime_Up2MaxAcc;//匀加加速时间修正
-// 		double dDeffDistance(dDistance - dMaxJerk * pow(dTime_JerkUniformly, 3.0) / 6.0);//匀加加速后的剩余距离
-// 		dVel += dMaxJerk * dTime_JerkUniformly * dTime_JerkUniformly / 2.0;//匀加加速后的速度
-// 		double dTime_AccUniformly (sqrt(dDeffDistance * 2.0 / dMaxAcc));//匀加速时间
-// 		double dTime_Up2MacVel((dMaxVel - dVel) / dMaxAcc);//达到最大速度时间
-// 		if (dTime_AccUniformly > dTime_Up2MacVel)
-// 		{
-// 			dTime_AccUniformly = dTime_Up2MacVel;//匀加速时间修正
-// 			dDeffDistance -= dMaxAcc * dTime_AccUniformly * dTime_AccUniformly / 2.0;//匀加速后剩余距离
-// 			double dTime_VelUniformly(dDeffDistance / dMaxVel);//匀速运动时间
-// 			/****************************************
-// 			运动过程：
-// 				匀加加速+匀加速+匀速
-// 			末段加速度为0,
-// 			末段速度为Max
-// 			*****************************************/
-// 			dTime = dTime_JerkUniformly + dTime_AccUniformly + dTime_VelUniformly;
-// 			dAcc = 0;
-// 			dVel = dMaxVel;
-// 			bool a1 = (dDist < 0 ? dAcc < dMaxAcc : dAcc > dMaxAcc) ||
-// 					  (dDist < 0 ? dVel < dMaxVel : dVel > dMaxVel) ;
-// 			return true;
-// 		}
-// 		/****************************************
-// 		运动过程：
-// 			匀加加速+匀加速
-// 		末段加速度为MAX
-// 		*****************************************/
-// 		dTime = dTime_JerkUniformly + dTime_AccUniformly;
-// 		dAcc = dMaxAcc;
-// 		dVel += dMaxAcc * dTime_AccUniformly;
-// 		bool a2 = (dDist < 0 ? dAcc < dMaxAcc : dAcc > dMaxAcc) ||
-// 				  (dDist < 0 ? dVel < dMaxVel : dVel > dMaxVel) ;
-// 		return true;
-// 	}
-// 	double dTime_Up2MacVel(sqrt((dMaxVel - dVel) / dMaxJerk * 2.0));//达到最大速度时间
-// 	if (dTime_JerkUniformly > dTime_Up2MacVel)
-// 	{
-// 		dTime_JerkUniformly = dTime_Up2MacVel;//匀加加速时间修正
-// 		double dDeffDistance(dDistance - dMaxJerk * pow(dTime_JerkUniformly, 3.0) / 6.0);//匀加加速后的剩余距离
-// 		double dTime_VelUniformly(dDeffDistance / dMaxVel);//匀速运动时间
-// 		/****************************************
-// 		运动过程：
-// 			匀加加速+匀速
-// 		末段速度为MAX
-// 		*****************************************/
-// 		dTime = dTime_JerkUniformly + dTime_VelUniformly;
-// 		dAcc += dMaxJerk * dTime_JerkUniformly;
-// 		bool a6 = (dDist < 0 ? dAcc < dMaxAcc : dAcc > dMaxAcc) ||
-// 			(dDist < 0 ? dVel < dMaxVel : dVel > dMaxVel) ;
-// 		dVel = dMaxVel;
-// 		bool a3 = (dDist < 0 ? dAcc < dMaxAcc : dAcc > dMaxAcc) ||
-// 				  (dDist < 0 ? dVel < dMaxVel : dVel > dMaxVel) ;
-// 		return true;
-// 	}
-// 	/****************************************
-// 	运动过程：
-// 		匀加加速
-// 	*****************************************/
-// 	dTime = dTime_JerkUniformly;
-// 	dAcc += dMaxJerk * dTime_JerkUniformly;
-// 	bool a5 = (dDist < 0 ? dAcc < dMaxAcc : dAcc > dMaxAcc) ||
-// 				(dDist < 0 ? dVel < dMaxVel : dVel > dMaxVel) ;
-// 	dVel += dMaxJerk * dTime_JerkUniformly * dTime_JerkUniformly / 2.0;
-// 	bool a4 = (dDist < 0 ? dAcc < dMaxAcc : dAcc > dMaxAcc) ||
-// 				(dDist < 0 ? dVel < dMaxVel : dVel > dMaxVel) ;
-// 	return true;
-// }
-// 
-// bool NyceAxis::ModifySpeed(double &dRefSpeed,double &dOwnSpeed,const double &dAngle)
-// {
-// 	double dMaxVel(m_move_pars.dMaxVel);
-// 	dOwnSpeed = dRefSpeed * tan(dAngle);
-// 	return true;
-// }

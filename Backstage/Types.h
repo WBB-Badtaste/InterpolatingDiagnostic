@@ -31,6 +31,7 @@ typedef struct InSeg
 	int iNo;
 	double dPosX;
 	double dPosY;
-	double dVel;
+	double dVelX;
+	double dVelY;
 	double dTime;
 }IN_SEG,*IN_SED_PRT;

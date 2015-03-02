@@ -26,6 +26,7 @@ public:
  	NyceNode* const					GetNode(const string&);
 	bool							SetInAxis(PCAXIS_INFO pAxis_infos,int sum);
 	bool							GetInSeg_Cicle_xy(const double *dCurX, const double *dCurY, const double *dRadius,IN_SED_PRT const pSegments,const int * segSum);
+	bool							MoveInterpolating(IN_SED_PRT pSegments,const int &iSum,const bool &bAbsolute);
 private:
 	SYSTEM_STATUS					m_status;
 	map<string, NyceNode*>			m_nodeMap;

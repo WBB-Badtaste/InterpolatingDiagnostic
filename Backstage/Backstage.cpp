@@ -152,13 +152,24 @@ BACKSTAGE_API int WINAPI SetAxisHomePars(char* name,double dMaxSpeed,double dMax
 	return BACKSTAGE_OK;
 }
 
-BACKSTAGE_API int WINAPI MoveInterpolating(const double *dCurX, const double *dCurY, const double *dRadius,IN_SED_PRT const pSegments,const int * segSum)
+BACKSTAGE_API int WINAPI GetInSeg_Circle(const double *dCurX, const double *dCurY, const double *dRadius,IN_SED_PRT const pSegments,const int * segSum)
 {
+	//¡Ÿ ±¥˙¬Î
+	if(g_mapAxis2Node.size() < 2)
+		return BACKSTAGE_GETINSEG_FAIL;
 	AXIS_INFO axisArray[2];
 	axisArray[0].nodeName = axisArray[1].nodeName = g_mapNode2Axis.begin()->first;
 	axisArray[0].axisName = g_mapAxis2Node.begin()->first;
 	axisArray[1].axisName = (g_mapAxis2Node.begin()++)->first;
-	g_pNyce->SetInAxis(axisArray,2);
-	g_pNyce->GetInSeg_Cicle_xy(dCurX,dCurY,dRadius,pSegments,segSum);
+	if( !g_pNyce->SetInAxis(axisArray,2)									||
+		!g_pNyce->GetInSeg_Cicle_xy(dCurX,dCurY,dRadius,pSegments,segSum)	)
+		return BACKSTAGE_GETINSEG_FAIL;
+	return BACKSTAGE_OK;
+}
+
+BACKSTAGE_API int WINAPI MoveInterpolating(IN_SED_PRT pSegments,const int iSum,const bool bAbsolute = true)
+{
+	if(!g_pNyce->MoveInterpolating(pSegments,iSum,bAbsolute))
+		return BACKSTAGE_MOVEINTERLOPATE_FAIL;
 	return BACKSTAGE_OK;
 }

@@ -11,7 +11,8 @@ namespace Window
         public int iNo;
         public double dPosX;
         public double dPosY;
-        public double dVel;
+        public double dVelX;
+        public double dVelY;
         public double dTime;
     };
 
@@ -33,8 +34,10 @@ namespace Window
         public extern static int GetAxisPosition(IntPtr axName, ref double encoderValue);
         [DllImport("Backstage.dll", EntryPoint = "GetAxisStatus", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public extern static int GetAxisStatus(IntPtr axName, IntPtr strState);
+        [DllImport("Backstage.dll", EntryPoint = "GetInSeg_Circle", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        unsafe public extern static int GetInSeg_Circle(ref double dCurX, ref double dCurY, ref double dRadius, InSeg* pSeg, ref int iSegSum);
         [DllImport("Backstage.dll", EntryPoint = "MoveInterpolating", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        unsafe public extern static int MoveInterpolating(ref double dCurX, ref double dCurY, ref double dRadius, InSeg* pSeg, ref int iSegSum);
+        unsafe public extern static int MoveInterpolating(InSeg* pSeg, int iSum, bool bAbsolute);
 
         public static int OK                = 10000;
         public static int INITALIZE_FAIL    = 10001;
