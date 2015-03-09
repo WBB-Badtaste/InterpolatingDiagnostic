@@ -160,9 +160,15 @@ BACKSTAGE_API int WINAPI GetInSeg_Circle(const double *dCurX, const double *dCur
 	AXIS_INFO axisArray[2];
 	axisArray[0].nodeName = axisArray[1].nodeName = g_mapNode2Axis.begin()->first;
 	axisArray[0].axisName = g_mapAxis2Node.begin()->first;
-	axisArray[1].axisName = (g_mapAxis2Node.begin()++)->first;
-	if( !g_pNyce->SetInAxis(axisArray,2)									||
-		!g_pNyce->GetInSeg_Cicle_xy(dCurX,dCurY,dRadius,pSegments,segSum)	)
+	axisArray[1].axisName = (++g_mapAxis2Node.begin())->first;
+	IN_INFO in_info;
+	ZeroMemory(&in_info,sizeof(IN_INFO));
+	in_info.dCurPosX = *dCurX;
+	in_info.dCurPosY = *dCurY;
+	in_info.dRadius = *dRadius;
+	in_info.iSegAmount = *segSum;
+	if( !g_pNyce->SetInAxis(axisArray,2)				||
+		!g_pNyce->GetInSeg_Cicle_xy(&in_info,pSegments)	)
 		return BACKSTAGE_GETINSEG_FAIL;
 	return BACKSTAGE_OK;
 }

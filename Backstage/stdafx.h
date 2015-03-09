@@ -18,6 +18,9 @@
 #define WIN32_LEAN_AND_MEAN     // Exclude rarely-used stuff from Windows headers
 
 // Windows Header Files:
+
+#define DEBUG
+
 #include <windows.h>
 #include <map>
 #include <string>
@@ -26,3 +29,7 @@
 #include "sacapi.h"
 #include "Errors.h"
 #include "Types.h"
+#include "dehapi.h"
+#include "dehenums.h"
+#include "dehtypes.h"
+

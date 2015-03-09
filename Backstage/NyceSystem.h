@@ -10,6 +10,20 @@ typedef struct axis_info
 	string axisName;
 }*const PCAXIS_INFO,AXIS_INFO;
 
+typedef struct interpolation_info
+{
+	double	dCurVelX;		//当前速度X
+	double	dCurVelY;		//当前速度Y
+	double  dUltVelX;		//最终速度X
+	double	dUltVelY;		//最终速度Y
+	double	dCurPosX;		//当前位置X
+	double	dCurPosY;		//当前位置Y
+	double	dRadius;		//圆的半径
+	int		iSegAmount;		//段数
+	bool	bInverse;		//逆时针移动
+	double	dAngleOffset;	//路径绕初始点的顺时针旋转角度
+}IN_INFO;
+
 class NyceSystem
 {
 public:
@@ -25,7 +39,7 @@ public:
  	unsigned						GetNodeSum();
  	NyceNode* const					GetNode(const string&);
 	bool							SetInAxis(PCAXIS_INFO pAxis_infos,int sum);
-	bool							GetInSeg_Cicle_xy(const double *dCurX, const double *dCurY, const double *dRadius,IN_SED_PRT const pSegments,const int * segSum);
+	bool							GetInSeg_Cicle_xy(const IN_INFO * const pInInfo,IN_SED_PRT const pSegments);
 	bool							MoveInterpolating(IN_SED_PRT pSegments,const int &iSum,const bool &bAbsolute);
 private:
 	SYSTEM_STATUS					m_status;
@@ -34,6 +48,8 @@ private:
 	NyceAxis*						m_pAxisY;
 	NyceAxis*						m_pAxisZ;
 
-	bool							GetInSegPars(const double &dDistance,double &dVel, double &dAcc, double &dTime,const double &dMVel,const double &dMAcc,const double &dMJerk);
+	bool							GetInSegPars(const double &dDistance,double &dVel, double &dAcc, double &dTime,const double &dMVel,const double &dMAcc,const double &dJerk);
+	bool							ModifyInSegPars_A(const double &dDistance,double &dVel,double &dAcc, double &dTime,const double &dMVel,const double &dMAcc,const double &dJerk);
+	bool							ModifyInSegPars_V(const double &dDistance,double &dVel,double &dAcc, double &dTime,const double &dMVel,const double &dMAcc,const double &dJerk);
 };
 

@@ -21,7 +21,8 @@ public:
 	bool			Align();
 	bool			Home();
 	bool			Reset();
-	bool			SetInPars(const SAC_CUB_PARS *pInPars,const int &iSum);
+	bool			SetInPars(SAC_CUB_PARS inPars[],const int &iSum);
+	bool			MoveInterpolating();
 	bool			GetStatus(SAC_STATE *state);
 	bool			GetPosition(double *);
 	bool			SetHomePars(const double &dMaxSpeed, const double &dMaxAcc, const double &dMaxJerk);

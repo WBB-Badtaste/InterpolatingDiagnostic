@@ -15,6 +15,7 @@ using MahApps.Metro.Controls;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.IO;
 
 namespace Window
 {
@@ -36,7 +37,7 @@ namespace Window
         private string axisName3 = "DEF_AXIS_3";
         private string axisName4 = "DEF_AXIS_4";
 
-        private IntPtr pNodeName; 
+        private IntPtr pNodeName;
         private IntPtr pAxisName1;
         private IntPtr pAxisName2;
         private IntPtr pAxisName3;
@@ -72,6 +73,7 @@ namespace Window
             bWorking = true;
             Thread thread = new Thread(new ThreadStart(ThreadMathod));
             thread.IsBackground = true;
+            thread.SetApartmentState(ApartmentState.STA);
             thread.Start();
         }
 
@@ -85,9 +87,12 @@ namespace Window
             DateTime timeCurrent = timeBeginMove;
             double buffer = 0.0;
             double offset = 0.0;
+
+            double lastPosX = 0.0, lastPosY = 0.0;
+            bool bDraw = false;
             while (bWorking)
             {
-                Thread.CurrentThread.Join(500);
+                Thread.CurrentThread.Join(100);
                 if (!bInit)
                     continue;
                 Backstage.GetAxisPosition(pAxisName1, ref posBuffer);
@@ -98,6 +103,7 @@ namespace Window
                 sysInfo.AxisY2Pos = posBuffer;
                 Backstage.GetAxisPosition(pAxisName4, ref posBuffer);
                 sysInfo.AxisZPos = posBuffer;
+                
                 Backstage.GetAxisStatus(pAxisName1, stateBuffer);
                 sysInfo.AxisXState = Marshal.PtrToStringAnsi(stateBuffer);
                 Backstage.GetAxisStatus(pAxisName2, stateBuffer);
@@ -120,6 +126,18 @@ namespace Window
                         }
                         else
                             sysInfo.TimeMove = Math.Round(buffer);
+                        if (bDraw)
+                        {
+                            DrawLine(lastPosX, lastPosY, sysInfo.AxisXPos, sysInfo.AxisY1Pos);
+                            lastPosX = sysInfo.AxisXPos;
+                            lastPosY = sysInfo.AxisY1Pos;
+                        }
+                        else
+                        {
+                            lastPosX = sysInfo.AxisXPos;
+                            lastPosY = sysInfo.AxisY1Pos;
+                            bDraw = true;
+                        }
                     }
                     else
                     {
@@ -227,7 +245,7 @@ namespace Window
         }
 
         private void Button_Click_Reset(object sender, RoutedEventArgs e)
-        {
+        { 
             if (!bInit)
                 listBox_result.Items.Add(new TextBox() { Text = "请先初始化！" });
 
@@ -263,8 +281,10 @@ namespace Window
             {
                 fixed (InSeg* p = &inSeg[0])
                 {
-                    double dCurX = 10;
-                    double dCurY = -20;
+                    double dCurX = 0; 
+                    double dCurY = 0;
+                    Backstage.GetAxisPosition(pAxisName1, ref dCurX);
+                    Backstage.GetAxisPosition(pAxisName2, ref dCurY);
                     double dRadius = 150;
                     int sum = inSeg.Length;
                     int a = Backstage.GetInSeg_Circle(ref dCurX, ref dCurY, ref dRadius, p, ref sum);
@@ -284,6 +304,13 @@ namespace Window
             }
             gcode.Value = gc;
         }
+
+        public void DrawLine(double lastPosX, double lastPosY, double nextPosX, double nextPosY)
+        {
+            this.Dispatcher.Invoke((Action)(() =>
+            {
+                Draw.drawLine(lastPosX, lastPosY, nextPosX, nextPosY, ref canvas_f);
+            }));
+        }
     }
-    
 }

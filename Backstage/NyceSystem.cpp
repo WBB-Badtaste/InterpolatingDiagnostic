@@ -4,6 +4,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+
 NyceSystem::NyceSystem(const bool &bSim):
 							m_status(SYSTEM_NON),
 							m_pAxisX(nullptr),
@@ -95,36 +96,83 @@ bool NyceSystem::SetInAxis(PCAXIS_INFO pAxis_infos,int sum)
 	return true;
 }
 
-bool NyceSystem::GetInSeg_Cicle_xy(const double *dCurX, const double *dCurY, const double *dRadius,IN_SED_PRT const pSegments,const int * segSum)
+bool NyceSystem::GetInSeg_Cicle_xy(const IN_INFO * const pInInfo,IN_SED_PRT const pSegments)
 {
 	IN_SED_PRT ptr(pSegments);
-	double dDistance_x(*dCurX),dDistance_y(*dCurY),dVel_x(0.0),dVel_y(0.0),dTime(0.0),dTime_x(0.0),dTime_y(0.0),dAcc_x(0.0),dAcc_y(0.0);
-	double dAngle(0.0),dLastVel_x(0.0),dLastVel_y(0.0);
+	double dDistance_x(pInInfo->dCurPosX),dDistance_y(pInInfo->dCurPosY);
+	double dVel_x(0.0),dVel_y(0.0),dLastVel_x(0.0),dLastVel_y(0.0);
+	double dAcc_x(0.0),dAcc_y(0.0),dLastAcc_x(0.0),dLastAcc_y(0.0);
+	double dTime(0.0),dTime_x(0.0),dTime_y(0.0);
+	double dAngle(0.0);
 	double dMaxVel_x(0.0),dMaxAcc_x(0.0),dMaxJerk_x(0.0),dMaxVel_y(0.0),dMaxAcc_y(0.0),dMaxJerk_y(0.0);
 	m_pAxisX->GetMovePars(dMaxVel_x,dMaxAcc_x,dMaxJerk_x);
 	m_pAxisY->GetMovePars(dMaxVel_y,dMaxAcc_y,dMaxJerk_y);
+	dMaxJerk_x *= 0.6;
+	dMaxJerk_y *= 0.6;
 	/****************************************
 	规划前半段的路径
 	*****************************************/
 	int i = 0;
-	for (; i <= *segSum / 2.0; ++i)
+	for (; i <= pInInfo->iSegAmount / 2.0; ++i)
 	{
 		ptr = pSegments + i;
-		dAngle = 2.0 * M_PI / (*segSum) * ((double)i+1.0) ;
+		double k = 2.0 / pInInfo->iSegAmount * ((double)i+1.0);
+		dAngle = M_PI * k;
 		if (i==0)
 		{
-			dDistance_x = *dRadius - *dRadius * cos(dAngle);
-			dDistance_y = *dRadius * sin(dAngle);
+			dDistance_x = pInInfo->dRadius * (1 - cos(dAngle));
+			dDistance_y = pInInfo->dRadius * sin(dAngle);
 		}
 		else
 		{
-			dDistance_x = *dCurX + *dRadius - *dRadius * cos(dAngle) - (ptr-1)->dPosX;
-			dDistance_y = *dCurY + *dRadius * sin(dAngle) - (ptr-1)->dPosY;
+			dDistance_x = pInInfo->dCurPosX + pInInfo->dRadius * (1 - cos(dAngle)) - (ptr-1)->dPosX;
+			dDistance_y = pInInfo->dCurPosY + pInInfo->dRadius * sin(dAngle) - (ptr-1)->dPosY;
 		}
 		dLastVel_x = dVel_x;
 		dLastVel_y = dVel_y;
+		dLastAcc_x = dAcc_x;
+		dLastAcc_y = dAcc_y;
 		GetInSegPars(dDistance_x,dVel_x,dAcc_x,dTime_x,dMaxVel_x,dMaxAcc_x,dMaxJerk_x);
 		GetInSegPars(dDistance_y,dVel_y,dAcc_y,dTime_y,dMaxVel_y,dMaxAcc_y,dMaxJerk_y);
+		double dNewMaxVel_x(dVel_x),dNewMaxVel_y(dVel_y),dNewMaxAcc_x(dAcc_x),dNewMaxAcc_y(dAcc_y);
+//  	if (k - 0.5 == (int)(k - 0.5) )
+//  	{
+//  		//a = k * pi + pi / 2
+//  	}
+
+// 		double buffer(- dAcc_x * tan(dAngle));
+// 		if ((buffer >0 && buffer > dNewMaxAcc_y)||
+// 			(buffer <0 && buffer < dNewMaxAcc_y))
+// 		{
+// 			dNewMaxAcc_x = - dAcc_y / tan(dAngle);
+// 			dVel_x = dLastVel_x;
+// 			dAcc_x = dLastAcc_x;
+// 			ModifyInSegPars_A(dDistance_x,dVel_x,dAcc_x,dTime_x,dNewMaxVel_x,dNewMaxAcc_x,dMaxJerk_x);
+// 		}
+// 		else
+// 		{
+// 			dNewMaxAcc_y = buffer;
+// 			dVel_y = dLastVel_y;
+// 			dAcc_y = dLastAcc_y;
+// 			ModifyInSegPars_A(dDistance_y,dVel_y,dAcc_y,dTime_y,dNewMaxVel_y,dNewMaxAcc_y,dMaxJerk_y);
+// 		}
+// 		buffer = dVel_x / tan(dAngle);
+// 		if ((buffer >0 && buffer >dNewMaxVel_y)||
+// 			(buffer <0 && buffer <dNewMaxVel_y))
+// 		{
+// 			dNewMaxVel_x = dVel_y * tan(dAngle);
+// 			dVel_x = dLastVel_x;
+// 			dAcc_x = dLastAcc_x;
+// 			ModifyInSegPars_V(dDistance_x,dVel_x,dAcc_x,dTime_x,dNewMaxVel_x,dNewMaxAcc_x,dMaxJerk_x);
+// 		}
+// 		else
+// 		{
+// 			dNewMaxVel_y = buffer;
+// 			dVel_y = dLastVel_y;
+// 			dAcc_y = dLastAcc_y;
+// 			ModifyInSegPars_V(dDistance_y,dVel_y,dAcc_y,dTime_y,dNewMaxVel_y,dNewMaxAcc_y,dMaxJerk_y);
+// 		}
+
 		if (dTime_x > dTime_y)
 		{
 			dTime = dTime_x;
@@ -183,14 +231,21 @@ bool NyceSystem::GetInSeg_Cicle_xy(const double *dCurX, const double *dCurY, con
 					dAcc_x = dMaxAcc_x;
 			}
 		}
+
+		//修正加速度
+		if (dVel_y == dMaxVel_x)
+			dAcc_y = 0;
+		if (dVel_x == dMaxVel_x)
+			dAcc_x = 0;
+
 		ptr->iNo = i;
 		ptr->dTime = dTime;
 		ptr->dVelX = dVel_x ;
 		ptr->dVelY = dVel_y;
 		if (i==0)
 		{
-			ptr->dPosX = dDistance_x + *dCurX;
-			ptr->dPosY = dDistance_y + *dCurY;
+			ptr->dPosX = dDistance_x + pInInfo->dCurPosX;
+			ptr->dPosY = dDistance_y + pInInfo->dCurPosY;
 		}
 		else
 		{
@@ -198,25 +253,162 @@ bool NyceSystem::GetInSeg_Cicle_xy(const double *dCurX, const double *dCurY, con
 			ptr->dPosY = dDistance_y + (ptr-1)->dPosY;
 		}
 	}
+	uint32_t a = 0x1F;
 	/****************************************
 	规划后半段的路径
 	*****************************************/
-	bool bParity(*segSum % 2 == 1 ? true : false);
+	bool bParity(pInInfo->iSegAmount % 2 == 1 ? true : false);
 	IN_SED_PRT ptrRef(nullptr);
 	i--;
-	for (int j = 0;i<*segSum;i++,j++)
-	{
+	for (int j = 0;i < pInInfo->iSegAmount;i++,j++)
+	{ 
 		ptr = pSegments + i;
-		dAngle = 2.0 * M_PI / (*segSum) * ((double)i+1.0) ;
+		dAngle = 2.0 * M_PI / pInInfo->iSegAmount * ((double)i+1.0) ;
 		ptrRef = bParity ? (ptr - j * 2 - 1) : (ptr - (j + 1) * 2);
 		ptr->iNo = i;
 		ptr->dTime = (ptrRef + 1)->dTime;//当分段是奇数时会出现时间错误
 		ptr->dVelX = -ptrRef->dVelX ;
 		ptr->dVelY = ptrRef->dVelY;
-		ptr->dPosX = *dCurX + *dRadius - *dRadius * cos(dAngle); 
-		ptr->dPosY = *dCurY + *dRadius * sin(dAngle);
+		ptr->dPosX = pInInfo->dCurPosX + pInInfo->dRadius * (1 - cos(dAngle)); 
+		ptr->dPosY = pInInfo->dCurPosY + pInInfo->dRadius * sin(dAngle);
 	}
 	ptr->dVelX = ptr->dVelY = 0;
+	return true;
+}
+
+bool NyceSystem::GetInSegPars(const double &dDistance,double &dVel, double &dAcc, double &dTime,const double &dMVel,const double &dMAcc,const double &dJerk)
+{
+	double dMaxJerk(dJerk);
+	double dMaxAcc(dMAcc);
+	double dMaxVel(dMVel);
+	if (dDistance < 0) 
+	{
+		dMaxJerk = -dMaxJerk;
+		dMaxAcc = -dMaxAcc;
+		dMaxVel = -dMaxVel;
+	}
+	double dTime_JerkUniformly(pow(dDistance * 6.0 /dMaxJerk, 1.0 / 3.0 ));//匀加加速时间
+	double dTime_Up2MaxAcc((dMaxAcc - dAcc) / dMaxJerk);//达到最大加速度时间
+	double dTime_Up2MacVel(sqrt((dMaxVel - dVel) / dMaxJerk * 2.0));//达到最大速度时间
+	if (dTime_JerkUniformly > dTime_Up2MaxAcc)
+	{ 
+		if (dTime_Up2MacVel < dTime_Up2MaxAcc)
+		{
+			dTime_JerkUniformly = dTime_Up2MacVel;//匀加加速时间修正
+			double dDeffDistance(dDistance - dMaxJerk * pow(dTime_JerkUniformly, 3.0) / 6.0);//匀加加速后的剩余距离
+			double dTime_VelUniformly(dDeffDistance / dMaxVel);//匀速运动时间
+			/****************************************
+			运动过程：
+			匀加加速+匀速
+			末段速度为MAX
+			*****************************************/
+			dAcc += dMaxJerk * dTime_JerkUniformly;
+			dVel = dMaxVel;
+			dTime = dTime_JerkUniformly + dTime_VelUniformly;
+			return true;
+		}
+		dTime_JerkUniformly = dTime_Up2MaxAcc;//匀加加速时间修正
+		double dDeffDistance(dDistance - dMaxJerk * pow(dTime_JerkUniformly, 3.0) / 6.0);//匀加加速后的剩余距离
+		dVel += dMaxJerk * dTime_JerkUniformly * dTime_JerkUniformly / 2.0;//匀加加速后的速度
+		double dTime_AccUniformly (sqrt(dDeffDistance * 2.0 / dMaxAcc));//匀加速时间
+		double dTime_Up2MacVel((dMaxVel - dVel) / dMaxAcc);//达到最大速度时间
+		if (dTime_AccUniformly > dTime_Up2MacVel)
+		{
+			dTime_AccUniformly = dTime_Up2MacVel;//匀加速时间修正
+			dDeffDistance -= dMaxAcc * dTime_AccUniformly * dTime_AccUniformly / 2.0;//匀加速后剩余距离
+			double dTime_VelUniformly(dDeffDistance / dMaxVel);//匀速运动时间
+			/****************************************
+			运动过程：
+				匀加加速+匀加速+匀速
+			末段加速度为0,
+			末段速度为Max
+			*****************************************/
+			dTime = dTime_JerkUniformly + dTime_AccUniformly + dTime_VelUniformly;
+
+			dAcc = dMAcc;//用在在后面的修正中，不能为0
+			dVel = dMaxVel;
+			return true;
+		}
+		/****************************************
+		运动过程：
+			匀加加速+匀加速
+		末段加速度为MAX
+		*****************************************/
+		dTime = dTime_JerkUniformly + dTime_AccUniformly;
+		dAcc = dMaxAcc;
+		dVel += dMaxAcc * dTime_AccUniformly;
+		return true;
+	}
+	if (dTime_JerkUniformly > dTime_Up2MacVel)
+	{
+		dTime_JerkUniformly = dTime_Up2MacVel;//匀加加速时间修正
+		double dDeffDistance(dDistance - dMaxJerk * pow(dTime_JerkUniformly, 3.0) / 6.0);//匀加加速后的剩余距离
+		double dTime_VelUniformly(dDeffDistance / dMaxVel);//匀速运动时间
+		/****************************************
+		运动过程：
+			匀加加速+匀速
+		末段速度为MAX
+		*****************************************/
+		dTime = dTime_JerkUniformly + dTime_VelUniformly;
+		dAcc += dMaxJerk * dTime_JerkUniformly;
+		dVel = dMaxVel;
+		return true;
+	}
+	/****************************************
+	运动过程：
+		匀加加速
+	*****************************************/
+	dTime = dTime_JerkUniformly;
+	dAcc += dMaxJerk * dTime_JerkUniformly;
+	dVel += dMaxJerk * dTime_JerkUniformly * dTime_JerkUniformly / 2.0;
+	return true;
+}
+
+bool NyceSystem::ModifyInSegPars_A(const double &dDistance,double &dVel,double &dAcc, double &dTime,const double &dMVel,const double &dMAcc,const double &dJerk)
+{
+	double dMaxJerk(dJerk);
+	if(dDistance < 0)
+		dMaxJerk = -dMaxJerk;
+	double dTime_JerkUniformly((dMAcc - dAcc) / dMaxJerk);//匀加加速时间
+	double dDist(dDistance - dJerk * pow(dTime_JerkUniformly,3.0) / 6.0);//匀加加速后剩余距离
+	dVel += dMaxJerk * dTime_JerkUniformly * dTime_JerkUniformly / 2.0;//匀加加速后的速度
+ #ifdef DEBUG
+ 	if ((dDist <0 && dVel >0) ||
+ 		(dDist >0 && dVel <0) )
+ 		return false;
+ #endif
+	double dTime_AccUniformly(sqrt(dDist * 2.0 / dMAcc));//匀加速时间
+	double dTimeUp2MaxVel((dMVel-dVel) / dMAcc);//加速到最大速度时间
+	if (dTimeUp2MaxVel < dTime_AccUniformly)
+	{
+		dTime_AccUniformly = dTimeUp2MaxVel;//匀加速时间修正
+		dDist -= 0.5 * dMAcc * dTime_AccUniformly * dTime_AccUniformly;//匀加速后剩余路程
+		double dTime_VelUniformly(dDist / dMVel);//匀速运动时间
+		dAcc = dMAcc;
+		dVel = dMVel;
+		dTime = dTime_JerkUniformly + dTime_AccUniformly + dTime_VelUniformly;
+		return true;
+	}
+	dAcc = dMAcc;
+	dTime = dTime_JerkUniformly + dTime_AccUniformly;
+	dVel += dMAcc * dTime_AccUniformly;
+	return true;
+}
+
+bool NyceSystem::ModifyInSegPars_V(const double &dDistance,double &dVel,double &dAcc, double &dTime,const double &dMVel,const double &dMAcc,const double &dJerk)
+{
+	double dTime_JerkUniformly((dMAcc - dAcc) / dJerk);
+	double dTime_AccUniformly((dMVel - dVel - dJerk * dTime_JerkUniformly * dTime_JerkUniformly / 2.0) / dMAcc);
+	double dDist(dDistance - dJerk * pow(dTime_JerkUniformly,3.0) / 6.0 - dMAcc * dTime_AccUniformly * dTime_AccUniformly / 2.0);
+#ifdef DEBUG
+	if ((dDist <0 && dVel >0) ||
+		(dDist >0 && dVel <0) )
+		return false;
+#endif
+	double dTime_VelUniformly(dDist / dMVel);
+	dVel = dMVel;
+	dAcc = dMAcc;
+	dTime = dTime_JerkUniformly + dTime_AccUniformly + dTime_VelUniformly;
 	return true;
 }
 
@@ -346,120 +538,121 @@ bool NyceSystem::GetInSeg_Cicle_xy(const double *dCurX, const double *dCurY, con
 // 	return true;
 // }
 
-bool NyceSystem::GetInSegPars(const double &dDistance,double &dVel, double &dAcc, double &dTime,const double &dMVel,const double &dMAcc,const double &dMJerk)
-{
-	double dMaxJerk(dMJerk);
-	double dMaxAcc(dMAcc);
-	double dMaxVel(dMVel);
-	if (dDistance <= 0) 
-	{
-		dMaxJerk = -dMaxJerk;
-		dMaxAcc = -dMaxAcc;
-		dMaxVel = -dMaxVel;
-	}
-	double dTime_JerkUniformly(pow(dDistance * 6.0 /dMaxJerk, 1.0 / 3.0 ));//匀加加速时间
-	double dTime_Up2MaxAcc((dMaxAcc - dAcc) / dMaxJerk);//达到最大加速度时间
-	if (dTime_JerkUniformly > dTime_Up2MaxAcc)
-	{ 
-		dTime_JerkUniformly = dTime_Up2MaxAcc;//匀加加速时间修正
-		double dDeffDistance(dDistance - dMaxJerk * pow(dTime_JerkUniformly, 3.0) / 6.0);//匀加加速后的剩余距离
-		dVel += dMaxJerk * dTime_JerkUniformly * dTime_JerkUniformly / 2.0;//匀加加速后的速度
-		double dTime_AccUniformly (sqrt(dDeffDistance * 2.0 / dMaxAcc));//匀加速时间
-		double dTime_Up2MacVel((dMaxVel - dVel) / dMaxAcc);//达到最大速度时间
-		if (dTime_AccUniformly > dTime_Up2MacVel)
-		{
-			dTime_AccUniformly = dTime_Up2MacVel;//匀加速时间修正
-			dDeffDistance -= dMaxAcc * dTime_AccUniformly * dTime_AccUniformly / 2.0;//匀加速后剩余距离
-			double dTime_VelUniformly(dDeffDistance / dMaxVel);//匀速运动时间
-			/****************************************
-			运动过程：
-				匀加加速+匀加速+匀速
-			末段加速度为0,
-			末段速度为Max
-			*****************************************/
-			dTime = dTime_JerkUniformly + dTime_AccUniformly + dTime_VelUniformly;
-			dAcc = 0;
-			dVel = dMaxVel;
-			return true;
-		}
-		/****************************************
-		运动过程：
-			匀加加速+匀加速
-		末段加速度为MAX
-		*****************************************/
-		dTime = dTime_JerkUniformly + dTime_AccUniformly;
-		dAcc = dMaxAcc;
-		dVel += dMaxAcc * dTime_AccUniformly;
-		return true;
-	}
-	double dTime_Up2MacVel(sqrt((dMaxVel - dVel) / dMaxJerk * 2.0));//达到最大速度时间
-	if (dTime_JerkUniformly > dTime_Up2MacVel)
-	{
-		dTime_JerkUniformly = dTime_Up2MacVel;//匀加加速时间修正
-		double dDeffDistance(dDistance - dMaxJerk * pow(dTime_JerkUniformly, 3.0) / 6.0);//匀加加速后的剩余距离
-		double dTime_VelUniformly(dDeffDistance / dMaxVel);//匀速运动时间
-		/****************************************
-		运动过程：
-			匀加加速+匀速
-		末段速度为MAX
-		*****************************************/
-		dTime = dTime_JerkUniformly + dTime_VelUniformly;
-		dAcc += dMaxJerk * dTime_JerkUniformly;
-		dVel = dMaxVel;
-		return true;
-	}
-	/****************************************
-	运动过程：
-		匀加加速
-	*****************************************/
-	dTime = dTime_JerkUniformly;
-	dAcc += dMaxJerk * dTime_JerkUniformly;
-	dVel += dMaxJerk * dTime_JerkUniformly * dTime_JerkUniformly / 2.0;
-	return true;
-}
+// bool NyceSystem::GetInSegPars(const double &dDistance,double &dVel, double &dAcc, double &dTime,const double &dMVel,const double &dMAcc,const double &dMJerk)
+// {
+// 	double dMaxJerk(dMJerk);
+// 	double dMaxAcc(dMAcc);
+// 	double dMaxVel(dMVel);
+// 	if (dDistance <= 0) 
+// 	{
+// 		dMaxJerk = -dMaxJerk;
+// 		dMaxAcc = -dMaxAcc;
+// 		dMaxVel = -dMaxVel;
+// 	}
+// 	double dTime_JerkUniformly(pow(dDistance * 6.0 /dMaxJerk, 1.0 / 3.0 ));//匀加加速时间
+// 	double dTime_Up2MaxAcc((dMaxAcc - dAcc) / dMaxJerk);//达到最大加速度时间
+// 	if (dTime_JerkUniformly > dTime_Up2MaxAcc)
+// 	{ 
+// 		dTime_JerkUniformly = dTime_Up2MaxAcc;//匀加加速时间修正
+// 		double dDeffDistance(dDistance - dMaxJerk * pow(dTime_JerkUniformly, 3.0) / 6.0);//匀加加速后的剩余距离
+// 		dVel += dMaxJerk * dTime_JerkUniformly * dTime_JerkUniformly / 2.0;//匀加加速后的速度
+// 		double dTime_AccUniformly (sqrt(dDeffDistance * 2.0 / dMaxAcc));//匀加速时间
+// 		double dTime_Up2MacVel((dMaxVel - dVel) / dMaxAcc);//达到最大速度时间
+// 		if (dTime_AccUniformly > dTime_Up2MacVel)
+// 		{
+// 			dTime_AccUniformly = dTime_Up2MacVel;//匀加速时间修正
+// 			dDeffDistance -= dMaxAcc * dTime_AccUniformly * dTime_AccUniformly / 2.0;//匀加速后剩余距离
+// 			double dTime_VelUniformly(dDeffDistance / dMaxVel);//匀速运动时间
+// 			/****************************************
+// 			运动过程：
+// 				匀加加速+匀加速+匀速
+// 			末段加速度为0,
+// 			末段速度为Max
+// 			*****************************************/
+// 			dTime = dTime_JerkUniformly + dTime_AccUniformly + dTime_VelUniformly;
+// 			dAcc = 0;
+// 			dVel = dMaxVel;
+// 			return true;
+// 		}
+// 		/****************************************
+// 		运动过程：
+// 			匀加加速+匀加速
+// 		末段加速度为MAX
+// 		*****************************************/
+// 		dTime = dTime_JerkUniformly + dTime_AccUniformly;
+// 		dAcc = dMaxAcc;
+// 		dVel += dMaxAcc * dTime_AccUniformly;
+// 		return true;
+// 	}
+// 	double dTime_Up2MacVel(sqrt((dMaxVel - dVel) / dMaxJerk * 2.0));//达到最大速度时间
+// 	if (dTime_JerkUniformly > dTime_Up2MacVel)
+// 	{
+// 		dTime_JerkUniformly = dTime_Up2MacVel;//匀加加速时间修正
+// 		double dDeffDistance(dDistance - dMaxJerk * pow(dTime_JerkUniformly, 3.0) / 6.0);//匀加加速后的剩余距离
+// 		double dTime_VelUniformly(dDeffDistance / dMaxVel);//匀速运动时间
+// 		/****************************************
+// 		运动过程：
+// 			匀加加速+匀速
+// 		末段速度为MAX
+// 		*****************************************/
+// 		dTime = dTime_JerkUniformly + dTime_VelUniformly;
+// 		dAcc += dMaxJerk * dTime_JerkUniformly;
+// 		dVel = dMaxVel;
+// 		return true;
+// 	}
+// 	/****************************************
+// 	运动过程：
+// 		匀加加速
+// 	*****************************************/
+// 	dTime = dTime_JerkUniformly;
+// 	dAcc += dMaxJerk * dTime_JerkUniformly;
+// 	dVel += dMaxJerk * dTime_JerkUniformly * dTime_JerkUniformly / 2.0;
+// 	return true;
+// }
 
 bool NyceSystem::MoveInterpolating(IN_SED_PRT pSegments,const int &iSum,const bool &bAbsolute = true)
 {
 	if (m_pAxisX == nullptr ||
 		m_pAxisY == nullptr )
 		return false;
-	SAC_CUB_PARS *pCubSpline_x = new SAC_CUB_PARS[iSum],*pCubSpline_y = new SAC_CUB_PARS[iSum] ;
+	SAC_CUB_PARS cubSpline_x[200],cubSpline_y[200] ;
+	ZeroMemory(cubSpline_x,200);
+	ZeroMemory(cubSpline_y,200);
 	int i=0;
 	for (;i < iSum ;++i)
 	{
-		SAC_CUB_PARS *px = pCubSpline_x + i,*py = pCubSpline_y + i;
-		px->splineId = (uint32_t)((pSegments + i)->iNo);
-		px->position = (pSegments + i)->dPosX;
-		px->time = (pSegments + i)->dTime;
-		px->velocity = (pSegments + i)->dVelX;
-		px->generateEvent = FALSE;
-		py->splineId = (uint32_t)((pSegments + i)->iNo);
-		py->position = (pSegments + i)->dPosY;
-		py->time = (pSegments + i)->dTime;
-		py->velocity = (pSegments + i)->dVelY;
-		py->generateEvent = FALSE;
+		cubSpline_x[i].splineId = (uint32_t)((pSegments + i)->iNo);
+		cubSpline_x[i].position = (pSegments + i)->dPosX;
+		cubSpline_x[i].time = (pSegments + i)->dTime;
+		cubSpline_x[i].velocity = (pSegments + i)->dVelX;
+		cubSpline_x[i].generateEvent = FALSE;
+
+		cubSpline_y[i].splineId = (uint32_t)((pSegments + i)->iNo);
+		cubSpline_y[i].position = (pSegments + i)->dPosY;
+		cubSpline_y[i].time = (pSegments + i)->dTime;
+		cubSpline_y[i].velocity = (pSegments + i)->dVelY;
+		cubSpline_y[i].generateEvent = FALSE;
+
 		if ( bAbsolute )
 		{
-			px->positionReference = SAC_ABSOLUTE;
-			py->positionReference = SAC_ABSOLUTE;
+			cubSpline_x[i].positionReference = SAC_ABSOLUTE;
+			cubSpline_y[i].positionReference = SAC_ABSOLUTE;
 		}
 		else
 		{
-			px->positionReference = SAC_RELATIVE;
-			py->positionReference = SAC_RELATIVE;
+			cubSpline_x[i].positionReference = SAC_RELATIVE;
+			cubSpline_y[i].positionReference = SAC_RELATIVE;
 		}
 	}
-	uint32_t groupId;
-	SAC_AXIS axis[2];
-	axis[0] = m_pAxisX->m_id;
-	axis[1] = m_pAxisY->m_id;
-	if ( MacDefineSyncGroup(axis,2,&groupId)		!= NYCE_OK	||
-		 !m_pAxisX->SetInPars(pCubSpline_x,iSum)				||
-		 !m_pAxisY->SetInPars(pCubSpline_y,iSum)				||
-		 MacStartSyncGroup(groupId,MAC_SYNC_MOTION)	!= NYCE_OK	||
-		 MacDeleteSyncGroup(groupId)				!= NYCE_OK	)
-		 return false;
-	delete[] pCubSpline_x;
-	delete[] pCubSpline_y;
+
+	if (!m_pAxisX->SetInPars(cubSpline_x,iSum))
+		return false;
+	if (!m_pAxisY->SetInPars(cubSpline_y,iSum))
+		return false;
+	if (!m_pAxisX->MoveInterpolating())
+		return false;
+	if (!m_pAxisY->MoveInterpolating())
+		return false;
+
 	return true;
 }

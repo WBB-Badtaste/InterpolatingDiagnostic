@@ -142,24 +142,50 @@ bool NyceAxis::GetPosition(double *value)
 	return true;
 }
 
-bool NyceAxis::SetInPars(const SAC_CUB_PARS *pInPars,const int &iSum)
+bool NyceAxis::SetInPars(SAC_CUB_PARS inPars[],const int &iSum)
 {
-	if( SacClearInterpolantBuffer(m_id)				!= NYCE_OK ||
-		SacWriteCubicIntBuffer(m_id,iSum,pInPars)	!= NYCE_OK ||
-		SacStartInterpolation(m_id)					!= NYCE_OK )
-		return false;		
+	if( SacClearInterpolantBuffer(m_id)				!= NYCE_OK )
+		return false;
+	SAC_CUB_PARS *p = inPars;
+	for (int sum(iSum);sum>0;sum -= 16)
+	{
+		if (sum > 16)
+		{
+			if(SacWriteCubicIntBuffer(m_id,16,p) !=NYCE_OK)
+				return false;
+		}
+		else
+		{
+			if(SacWriteCubicIntBuffer(m_id,sum,p) !=NYCE_OK)
+				return false;
+		}
+		p += 16;
+	}
+	
+	return true; 
+}
+
+bool NyceAxis::MoveInterpolating()
+{
+	if (SacStartInterpolation(m_id) != NYCE_OK )
+		return false;
 	return true;
 }
+
 
 bool NyceAxis::GetMovePars(double &dMaxSpeed, double &dMaxAcc, double &dMaxJerk)
 {
 	if (m_status != AXIS_CONNECTED)
 		return false;
+	double dVelPar(0.0),dAccPar(0.0),dJerkPar(0.0);
+	// 	SacReadParameter(m_id,SAC_PAR_MAX_VEL_NORMAL_MODE,&dVelPar);
+	// 	SacReadParameter(m_id,SAC_PAR_MAX_ACC_NORMAL_MODE,&dAccPar);
+	// 	SacReadParameter(m_id,SAC_PAR_MAX_JERK_NORMAL_MODE,&dJerkPar);
 	// 	dMaxSpeed	= m_move_pars.dMaxVel;
 	// 	dMaxAcc		= m_move_pars.dMaxAcc;
 	// 	dMaxJerk	= m_move_pars.dMaxJerk;
-	dMaxSpeed	= 20;
-	dMaxAcc		= 200;
-	dMaxJerk	= 2000;
+	dMaxSpeed	= 200;
+	dMaxAcc		= 2000;
+	dMaxJerk	= 20000;
 	return true;
 }
