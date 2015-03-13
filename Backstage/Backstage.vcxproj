@@ -83,6 +83,7 @@
     <ClInclude Include="Backstage.h" />
     <ClInclude Include="BackstageInterface.h" />
     <ClInclude Include="Errors.h" />
+    <ClInclude Include="Interpolation.h" />
     <ClInclude Include="NyceAxis.h" />
     <ClInclude Include="NyceNode.h" />
     <ClInclude Include="NyceSystem.h" />

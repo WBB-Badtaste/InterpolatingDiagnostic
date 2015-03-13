@@ -167,11 +167,11 @@ namespace Window
             }
             listBox_result.Items.Add(new TextBox() { Text = "正在初始化..." });
            
-            if (Backstage.Initialize(ref bSim)           != Backstage.OK ||
-                Backstage.AddAxis(pNodeName, pAxisNameX) != Backstage.OK ||
+            if (Backstage.Initialize(ref bSim)            != Backstage.OK ||
+                Backstage.AddAxis(pNodeName, pAxisNameX)  != Backstage.OK ||
                 Backstage.AddAxis(pNodeName, pAxisNameY1) != Backstage.OK ||
                 Backstage.AddAxis(pNodeName, pAxisNameY2) != Backstage.OK ||
-                Backstage.AddAxis(pNodeName, pAxisNameZ) != Backstage.OK )
+                Backstage.AddAxis(pNodeName, pAxisNameZ)  != Backstage.OK )
             {
                 listBox_result.Items.Add(new TextBox() { Text = "初始化失败！" });
             }
@@ -188,8 +188,6 @@ namespace Window
             //string path = "Circle_200_200.txt";
             //gcode.Value = FileOper.Read(ref path);
             //listBox_result.Items.Add(new TextBox() { Text = "完成基代码读取。" });
-
-            
         }
 
         private void Button_Click_Draw(object sender, RoutedEventArgs e)
@@ -202,13 +200,10 @@ namespace Window
         {
             if (!bInit)
                 return;
-
             bWorking = false;
             Thread.Sleep(1000);
-
             if (Backstage.Terminate() == 0)
                 bInit = false;
-
             Marshal.FreeHGlobal(pNodeName);
             Marshal.FreeHGlobal(pAxisNameX);
             Marshal.FreeHGlobal(pAxisNameY1);
@@ -221,10 +216,10 @@ namespace Window
             if(!bInit)
                 listBox_result.Items.Add(new TextBox() { Text = "请先初始化！" });
 
-            if (Backstage.AlignAxis(pAxisNameX) != Backstage.OK ||
+            if (Backstage.AlignAxis(pAxisNameX)  != Backstage.OK ||
                 Backstage.AlignAxis(pAxisNameY1) != Backstage.OK ||
                 Backstage.AlignAxis(pAxisNameY2) != Backstage.OK ||
-                Backstage.AlignAxis(pAxisNameZ) != Backstage.OK )
+                Backstage.AlignAxis(pAxisNameZ)  != Backstage.OK )
             {
                 listBox_result.Items.Add(new TextBox() { Text = "寻相失败！" });
             }
@@ -239,10 +234,10 @@ namespace Window
             if (!bInit)
                 listBox_result.Items.Add(new TextBox() { Text = "请先初始化！" });
 
-            if (Backstage.HomeAxis(pAxisNameX) != Backstage.OK ||
+            if (Backstage.HomeAxis(pAxisNameX)  != Backstage.OK ||
                 Backstage.HomeAxis(pAxisNameY1) != Backstage.OK ||
                 Backstage.HomeAxis(pAxisNameY2) != Backstage.OK ||
-                Backstage.HomeAxis(pAxisNameZ) != Backstage.OK )
+                Backstage.HomeAxis(pAxisNameZ)  != Backstage.OK )
             {
                 listBox_result.Items.Add(new TextBox() { Text = "回零失败！" });
             }
@@ -257,10 +252,10 @@ namespace Window
             if (!bInit)
                 listBox_result.Items.Add(new TextBox() { Text = "请先初始化！" });
 
-            if (Backstage.ResetAxis(pAxisNameX) != Backstage.OK ||
+            if (Backstage.ResetAxis(pAxisNameX)  != Backstage.OK ||
                 Backstage.ResetAxis(pAxisNameY1) != Backstage.OK ||
                 Backstage.ResetAxis(pAxisNameY2) != Backstage.OK ||
-                Backstage.ResetAxis(pAxisNameZ) != Backstage.OK )
+                Backstage.ResetAxis(pAxisNameZ)  != Backstage.OK )
             {
                 listBox_result.Items.Add(new TextBox() { Text = "复位失败！" });
             }
@@ -302,12 +297,12 @@ namespace Window
             foreach (InSeg seg in inSeg)
             {
                 GcodeSegment Segment = new GcodeSegment();
-                Segment.X坐标 = seg.dPosX;
-                Segment.Y坐标 = seg.dPosY;
-                Segment.段号 = (uint)seg.iNo;
-                Segment.X轴段末速度 = seg.dVelX;
-                Segment.Y轴段末速度 = seg.dVelY;
-                Segment.运动时间 = seg.dTime;
+                Segment.X坐标         = seg.dPosX;
+                Segment.Y坐标         = seg.dPosY;
+                Segment.段号          = (uint)seg.iNo;
+                Segment.X轴段末速度   = seg.dVelX;
+                Segment.Y轴段末速度   = seg.dVelY;
+                Segment.运动时间      = seg.dTime;
                 gc.Add(Segment);
             }
             gcode.Value = gc;
