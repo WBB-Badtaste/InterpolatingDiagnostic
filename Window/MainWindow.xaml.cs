@@ -29,35 +29,39 @@ namespace Window
         private bool bWorking = false;
         private Gcode gcode = new Gcode();
         private SysInfo sysInfo = new SysInfo();
+        private AxisInfo axisInfoX = new AxisInfo();
+        private AxisInfo axisInfoY1 = new AxisInfo();
+        private AxisInfo axisInfoY2 = new AxisInfo();
+        private AxisInfo axisInfoZ = new AxisInfo();
         InSeg[] inSeg = new InSeg[200];
 
-        private string nodeName = "NY4112_node";
+        private string nodeName  = "NY4112_node";
         private string axisName1 = "DEF_AXIS_1";
         private string axisName2 = "DEF_AXIS_2";
         private string axisName3 = "DEF_AXIS_3";
         private string axisName4 = "DEF_AXIS_4";
 
         private IntPtr pNodeName;
-        private IntPtr pAxisName1;
-        private IntPtr pAxisName2;
-        private IntPtr pAxisName3;
-        private IntPtr pAxisName4;
+        private IntPtr pAxisNameX;
+        private IntPtr pAxisNameY1;
+        private IntPtr pAxisNameY2;
+        private IntPtr pAxisNameZ;
 
         public MainWindow()
         {
             InitializeComponent();
 
             pNodeName = Marshal.AllocHGlobal(nodeName.Length);
-            pAxisName1 = Marshal.AllocHGlobal(axisName1.Length);
-            pAxisName2 = Marshal.AllocHGlobal(axisName2.Length);
-            pAxisName3 = Marshal.AllocHGlobal(axisName3.Length);
-            pAxisName4 = Marshal.AllocHGlobal(axisName4.Length);
+            pAxisNameX = Marshal.AllocHGlobal(axisName1.Length);
+            pAxisNameY1 = Marshal.AllocHGlobal(axisName2.Length);
+            pAxisNameY2 = Marshal.AllocHGlobal(axisName3.Length);
+            pAxisNameZ = Marshal.AllocHGlobal(axisName4.Length);
 
             pNodeName = Marshal.StringToHGlobalAnsi(nodeName);
-            pAxisName1 = Marshal.StringToHGlobalAnsi(axisName1);
-            pAxisName2 = Marshal.StringToHGlobalAnsi(axisName2);
-            pAxisName3 = Marshal.StringToHGlobalAnsi(axisName3);
-            pAxisName4 = Marshal.StringToHGlobalAnsi(axisName4);
+            pAxisNameX = Marshal.StringToHGlobalAnsi(axisName1);
+            pAxisNameY1 = Marshal.StringToHGlobalAnsi(axisName2);
+            pAxisNameY2 = Marshal.StringToHGlobalAnsi(axisName3);
+            pAxisNameZ = Marshal.StringToHGlobalAnsi(axisName4);
 
             GcodeDataGrid.SetBinding(DataGrid.ItemsSourceProperty, new Binding("Value") { Source = gcode, Mode = BindingMode.OneWay});
             XStatus.SetBinding(TextBox.TextProperty, new Binding("AxisXState") { Source = sysInfo, Mode = BindingMode.OneWay });
@@ -69,7 +73,7 @@ namespace Window
             Y2Pos.SetBinding(TextBox.TextProperty, new Binding("AxisY2Pos") { Source = sysInfo, Mode = BindingMode.OneWay });
             ZPos.SetBinding(TextBox.TextProperty, new Binding("AxisZPos") { Source = sysInfo, Mode = BindingMode.OneWay });
             MoveTime.SetBinding(TextBox.TextProperty, new Binding("TimeMove") { Source = sysInfo, Mode = BindingMode.OneWay });
-
+            
             bWorking = true;
             Thread thread = new Thread(new ThreadStart(ThreadMathod));
             thread.IsBackground = true;
@@ -92,25 +96,25 @@ namespace Window
             bool bDraw = false;
             while (bWorking)
             {
-                Thread.CurrentThread.Join(100);
+                Thread.CurrentThread.Join(50);
                 if (!bInit)
                     continue;
-                Backstage.GetAxisPosition(pAxisName1, ref posBuffer);
+                Backstage.GetAxisPosition(pAxisNameX, ref posBuffer);
                 sysInfo.AxisXPos = posBuffer;
-                Backstage.GetAxisPosition(pAxisName2, ref posBuffer);
+                Backstage.GetAxisPosition(pAxisNameY1, ref posBuffer);
                 sysInfo.AxisY1Pos = posBuffer;
-                Backstage.GetAxisPosition(pAxisName3, ref posBuffer);
+                Backstage.GetAxisPosition(pAxisNameY2, ref posBuffer);
                 sysInfo.AxisY2Pos = posBuffer;
-                Backstage.GetAxisPosition(pAxisName4, ref posBuffer);
+                Backstage.GetAxisPosition(pAxisNameZ, ref posBuffer);
                 sysInfo.AxisZPos = posBuffer;
                 
-                Backstage.GetAxisStatus(pAxisName1, stateBuffer);
+                Backstage.GetAxisStatus(pAxisNameX, stateBuffer);
                 sysInfo.AxisXState = Marshal.PtrToStringAnsi(stateBuffer);
-                Backstage.GetAxisStatus(pAxisName2, stateBuffer);
+                Backstage.GetAxisStatus(pAxisNameY1, stateBuffer);
                 sysInfo.AxisY1State = Marshal.PtrToStringAnsi(stateBuffer);
-                Backstage.GetAxisStatus(pAxisName3, stateBuffer);
+                Backstage.GetAxisStatus(pAxisNameY2, stateBuffer);
                 sysInfo.AxisY2State = Marshal.PtrToStringAnsi(stateBuffer);
-                Backstage.GetAxisStatus(pAxisName4, stateBuffer);
+                Backstage.GetAxisStatus(pAxisNameZ, stateBuffer);
                 sysInfo.AxisZState = Marshal.PtrToStringAnsi(stateBuffer);
                 if (bMoving)
                 {
@@ -128,12 +132,13 @@ namespace Window
                             sysInfo.TimeMove = Math.Round(buffer);
                         if (bDraw)
                         {
-                            DrawLine(lastPosX, lastPosY, sysInfo.AxisXPos, sysInfo.AxisY1Pos);
+                            DrawLine(lastPosX, lastPosY, sysInfo.AxisXPos, sysInfo.AxisY1Pos,true);
                             lastPosX = sysInfo.AxisXPos;
                             lastPosY = sysInfo.AxisY1Pos;
                         }
                         else
                         {
+                            Draw.Clear_f(ref canvas_f);
                             lastPosX = sysInfo.AxisXPos;
                             lastPosY = sysInfo.AxisY1Pos;
                             bDraw = true;
@@ -163,10 +168,10 @@ namespace Window
             listBox_result.Items.Add(new TextBox() { Text = "正在初始化..." });
            
             if (Backstage.Initialize(ref bSim)           != Backstage.OK ||
-                Backstage.AddAxis(pNodeName, pAxisName1) != Backstage.OK ||
-                Backstage.AddAxis(pNodeName, pAxisName2) != Backstage.OK ||
-                Backstage.AddAxis(pNodeName, pAxisName3) != Backstage.OK ||
-                Backstage.AddAxis(pNodeName, pAxisName4) != Backstage.OK )
+                Backstage.AddAxis(pNodeName, pAxisNameX) != Backstage.OK ||
+                Backstage.AddAxis(pNodeName, pAxisNameY1) != Backstage.OK ||
+                Backstage.AddAxis(pNodeName, pAxisNameY2) != Backstage.OK ||
+                Backstage.AddAxis(pNodeName, pAxisNameZ) != Backstage.OK )
             {
                 listBox_result.Items.Add(new TextBox() { Text = "初始化失败！" });
             }
@@ -174,7 +179,8 @@ namespace Window
             {
                 listBox_result.Items.Add(new TextBox() { Text = "完成初始化。" });
                 bInit = true;
-            }
+                Seletion();
+            }          
         }
 
         private void Button_Click_LoadFile(object sender, RoutedEventArgs e)
@@ -182,6 +188,8 @@ namespace Window
             //string path = "Circle_200_200.txt";
             //gcode.Value = FileOper.Read(ref path);
             //listBox_result.Items.Add(new TextBox() { Text = "完成基代码读取。" });
+
+            
         }
 
         private void Button_Click_Draw(object sender, RoutedEventArgs e)
@@ -202,10 +210,10 @@ namespace Window
                 bInit = false;
 
             Marshal.FreeHGlobal(pNodeName);
-            Marshal.FreeHGlobal(pAxisName1);
-            Marshal.FreeHGlobal(pAxisName2);
-            Marshal.FreeHGlobal(pAxisName3);
-            Marshal.FreeHGlobal(pAxisName4);
+            Marshal.FreeHGlobal(pAxisNameX);
+            Marshal.FreeHGlobal(pAxisNameY1);
+            Marshal.FreeHGlobal(pAxisNameY2);
+            Marshal.FreeHGlobal(pAxisNameZ);
         }
 
         private void Button_Click_Align(object sender, RoutedEventArgs e)
@@ -213,10 +221,10 @@ namespace Window
             if(!bInit)
                 listBox_result.Items.Add(new TextBox() { Text = "请先初始化！" });
 
-            if (Backstage.AlignAxis(pAxisName1) != Backstage.OK ||
-                Backstage.AlignAxis(pAxisName2) != Backstage.OK ||
-                Backstage.AlignAxis(pAxisName3) != Backstage.OK ||
-                Backstage.AlignAxis(pAxisName4) != Backstage.OK )
+            if (Backstage.AlignAxis(pAxisNameX) != Backstage.OK ||
+                Backstage.AlignAxis(pAxisNameY1) != Backstage.OK ||
+                Backstage.AlignAxis(pAxisNameY2) != Backstage.OK ||
+                Backstage.AlignAxis(pAxisNameZ) != Backstage.OK )
             {
                 listBox_result.Items.Add(new TextBox() { Text = "寻相失败！" });
             }
@@ -231,10 +239,10 @@ namespace Window
             if (!bInit)
                 listBox_result.Items.Add(new TextBox() { Text = "请先初始化！" });
 
-            if (Backstage.HomeAxis(pAxisName1) != Backstage.OK ||
-                Backstage.HomeAxis(pAxisName2) != Backstage.OK ||
-                Backstage.HomeAxis(pAxisName3) != Backstage.OK ||
-                Backstage.HomeAxis(pAxisName4) != Backstage.OK )
+            if (Backstage.HomeAxis(pAxisNameX) != Backstage.OK ||
+                Backstage.HomeAxis(pAxisNameY1) != Backstage.OK ||
+                Backstage.HomeAxis(pAxisNameY2) != Backstage.OK ||
+                Backstage.HomeAxis(pAxisNameZ) != Backstage.OK )
             {
                 listBox_result.Items.Add(new TextBox() { Text = "回零失败！" });
             }
@@ -249,12 +257,12 @@ namespace Window
             if (!bInit)
                 listBox_result.Items.Add(new TextBox() { Text = "请先初始化！" });
 
-            if (Backstage.ResetAxis(pAxisName1) != Backstage.OK ||
-                Backstage.ResetAxis(pAxisName2) != Backstage.OK ||
-                Backstage.ResetAxis(pAxisName3) != Backstage.OK ||
-                Backstage.ResetAxis(pAxisName4) != Backstage.OK )
+            if (Backstage.ResetAxis(pAxisNameX) != Backstage.OK ||
+                Backstage.ResetAxis(pAxisNameY1) != Backstage.OK ||
+                Backstage.ResetAxis(pAxisNameY2) != Backstage.OK ||
+                Backstage.ResetAxis(pAxisNameZ) != Backstage.OK )
             {
-                listBox_result.Items.Add(new TextBox() { Text = "复位失败！" });  
+                listBox_result.Items.Add(new TextBox() { Text = "复位失败！" });
             }
             else
             {
@@ -283,8 +291,8 @@ namespace Window
                 {
                     double dCurX = 0; 
                     double dCurY = 0;
-                    Backstage.GetAxisPosition(pAxisName1, ref dCurX);
-                    Backstage.GetAxisPosition(pAxisName2, ref dCurY);
+                    Backstage.GetAxisPosition(pAxisNameX, ref dCurX);
+                    Backstage.GetAxisPosition(pAxisNameY1, ref dCurY);
                     double dRadius = 150;
                     int sum = inSeg.Length;
                     int a = Backstage.GetInSeg_Circle(ref dCurX, ref dCurY, ref dRadius, p, ref sum);
@@ -305,12 +313,109 @@ namespace Window
             gcode.Value = gc;
         }
 
-        public void DrawLine(double lastPosX, double lastPosY, double nextPosX, double nextPosY)
+        public void DrawLine(double lastPosX, double lastPosY, double nextPosX, double nextPosY,bool bRed = false)
         {
             this.Dispatcher.Invoke((Action)(() =>
             {
-                Draw.drawLine(lastPosX, lastPosY, nextPosX, nextPosY, ref canvas_f);
+                Draw.DrawLine_f(lastPosX, lastPosY, nextPosX, nextPosY, ref canvas_f, bRed);
             }));
+        }
+
+        private void ComboBox_SelectionChanged_Axis(object sender, SelectionChangedEventArgs e)
+        {
+            if (!bInit)
+                return;
+            Seletion();
+        }
+
+        private void Seletion()
+        {
+            double dVel = 0, dAcc = 0, dJerk = 0;
+            switch (combox_axis.SelectedIndex)
+            {
+                case 0:
+                    home_speed.SetBinding(NumericUpDown.DataContextProperty, new Binding("Home_Vel") { Source = axisInfoX, Mode = BindingMode.TwoWay });
+                    home_acceleration.SetBinding(NumericUpDown.DataContextProperty, new Binding("Home_Acc") { Source = axisInfoX, Mode = BindingMode.TwoWay });
+                    home_jerk.SetBinding(NumericUpDown.DataContextProperty, new Binding("Home_Jerk") { Source = axisInfoX, Mode = BindingMode.TwoWay });
+                    motion_speed.SetBinding(NumericUpDown.DataContextProperty, new Binding("Motion_Vel") { Source = axisInfoX, Mode = BindingMode.TwoWay });
+                    motion_acceleration.SetBinding(NumericUpDown.DataContextProperty, new Binding("Motion_Acc") { Source = axisInfoX, Mode = BindingMode.TwoWay });
+                    motion_jerk.SetBinding(NumericUpDown.DataContextProperty, new Binding("Motion_Jerk") { Source = axisInfoX, Mode = BindingMode.TwoWay });
+                    emergency_acceleration.SetBinding(NumericUpDown.DataContextProperty, new Binding("Stop_Acc") { Source = axisInfoX, Mode = BindingMode.TwoWay });
+
+                    Backstage.GetAxisHomePars(pAxisNameX, ref dVel, ref dAcc, ref dJerk);
+                    axisInfoX.Home_Vel = dVel;
+                    axisInfoX.Home_Acc = dAcc;
+                    axisInfoX.Home_Jerk = dJerk;
+                    Backstage.GetAxisMotionPars(pAxisNameX, ref dVel, ref dAcc, ref dJerk);
+                    axisInfoX.Motion_Vel = dVel;
+                    axisInfoX.Motion_Acc = dAcc;
+                    axisInfoX.Motion_Jerk = dJerk;
+                    Backstage.GetAxisStopPars(pAxisNameX, ref dAcc);
+                    axisInfoX.Stop_Acc = dAcc;
+                    break;
+                case 1:
+                    home_speed.SetBinding(NumericUpDown.DataContextProperty, new Binding("Home_Vel") { Source = axisInfoY1, Mode = BindingMode.TwoWay });
+                    home_acceleration.SetBinding(NumericUpDown.DataContextProperty, new Binding("Home_Acc") { Source = axisInfoY1, Mode = BindingMode.TwoWay });
+                    home_jerk.SetBinding(NumericUpDown.DataContextProperty, new Binding("Home_Jerk") { Source = axisInfoY1, Mode = BindingMode.TwoWay });
+                    motion_speed.SetBinding(NumericUpDown.DataContextProperty, new Binding("Motion_Vel") { Source = axisInfoY1, Mode = BindingMode.TwoWay });
+                    motion_acceleration.SetBinding(NumericUpDown.DataContextProperty, new Binding("Motion_Acc") { Source = axisInfoY1, Mode = BindingMode.TwoWay });
+                    motion_jerk.SetBinding(NumericUpDown.DataContextProperty, new Binding("Motion_Jerk") { Source = axisInfoY1, Mode = BindingMode.TwoWay });
+                    emergency_acceleration.SetBinding(NumericUpDown.DataContextProperty, new Binding("Stop_Acc") { Source = axisInfoY1, Mode = BindingMode.TwoWay });
+
+                    Backstage.GetAxisHomePars(pAxisNameY1, ref dVel, ref dAcc, ref dJerk);
+                    axisInfoY1.Home_Vel = dVel;
+                    axisInfoY1.Home_Acc = dAcc;
+                    axisInfoY1.Home_Jerk = dJerk;
+                    Backstage.GetAxisMotionPars(pAxisNameY1, ref dVel, ref dAcc, ref dJerk);
+                    axisInfoY1.Motion_Vel = dVel;
+                    axisInfoY1.Motion_Acc = dAcc;
+                    axisInfoY1.Motion_Jerk = dJerk;
+                    Backstage.GetAxisStopPars(pAxisNameY1, ref dAcc);
+                    axisInfoY1.Stop_Acc = dAcc;
+                    break;
+                case 2:
+                    home_speed.SetBinding(NumericUpDown.DataContextProperty, new Binding("Home_Vel") { Source = axisInfoY2, Mode = BindingMode.TwoWay });
+                    home_acceleration.SetBinding(NumericUpDown.DataContextProperty, new Binding("Home_Acc") { Source = axisInfoY2, Mode = BindingMode.TwoWay });
+                    home_jerk.SetBinding(NumericUpDown.DataContextProperty, new Binding("Home_Jerk") { Source = axisInfoY2, Mode = BindingMode.TwoWay });
+                    motion_speed.SetBinding(NumericUpDown.DataContextProperty, new Binding("Motion_Vel") { Source = axisInfoY2, Mode = BindingMode.TwoWay });
+                    motion_acceleration.SetBinding(NumericUpDown.DataContextProperty, new Binding("Motion_Acc") { Source = axisInfoY2, Mode = BindingMode.TwoWay });
+                    motion_jerk.SetBinding(NumericUpDown.DataContextProperty, new Binding("Motion_Jerk") { Source = axisInfoY2, Mode = BindingMode.TwoWay });
+                    emergency_acceleration.SetBinding(NumericUpDown.DataContextProperty, new Binding("Stop_Acc") { Source = axisInfoY2, Mode = BindingMode.TwoWay });
+
+                    Backstage.GetAxisHomePars(pAxisNameY2, ref dVel, ref dAcc, ref dJerk);
+                    axisInfoY2.Home_Vel = dVel;
+                    axisInfoY2.Home_Acc = dAcc;
+                    axisInfoY2.Home_Jerk = dJerk;
+                    Backstage.GetAxisMotionPars(pAxisNameY2, ref dVel, ref dAcc, ref dJerk);
+                    axisInfoY2.Motion_Vel = dVel;
+                    axisInfoY2.Motion_Acc = dAcc;
+                    axisInfoY2.Motion_Jerk = dJerk;
+                    Backstage.GetAxisStopPars(pAxisNameY2, ref dAcc);
+                    axisInfoY2.Stop_Acc = dAcc;
+                    break;
+                case 3:
+                    home_speed.SetBinding(NumericUpDown.DataContextProperty, new Binding("Home_Vel") { Source = axisInfoZ, Mode = BindingMode.TwoWay });
+                    home_acceleration.SetBinding(NumericUpDown.DataContextProperty, new Binding("Home_Acc") { Source = axisInfoZ, Mode = BindingMode.TwoWay });
+                    home_jerk.SetBinding(NumericUpDown.DataContextProperty, new Binding("Home_Jerk") { Source = axisInfoZ, Mode = BindingMode.TwoWay });
+                    motion_speed.SetBinding(NumericUpDown.DataContextProperty, new Binding("Motion_Vel") { Source = axisInfoZ, Mode = BindingMode.TwoWay });
+                    motion_acceleration.SetBinding(NumericUpDown.DataContextProperty, new Binding("Motion_Acc") { Source = axisInfoZ, Mode = BindingMode.TwoWay });
+                    motion_jerk.SetBinding(NumericUpDown.DataContextProperty, new Binding("Motion_Jerk") { Source = axisInfoZ, Mode = BindingMode.TwoWay });
+                    emergency_acceleration.SetBinding(NumericUpDown.DataContextProperty, new Binding("Stop_Acc") { Source = axisInfoZ, Mode = BindingMode.TwoWay });
+
+                    Backstage.GetAxisHomePars(pAxisNameZ, ref dVel, ref dAcc, ref dJerk);
+                    axisInfoZ.Home_Vel = dVel;
+                    axisInfoZ.Home_Acc = dAcc;
+                    axisInfoZ.Home_Jerk = dJerk;
+                    Backstage.GetAxisMotionPars(pAxisNameZ, ref dVel, ref dAcc, ref dJerk);
+                    axisInfoZ.Motion_Vel = dVel;
+                    axisInfoZ.Motion_Acc = dAcc;
+                    axisInfoZ.Motion_Jerk = dJerk;
+                    Backstage.GetAxisStopPars(pAxisNameZ, ref dAcc);
+                    axisInfoZ.Stop_Acc = dAcc;
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

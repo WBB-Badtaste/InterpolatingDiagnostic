@@ -27,9 +27,17 @@ EXTERN_C BACKSTAGE_API int WINAPI GetAxisPosition(char*,double *value);
 //取axis状态
 EXTERN_C BACKSTAGE_API int WINAPI GetAxisStatus(char*,char* pState);
 //取HomePars
-EXTERN_C BACKSTAGE_API int WINAPI GetAxisHomePars(double*,double*,double*);
+EXTERN_C BACKSTAGE_API int WINAPI GetAxisHomePars(char* ,double*,double*,double*);
 //设置HomePars
-EXTERN_C BACKSTAGE_API int WINAPI SetAxisHomePars(double,double,double);
+EXTERN_C BACKSTAGE_API int WINAPI SetAxisHomePars(char*, double,double,double);
+//取MotionPars
+EXTERN_C BACKSTAGE_API int WINAPI GetAxisMotionPars(char*, double*,double*,double*);
+//设置MotionPars
+EXTERN_C BACKSTAGE_API int WINAPI SetAxisMotionPars(char*, double,double,double);
+//取StopPars
+EXTERN_C BACKSTAGE_API int WINAPI GetAxisStopPars(char*, double*);
+//设置StopPars
+EXTERN_C BACKSTAGE_API int WINAPI SetAxisStopPars(char*, double);
 //获得插补分段
 EXTERN_C BACKSTAGE_API int WINAPI GetInSeg_Circle(const double *dCurX, const double *dCurY, const double *dRadius,IN_SED_PRT const pSegments,const int *segSum);
 //插补运动

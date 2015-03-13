@@ -38,6 +38,18 @@ namespace Window
         unsafe public extern static int GetInSeg_Circle(ref double dCurX, ref double dCurY, ref double dRadius, InSeg* pSeg, ref int iSegSum);
         [DllImport("Backstage.dll", EntryPoint = "MoveInterpolating", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         unsafe public extern static int MoveInterpolating(InSeg* pSeg, int iSum, bool bAbsolute);
+        [DllImport("Backstage.dll", EntryPoint = "GetAxisHomePars", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public extern static int GetAxisHomePars(IntPtr axName,ref double dMaxVel,ref double dMaxAcc,ref double dMaxJerk);
+        [DllImport("Backstage.dll", EntryPoint = "SetAxisHomePars", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public extern static int SetAxisHomePars(IntPtr axName,double dMaxVel,double dMaxAcc,double dMaxJerk);
+        [DllImport("Backstage.dll", EntryPoint = "GetAxisMotionPars", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public extern static int GetAxisMotionPars(IntPtr axName,ref double dMaxVel,ref double dMaxAcc,ref double dMaxJerk);
+        [DllImport("Backstage.dll", EntryPoint = "SetAxisMotionPars", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public extern static int SetAxisMotionPars(IntPtr axName,double dMaxVel,double dMaxAcc,double dMaxJerk);
+        [DllImport("Backstage.dll", EntryPoint = "GetAxisStopPars", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public extern static int GetAxisStopPars(IntPtr axName,ref double dMaxAcc);
+        [DllImport("Backstage.dll", EntryPoint = "SetAxisStopPars", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public extern static int SetAxisStopPars(IntPtr axName,double dMaxAcc);
 
         public static int OK                = 10000;
         public static int INITALIZE_FAIL    = 10001;

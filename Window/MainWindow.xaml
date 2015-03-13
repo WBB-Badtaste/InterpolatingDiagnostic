@@ -89,7 +89,7 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Row="0"  Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <Label Content="请选择轴 Chose Axis：" VerticalContentAlignment="Center" />
-                        <ComboBox Name="combox_axis" Width="87" Height="23" SelectedIndex="0">
+                        <ComboBox Name="combox_axis" Width="87" Height="23" SelectedIndex="0" SelectionChanged="ComboBox_SelectionChanged_Axis">
                             <ComboBoxItem Content="X轴"/>
                             <ComboBoxItem Content="Y1轴"/>
                             <ComboBoxItem Content="Y2轴"/>

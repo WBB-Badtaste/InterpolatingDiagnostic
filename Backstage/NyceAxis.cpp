@@ -9,9 +9,6 @@ NyceAxis::NyceAxis(const string &name):
 								m_status(AXIS_NON)
 {
 	Connect();
-	m_move_pars.dMaxAcc = 10;
-	m_move_pars.dMaxJerk = 10;
-	m_move_pars.dMaxVel = 10;
 }
 
 NyceAxis::~NyceAxis(void)
@@ -24,8 +21,7 @@ bool NyceAxis::Connect()
 {
 	if (m_status == AXIS_CONNECTED)
 		return true;
-	if (SacConnect(m_name.c_str(), &m_id)	!= NYCE_OK ||
-		SacReadHomePars(m_id,&m_home_pars)	!= NYCE_OK )
+	if (SacConnect(m_name.c_str(), &m_id)	!= NYCE_OK )
 		return false;
 	m_status = AXIS_CONNECTED;
 	return true;
@@ -84,19 +80,12 @@ bool NyceAxis::SetHomePars(const double &dMaxSpeed, const double &dMaxAcc, const
 {
 	if (m_status != AXIS_CONNECTED)
 		return false;
-	if (m_home_pars.velocity	 == dMaxSpeed &&
-		m_home_pars.jerk		 == dMaxJerk  &&
-		m_home_pars.acceleration == dMaxAcc   )
-		return true;
-	SAC_HOME_PARS buffer = m_home_pars;
-	m_home_pars.velocity = dMaxSpeed;
-	m_home_pars.jerk = dMaxJerk;
-	m_home_pars.acceleration = dMaxAcc;
-	if (SacWriteHomePars(m_id, &m_home_pars) != NYCE_OK)
-	{
-		m_home_pars = buffer;
+	SAC_HOME_PARS home_pars;
+	home_pars.velocity = dMaxSpeed;
+	home_pars.jerk = dMaxJerk;
+	home_pars.acceleration = dMaxAcc;
+	if (SacWriteHomePars(m_id, &home_pars) != NYCE_OK)
 		return false;
-	}
 	return true;
 }
 
@@ -104,12 +93,48 @@ bool NyceAxis::GetHomePars(double &dMaxSpeed, double &dMaxAcc, double &dMaxJerk)
 {
 	if (m_status != AXIS_CONNECTED)
 		return false;
-	dMaxSpeed	= m_home_pars.velocity;
-	dMaxAcc		= m_home_pars.acceleration;
-	dMaxJerk	= m_home_pars.jerk;
+	SAC_HOME_PARS home_pars;
+	if (SacReadHomePars(m_id,&home_pars) != NYCE_OK)
+		return false;
+	dMaxSpeed	= home_pars.velocity;
+	dMaxAcc		= home_pars.acceleration;
+	dMaxJerk	= home_pars.jerk;
 	return  true;
 }
 
+bool NyceAxis::SetMotionPars(const double &dMaxSpeed, const double &dMaxAcc, const double &dMaxJerk)
+{
+	if (m_status != AXIS_CONNECTED												   ||
+		SacWriteParameter(m_id,SAC_PAR_MAX_VEL_NORMAL_MODE,dMaxSpeed)	!= NYCE_OK ||
+		SacWriteParameter(m_id,SAC_PAR_MAX_ACC_NORMAL_MODE,dMaxAcc)		!= NYCE_OK ||
+		SacWriteParameter(m_id,SAC_PAR_MAX_JERK_NORMAL_MODE,dMaxJerk)	!= NYCE_OK )
+		return false;
+	return true;
+}
+
+bool NyceAxis::GetMotionPars(double &dMaxSpeed, double &dMaxAcc, double &dMaxJerk)
+{
+	if (m_status != AXIS_CONNECTED												   ||
+		SacReadParameter(m_id,SAC_PAR_MAX_VEL_NORMAL_MODE,&dMaxSpeed)	!= NYCE_OK ||
+		SacReadParameter(m_id,SAC_PAR_MAX_ACC_NORMAL_MODE,&dMaxAcc)		!= NYCE_OK ||
+		SacReadParameter(m_id,SAC_PAR_MAX_JERK_NORMAL_MODE,&dMaxJerk)	!= NYCE_OK )
+		return false;
+	return  true;
+}
+bool NyceAxis::SetStopPars(const double &dMaxAcc)
+{
+	if (m_status != AXIS_CONNECTED										   ||
+		SacWriteParameter(m_id,SAC_PAR_QUICKSTOP_ACC,dMaxAcc)	!= NYCE_OK )
+		return false;
+	return true;
+}
+bool NyceAxis::GetStopPars(double &dMaxAcc)
+{
+	if (m_status != AXIS_CONNECTED										   ||
+		SacReadParameter(m_id,SAC_PAR_QUICKSTOP_ACC,&dMaxAcc)	!= NYCE_OK )
+		return false;
+	return true;
+}
 bool NyceAxis::Home()
 {
 	if (m_status != AXIS_CONNECTED)
@@ -172,20 +197,3 @@ bool NyceAxis::MoveInterpolating()
 	return true;
 }
 
-
-bool NyceAxis::GetMovePars(double &dMaxSpeed, double &dMaxAcc, double &dMaxJerk)
-{
-	if (m_status != AXIS_CONNECTED)
-		return false;
-	double dVelPar(0.0),dAccPar(0.0),dJerkPar(0.0);
-	// 	SacReadParameter(m_id,SAC_PAR_MAX_VEL_NORMAL_MODE,&dVelPar);
-	// 	SacReadParameter(m_id,SAC_PAR_MAX_ACC_NORMAL_MODE,&dAccPar);
-	// 	SacReadParameter(m_id,SAC_PAR_MAX_JERK_NORMAL_MODE,&dJerkPar);
-	// 	dMaxSpeed	= m_move_pars.dMaxVel;
-	// 	dMaxAcc		= m_move_pars.dMaxAcc;
-	// 	dMaxJerk	= m_move_pars.dMaxJerk;
-	dMaxSpeed	= 200;
-	dMaxAcc		= 2000;
-	dMaxJerk	= 20000;
-	return true;
-}

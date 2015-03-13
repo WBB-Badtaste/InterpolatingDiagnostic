@@ -31,6 +31,7 @@ BACKSTAGE_API int WINAPI Terminate()
 			g_mapAxis2Node.erase(g_mapAxis2Node.begin());
  		delete g_pNyce;
  		return BACKSTAGE_OK;
+
  	}
  	else
  		return BACKSTAGE_TERMINATE_FAIL;
@@ -152,6 +153,34 @@ BACKSTAGE_API int WINAPI SetAxisHomePars(char* name,double dMaxSpeed,double dMax
 	return BACKSTAGE_OK;
 }
 
+EXTERN_C BACKSTAGE_API int WINAPI GetAxisMotionPars(char* name, double* dMaxSpeed,double* dMaxAcc,double* dMaxJerk)
+{
+	string axisName(name);
+	if (!g_pNyce->GetNode(g_mapAxis2Node[axisName])->GetAxis(axisName)->GetMotionPars(*dMaxSpeed,*dMaxAcc,*dMaxJerk))
+		return BACKSTAGE_GETAXISMOTIONPARS_FAIL;
+	return BACKSTAGE_OK;
+}
+EXTERN_C BACKSTAGE_API int WINAPI SetAxisMotionPars(char* name, double dMaxSpeed,double dMaxAcc,double dMaxJerk)
+{
+	string axisName(name);
+	if (!g_pNyce->GetNode(g_mapAxis2Node[axisName])->GetAxis(axisName)->SetMotionPars(dMaxSpeed,dMaxAcc,dMaxJerk))
+		return BACKSTAGE_SETAXISMOTIONPARS_FAIL;
+	return BACKSTAGE_OK;
+}
+EXTERN_C BACKSTAGE_API int WINAPI GetAxisStopPars(char* name, double* dStopAcc)
+{
+	string axisName(name);
+	if (!g_pNyce->GetNode(g_mapAxis2Node[axisName])->GetAxis(axisName)->GetStopPars(*dStopAcc))
+		return BACKSTAGE_GETAXISSTOPPARS_FAIL;
+	return BACKSTAGE_OK;
+}
+EXTERN_C BACKSTAGE_API int WINAPI SetAxisStopPars(char* name, double dStopAcc)
+{
+	string axisName(name);
+	if (!g_pNyce->GetNode(g_mapAxis2Node[axisName])->GetAxis(axisName)->SetStopPars(dStopAcc))
+		return BACKSTAGE_SETAXISSTOPPARS_FAIL;
+	return BACKSTAGE_OK;
+}
 BACKSTAGE_API int WINAPI GetInSeg_Circle(const double *dCurX, const double *dCurY, const double *dRadius,IN_SED_PRT const pSegments,const int * segSum)
 {
 	//¡Ÿ ±¥˙¬Î

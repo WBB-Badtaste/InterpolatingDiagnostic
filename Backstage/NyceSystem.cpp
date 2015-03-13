@@ -105,8 +105,8 @@ bool NyceSystem::GetInSeg_Cicle_xy(const IN_INFO * const pInInfo,IN_SED_PRT cons
 	double dTime(0.0),dTime_x(0.0),dTime_y(0.0);
 	double dAngle(0.0);
 	double dMaxVel_x(0.0),dMaxAcc_x(0.0),dMaxJerk_x(0.0),dMaxVel_y(0.0),dMaxAcc_y(0.0),dMaxJerk_y(0.0);
-	m_pAxisX->GetMovePars(dMaxVel_x,dMaxAcc_x,dMaxJerk_x);
-	m_pAxisY->GetMovePars(dMaxVel_y,dMaxAcc_y,dMaxJerk_y);
+	m_pAxisX->GetMotionPars(dMaxVel_x,dMaxAcc_x,dMaxJerk_x);
+	m_pAxisY->GetMotionPars(dMaxVel_y,dMaxAcc_y,dMaxJerk_y);
 	dMaxJerk_x *= 0.6;
 	dMaxJerk_y *= 0.6;
 	/****************************************
@@ -645,6 +645,12 @@ bool NyceSystem::MoveInterpolating(IN_SED_PRT pSegments,const int &iSum,const bo
 		}
 	}
 
+	SAC_AXIS axis[2];
+	axis[0] =m_pAxisX->m_id;
+	axis[1] =m_pAxisY->m_id;
+	uint32_t groundId;
+	if (MacDefineSyncGroup(axis,2,&groundId) != NYCE_OK)
+		return false;
 	if (!m_pAxisX->SetInPars(cubSpline_x,iSum))
 		return false;
 	if (!m_pAxisY->SetInPars(cubSpline_y,iSum))
@@ -653,6 +659,9 @@ bool NyceSystem::MoveInterpolating(IN_SED_PRT pSegments,const int &iSum,const bo
 		return false;
 	if (!m_pAxisY->MoveInterpolating())
 		return false;
-
+	if (MacStartSyncGroup(groundId,MAC_SYNC_MOTION) != NYCE_OK)
+		return false;
+	if (MacDeleteSyncGroup(groundId) != NYCE_OK)
+		return false;
 	return true;
 }

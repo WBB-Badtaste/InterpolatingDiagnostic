@@ -27,13 +27,14 @@ public:
 	bool			GetPosition(double *);
 	bool			SetHomePars(const double &dMaxSpeed, const double &dMaxAcc, const double &dMaxJerk);
 	bool			GetHomePars(double &dMaxSpeed,  double &dMaxAcc,  double &dMaxJerk);
-	bool			GetMovePars(double &dMaxSpeed,  double &dMaxAcc,  double &dMaxJerk);
+	bool			SetMotionPars(const double &dMaxSpeed, const double &dMaxAcc, const double &dMaxJerk);
+	bool			GetMotionPars(double &dMaxSpeed, double &dMaxAcc, double &dMaxJerk);
+	bool			SetStopPars(const double &dMaxAcc);
+	bool			GetStopPars(double &dMaxAcc);
 	const string				m_name;
 	SAC_AXIS					m_id;
 	AXIS_STATUS					m_status;
 	SAC_CONFIGURE_AXIS_PARS		m_configure_pars;
-	SAC_HOME_PARS				m_home_pars;
-	AXIS_MOVE_PARS				m_move_pars;
 };
 
 
