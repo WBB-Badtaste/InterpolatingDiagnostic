@@ -42,3 +42,5 @@ EXTERN_C BACKSTAGE_API int WINAPI SetAxisStopPars(char*, double);
 EXTERN_C BACKSTAGE_API int WINAPI GetInSeg_Circle(const double *dCurX, const double *dCurY, const double *dRadius,IN_SED_PRT const pSegments,const int *segSum);
 //≤Â≤π‘À∂Ø
 EXTERN_C BACKSTAGE_API int WINAPI MoveInterpolating(IN_SED_PRT pSegments,const int iSum,const bool bAbsolute);
+//Rocks‘≤ª°≤Â≤π
+EXTERN_C BACKSTAGE_API int WINAPI RocksArcInterpolation(char* node,char* axisX,char* axisY1,char* axisY2,char* axisZ,double dCenterX,double dCenterY,double dTime,double dAngle);

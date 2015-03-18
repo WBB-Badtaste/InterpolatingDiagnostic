@@ -33,3 +33,5 @@
 #include "dehenums.h"
 #include "dehtypes.h"
 
+#include "rocksenums.h"
+

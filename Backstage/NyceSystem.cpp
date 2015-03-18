@@ -8,7 +8,8 @@
 NyceSystem::NyceSystem(const bool &bSim):
 							m_status(SYSTEM_NON),
 							m_pAxisX(nullptr),
-							m_pAxisY(nullptr),
+							m_pAxisY1(nullptr),
+							m_pAxisY2(nullptr),
 							m_pAxisZ(nullptr)
 {
 	Initialize(bSim);
@@ -91,7 +92,7 @@ bool NyceSystem::SetInAxis(PCAXIS_INFO pAxis_infos,int sum)
 		sum < 2 )
 		return false;
 	m_pAxisX = m_nodeMap[pAxis_infos->nodeName]->GetAxis(pAxis_infos->axisName);
-	m_pAxisY = m_nodeMap[(pAxis_infos + 1)->nodeName]->GetAxis((pAxis_infos + 1)->axisName);
+	m_pAxisY1 = m_nodeMap[(pAxis_infos + 1)->nodeName]->GetAxis((pAxis_infos + 1)->axisName);
 //	m_pAxisZ = m_nodeMap[(pAxis_infos + 2)->nodeName]->GetAxis((pAxis_infos + 2)->axisName);
 	return true;
 }
@@ -106,7 +107,7 @@ bool NyceSystem::GetInSeg_Cicle_xy(const IN_INFO * const pInInfo,IN_SED_PRT cons
 	double dAngle(0.0);
 	double dMaxVel_x(0.0),dMaxAcc_x(0.0),dMaxJerk_x(0.0),dMaxVel_y(0.0),dMaxAcc_y(0.0),dMaxJerk_y(0.0);
 	m_pAxisX->GetMotionPars(dMaxVel_x,dMaxAcc_x,dMaxJerk_x);
-	m_pAxisY->GetMotionPars(dMaxVel_y,dMaxAcc_y,dMaxJerk_y);
+	m_pAxisY1->GetMotionPars(dMaxVel_y,dMaxAcc_y,dMaxJerk_y);
 	dMaxJerk_x *= 0.6;
 	dMaxJerk_y *= 0.6;
 	/****************************************
@@ -538,6 +539,9 @@ bool NyceSystem::ModifyInSegPars_V(const double &dDistance,double &dVel,double &
 // 	return true;
 // }
 
+
+
+
 // bool NyceSystem::GetInSegPars(const double &dDistance,double &dVel, double &dAcc, double &dTime,const double &dMVel,const double &dMAcc,const double &dMJerk)
 // {
 // 	double dMaxJerk(dMJerk);
@@ -610,10 +614,13 @@ bool NyceSystem::ModifyInSegPars_V(const double &dDistance,double &dVel,double &
 // 	return true;
 // }
 
+
+
+
 bool NyceSystem::MoveInterpolating(IN_SED_PRT pSegments,const int &iSum,const bool &bAbsolute = true)
 {
 	if (m_pAxisX == nullptr ||
-		m_pAxisY == nullptr )
+		m_pAxisY1 == nullptr )
 		return false;
 	SAC_CUB_PARS cubSpline_x[200],cubSpline_y[200] ;
 	ZeroMemory(cubSpline_x,200);
@@ -647,21 +654,123 @@ bool NyceSystem::MoveInterpolating(IN_SED_PRT pSegments,const int &iSum,const bo
 
 	SAC_AXIS axis[2];
 	axis[0] =m_pAxisX->m_id;
-	axis[1] =m_pAxisY->m_id;
+	axis[1] =m_pAxisY1->m_id;
 	uint32_t groundId;
 	if (MacDefineSyncGroup(axis,2,&groundId) != NYCE_OK)
 		return false;
 	if (!m_pAxisX->SetInPars(cubSpline_x,iSum))
 		return false;
-	if (!m_pAxisY->SetInPars(cubSpline_y,iSum))
+	if (!m_pAxisY1->SetInPars(cubSpline_y,iSum))
 		return false;
 	if (!m_pAxisX->MoveInterpolating())
 		return false;
-	if (!m_pAxisY->MoveInterpolating())
+	if (!m_pAxisY1->MoveInterpolating())
 		return false;
 	if (MacStartSyncGroup(groundId,MAC_SYNC_MOTION) != NYCE_OK)
 		return false;
 	if (MacDeleteSyncGroup(groundId) != NYCE_OK)
 		return false;
+	return true;
+}
+
+bool NyceSystem::RocksGantryInitialize(GANTRY_INFO *pGantryInfo)
+{
+	if (m_status != SYSTEM_INITIALIZED )
+		return false;
+	m_pAxisX	= m_nodeMap[pGantryInfo->sNodeName]->GetAxis(pGantryInfo->sAxisName_x);
+	m_pAxisY1	= m_nodeMap[pGantryInfo->sNodeName]->GetAxis(pGantryInfo->sAxisName_y1);
+	m_pAxisY2	= m_nodeMap[pGantryInfo->sNodeName]->GetAxis(pGantryInfo->sAxisName_y2);
+	m_pAxisZ	= m_nodeMap[pGantryInfo->sNodeName]->GetAxis(pGantryInfo->sAxisName_z);
+	m_rockMech.dof [0] = TRUE;//x
+	m_rockMech.dof [1] = TRUE;//y
+	m_rockMech.dof [2] = FALSE;//z
+	m_rockMech.dof [3] = FALSE;
+	m_rockMech.dof [4] = FALSE;
+	m_rockMech.dof [5] = FALSE;
+	m_rockMech.nrOfJoints = 4;
+	m_rockMech.jointAxisId[0] = m_pAxisX->m_id;
+	m_rockMech.jointAxisId[1] = m_pAxisY1->m_id;
+	m_rockMech.jointAxisId[2] = m_pAxisY2->m_id;
+	m_rockMech.jointAxisId[3] = m_pAxisZ->m_id;
+	return true;
+}
+
+bool NyceSystem::InitalizeRocksTrajCirclePars(POS &center,double &dTime,ROCKS_TRAJ_SINE_ACC_CIRCLE_PARS &rocksTrajCirclePars)
+{
+	double dPosX, dVelX(0.0), dAccX(0.0), dJerkX(0.0);
+	double dPosY1,dVelY1(0.0),dAccY1(0.0),dJerkY1(0.0);
+	double dPosY2,dVelY2(0.0),dAccY2(0.0),dJerkY2(0.0);
+	double dPosZ, dVelZ(0.0), dAccZ(0.0), dJerkZ(0.0);
+	if (!m_pAxisX ->GetMotionPars(dVelX,dAccX,dJerkX)	 ||
+		!m_pAxisY1->GetMotionPars(dVelY1,dAccY1,dJerkY1) ||
+		!m_pAxisY2->GetMotionPars(dVelY2,dAccY2,dJerkY2) ||
+		!m_pAxisZ ->GetMotionPars(dVelZ,dAccZ,dJerkZ)	 ||
+		!m_pAxisX ->GetPosition(&dPosX)					 ||
+		!m_pAxisY1->GetPosition(&dPosY1)				 ||
+		!m_pAxisY2->GetPosition(&dPosY2)				 ||
+		!m_pAxisZ ->GetPosition(&dPosZ)					 )
+		return false;
+	/********************************
+
+			”–Œ Ã‚	
+
+	 ********************************/
+ 	if (RocksKinGantryPosition(&m_rockMech,rocksTrajCirclePars.startPos) != NYCE_OK)
+ 		return false;
+	rocksTrajCirclePars.center[0]			  = center.dX;
+	rocksTrajCirclePars.center[1]			  = center.dY;
+	rocksTrajCirclePars.angle				  = 360.0;
+	rocksTrajCirclePars.plane				  = ROCKS_PLANE_XY;
+	rocksTrajCirclePars.maxVelocity			  = 300;//min(min(min(dVelX,dVelY1),dVelY2),dVelZ);
+	rocksTrajCirclePars.maxAcceleration		  = 3000;//min(min(min(dAccX,dAccY1),dAccY2),dAccZ);
+	rocksTrajCirclePars.splineTime			  = dTime;
+	rocksTrajCirclePars.maxNrOfSplines		  = 0;
+	rocksTrajCirclePars.pPositionSplineBuffer = NULL;
+	rocksTrajCirclePars.pVelocitySplineBuffer = NULL;
+	return true;
+}
+
+bool NyceSystem::RocksGantryArcInterpolation(POS &center,double &dTime)
+{
+	if (RocksMechCreate(&m_rockMech) != NYCE_OK)
+		return false;
+
+	ROCKS_TRAJ_SINE_ACC_CIRCLE_PARS rocksTrajCirclePars;
+	 
+	ROCKS_KIN_INV_PARS kinInvPars;
+	for (int i=0;i<ROCKS_MECH_MAX_NR_OF_JOINTS;++i)
+	{
+		kinInvPars.pJointPositionBuffer[i] = NULL;
+		kinInvPars.pJointVelocityBuffer[i] = NULL;
+	}
+
+	NYCE_STATUS status;
+// 	if (RocksKinDefineGantry(&m_rockMech,ROCKS_GANTRY_Y)		   != NYCE_OK )
+// 		return false;
+	if (!InitalizeRocksTrajCirclePars(center,dTime,rocksTrajCirclePars))
+		return false;
+	if (RocksTrajSineAccCircle(&m_rockMech,&rocksTrajCirclePars)   != NYCE_OK )
+		return false;
+// 	if (RocksKinInverseGantry(&m_rockMech,&kinInvPars)			   != NYCE_OK )
+// 		return false;
+	if (RocksKinInverseCartesian(&m_rockMech,&kinInvPars)		   != NYCE_OK )
+		return false;
+// 	if (RocksStream(&m_rockMech)								   != NYCE_OK )
+// 		return false;
+	status = RocksStream(&m_rockMech);
+	string str = NyceGetStatusString(status);
+
+	SAC_STATE state;
+	m_pAxisX ->GetStatus(&state);
+	m_pAxisY1->GetStatus(&state);
+	m_pAxisY2->GetStatus(&state);
+	m_pAxisZ ->GetStatus(&state);
+
+	if (RocksStreamSynchronize(&m_rockMech,SAC_INDEFINITE) != NYCE_OK )
+		return false;
+
+	if (RocksMechDelete(&m_rockMech)!= NYCE_OK)
+		return false;
+
 	return true;
 }

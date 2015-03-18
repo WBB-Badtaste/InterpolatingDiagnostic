@@ -208,3 +208,21 @@ BACKSTAGE_API int WINAPI MoveInterpolating(IN_SED_PRT pSegments,const int iSum,c
 		return BACKSTAGE_MOVEINTERLOPATE_FAIL;
 	return BACKSTAGE_OK;
 }
+
+BACKSTAGE_API int WINAPI RocksArcInterpolation(char* node,char* axisX,char* axisY1,char* axisY2,char* axisZ,double dCenterX,double dCenterY,double dTime,double dAngle= 0.0)
+{
+	GANTRY_INFO gantryInfo;
+	gantryInfo.sNodeName    = node;
+	gantryInfo.sAxisName_x  = axisX;
+	gantryInfo.sAxisName_y1 = axisY1;
+	gantryInfo.sAxisName_y2 = axisY2;
+	gantryInfo.sAxisName_z  = axisZ;
+	if (!g_pNyce->RocksGantryInitialize(&gantryInfo))
+		return false;
+	POS center;
+	center.dX = dCenterX;
+	center.dY = dCenterY;
+	if (!g_pNyce->RocksGantryArcInterpolation(center,dTime))
+		return false;
+	return BACKSTAGE_OK;
+}

@@ -268,14 +268,15 @@ namespace Window
         private void Button_Click_Interpolate(object sender, RoutedEventArgs e)
         {
             bMoving = true;
-            unsafe
-            {
-                fixed (InSeg* p = &inSeg[0])
-                {
-                    int sum = inSeg.Length;
-                    int a = Backstage.MoveInterpolating(p, sum, true);
-                }
-            }
+//             unsafe
+//             {
+//                 fixed (InSeg* p = &inSeg[0])
+//                 {
+//                     int sum = inSeg.Length;
+//                     int a = Backstage.MoveInterpolating(p, sum, true);
+//                 }
+//             }
+            Backstage.RocksArcInterpolation(pNodeName, pAxisNameX, pAxisNameY1, pAxisNameY2, pAxisNameZ, 1000, 1000, 1000, 360.0);
         }
 
         private void Button_Click_GenerateFile(object sender, RoutedEventArgs e)

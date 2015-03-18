@@ -119,9 +119,6 @@ bool NyceAxis::GetMotionPars(double &dMaxSpeed, double &dMaxAcc, double &dMaxJer
 		SacReadParameter(m_id,SAC_PAR_MAX_ACC_NORMAL_MODE,&dMaxAcc)		!= NYCE_OK ||
 		SacReadParameter(m_id,SAC_PAR_MAX_JERK_NORMAL_MODE,&dMaxJerk)	!= NYCE_OK )
 		return false;
-	dMaxSpeed	= 50; 
-	dMaxAcc		= 3000;
-	dMaxJerk	= 30000;
 	return  true;
 }
 bool NyceAxis::SetStopPars(const double &dMaxAcc)
@@ -146,7 +143,7 @@ bool NyceAxis::Home()
 	for (int i = 0; i<3; ++i)
 		if (GetStatus(&state)	== true			&& 
 			state				== SAC_READY	&&
-			SacHome(m_id)		== NYCE_OK		)
+			SacHome(m_id)		== NYCE_OK		) 
 			return true;
 	return false;
 }
