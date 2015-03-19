@@ -46,15 +46,18 @@ bool NyceAxis::Align()
 {
 	if (m_status != AXIS_CONNECTED)
 		return false;
-	if (SacShutdown(m_id)									!= NYCE_OK ||
-		SacSynchronize( m_id, SAC_REQ_SHUTDOWN, 1.0 )		!= NYCE_OK ||
-		SacInitialize( m_id, SAC_USE_FLASH )				!= NYCE_OK ||
-		SacSynchronize( m_id, SAC_REQ_INITIALIZE, 1.0 )		!= NYCE_OK ||
-		SacReset( m_id)										!= NYCE_OK ||
-		SacSynchronize( m_id, SAC_REQ_RESET, 1.0 )			!= NYCE_OK ||
-		SacGetAxisConfiguration( m_id, &m_configure_pars )	!= NYCE_OK )
+// 	if (SacShutdown(m_id)									!= NYCE_OK ||
+// 		SacSynchronize( m_id, SAC_REQ_SHUTDOWN, 1.0 )		!= NYCE_OK )
+// 		return false;
+// 	if (SacInitialize( m_id, SAC_USE_FLASH )				!= NYCE_OK ||
+// 		SacSynchronize( m_id, SAC_REQ_INITIALIZE, 1.0 )		!= NYCE_OK )
+// 		return false;
+	if (SacReset( m_id)										!= NYCE_OK ||
+		SacSynchronize( m_id, SAC_REQ_RESET, 1.0 )			!= NYCE_OK )
 		return false;
-	if (m_configure_pars.motorType										== SAC_BRUSHLESS_AC_MOTOR &&
+// 	if (SacGetAxisConfiguration( m_id, &m_configure_pars )	!= NYCE_OK )
+// 		return false;
+	if (/*m_configure_pars.motorType										== SAC_BRUSHLESS_AC_MOTOR &&*/
 		SacAlignMotor(m_id)												!= NYCE_OK ||
 		SacSynchronize( m_id, SAC_REQ_ALIGN_MOTOR, SAC_INDEFINITE )		!= NYCE_OK )
 		return false;
@@ -71,7 +74,7 @@ bool NyceAxis::Reset()
 	if (SacReset(m_id)											!= NYCE_OK ||
 		SacSynchronize( m_id, SAC_REQ_RESET, SAC_INDEFINITE)	!= NYCE_OK ||
 		SacLock( m_id )											!= NYCE_OK ||
-		SacSynchronize( m_id, SAC_REQ_LOCK, SAC_INDEFINITE )	!= NYCE_OK )
+		SacSynchronize( m_id, SAC_REQ_LOCK, 1.0 )	!= NYCE_OK )
 		return false;
 	return true;
 }
@@ -143,7 +146,8 @@ bool NyceAxis::Home()
 	for (int i = 0; i<3; ++i)
 		if (GetStatus(&state)	== true			&& 
 			state				== SAC_READY	&&
-			SacHome(m_id)		== NYCE_OK		) 
+			SacHome(m_id)		== NYCE_OK		&&
+			SacSynchronize( m_id, SAC_REQ_HOMING_COMPLETED, 1.0 ) == NYCE_OK )
 			return true;
 	return false;
 }

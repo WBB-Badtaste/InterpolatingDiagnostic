@@ -209,7 +209,7 @@ BACKSTAGE_API int WINAPI MoveInterpolating(IN_SED_PRT pSegments,const int iSum,c
 	return BACKSTAGE_OK;
 }
 
-BACKSTAGE_API int WINAPI RocksArcInterpolation(char* node,char* axisX,char* axisY1,char* axisY2,char* axisZ,double dCenterX,double dCenterY,double dTime,double dAngle= 0.0)
+BACKSTAGE_API int WINAPI RocksGantryInitialize(char* node,char* axisX,char* axisY1,char* axisY2,char* axisZ)
 {
 	GANTRY_INFO gantryInfo;
 	gantryInfo.sNodeName    = node;
@@ -218,11 +218,23 @@ BACKSTAGE_API int WINAPI RocksArcInterpolation(char* node,char* axisX,char* axis
 	gantryInfo.sAxisName_y2 = axisY2;
 	gantryInfo.sAxisName_z  = axisZ;
 	if (!g_pNyce->RocksGantryInitialize(&gantryInfo))
-		return false;
+		return BACKSTAGE_ROCKGANRTYINIT_FAIL;
+	return BACKSTAGE_OK;
+}
+
+EXTERN_C BACKSTAGE_API int WINAPI RocksGantryTerminal()
+{
+	if (!g_pNyce->RocksGantryTerminal())
+		return BACKSTAGE_ROCKGANRTYTERM_FAIL;
+	return BACKSTAGE_OK;
+}
+
+BACKSTAGE_API int WINAPI RocksGanrtyArcInterpolation(double dCenterX,double dCenterY,double dTime,double dAngle)
+{
 	POS center;
 	center.dX = dCenterX;
 	center.dY = dCenterY;
 	if (!g_pNyce->RocksGantryArcInterpolation(center,dTime))
-		return false;
+		return BACKSTAGE_ROCKGANRTYSARCIN_FAIL;
 	return BACKSTAGE_OK;
 }

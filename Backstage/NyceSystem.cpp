@@ -683,15 +683,25 @@ bool NyceSystem::RocksGantryInitialize(GANTRY_INFO *pGantryInfo)
 	m_pAxisZ	= m_nodeMap[pGantryInfo->sNodeName]->GetAxis(pGantryInfo->sAxisName_z);
 	m_rockMech.dof [0] = TRUE;//x
 	m_rockMech.dof [1] = TRUE;//y
-	m_rockMech.dof [2] = FALSE;//z
+	m_rockMech.dof [2] = TRUE;//z
 	m_rockMech.dof [3] = FALSE;
 	m_rockMech.dof [4] = FALSE;
 	m_rockMech.dof [5] = FALSE;
 	m_rockMech.nrOfJoints = 4;
 	m_rockMech.jointAxisId[0] = m_pAxisX->m_id;
 	m_rockMech.jointAxisId[1] = m_pAxisY1->m_id;
-	m_rockMech.jointAxisId[2] = m_pAxisY2->m_id;
-	m_rockMech.jointAxisId[3] = m_pAxisZ->m_id;
+  	m_rockMech.jointAxisId[2] = m_pAxisY2->m_id;
+  	m_rockMech.jointAxisId[3] = m_pAxisZ->m_id; 
+
+	if (RocksMechCreate(&m_rockMech) != NYCE_OK)
+		return false;
+	return true;
+}
+
+bool NyceSystem::RocksGantryTerminal()
+{
+	if (RocksMechDelete(&m_rockMech) != NYCE_OK)
+		return false;
 	return true;
 }
 
@@ -715,26 +725,27 @@ bool NyceSystem::InitalizeRocksTrajCirclePars(POS &center,double &dTime,ROCKS_TR
 			ÓÐÎÊÌâ	
 
 	 ********************************/
- 	if (RocksKinGantryPosition(&m_rockMech,rocksTrajCirclePars.startPos) != NYCE_OK)
- 		return false;
+//  	if (RocksKinGantryPosition(&m_rockMech,rocksTrajCirclePars.startPos) != NYCE_OK)
+//  		return false;
+	if (RocksKinCartesianPosition(&m_rockMech,rocksTrajCirclePars.startPos) != NYCE_OK)
+		return false;
 	rocksTrajCirclePars.center[0]			  = center.dX;
 	rocksTrajCirclePars.center[1]			  = center.dY;
-	rocksTrajCirclePars.angle				  = 360.0;
+	rocksTrajCirclePars.angle				  = M_PI * 2.0;
 	rocksTrajCirclePars.plane				  = ROCKS_PLANE_XY;
 	rocksTrajCirclePars.maxVelocity			  = 300;//min(min(min(dVelX,dVelY1),dVelY2),dVelZ);
-	rocksTrajCirclePars.maxAcceleration		  = 3000;//min(min(min(dAccX,dAccY1),dAccY2),dAccZ);
-	rocksTrajCirclePars.splineTime			  = dTime;
+	rocksTrajCirclePars.maxAcceleration		  = 1000;//min(min(min(dAccX,dAccY1),dAccY2),dAccZ);
+	rocksTrajCirclePars.splineTime			  = 0.01;
 	rocksTrajCirclePars.maxNrOfSplines		  = 0;
 	rocksTrajCirclePars.pPositionSplineBuffer = NULL;
 	rocksTrajCirclePars.pVelocitySplineBuffer = NULL;
+	
 	return true;
 }
 
+
 bool NyceSystem::RocksGantryArcInterpolation(POS &center,double &dTime)
 {
-	if (RocksMechCreate(&m_rockMech) != NYCE_OK)
-		return false;
-
 	ROCKS_TRAJ_SINE_ACC_CIRCLE_PARS rocksTrajCirclePars;
 	 
 	ROCKS_KIN_INV_PARS kinInvPars;
@@ -743,34 +754,96 @@ bool NyceSystem::RocksGantryArcInterpolation(POS &center,double &dTime)
 		kinInvPars.pJointPositionBuffer[i] = NULL;
 		kinInvPars.pJointVelocityBuffer[i] = NULL;
 	}
-
-	NYCE_STATUS status;
-// 	if (RocksKinDefineGantry(&m_rockMech,ROCKS_GANTRY_Y)		   != NYCE_OK )
-// 		return false;
+	
 	if (!InitalizeRocksTrajCirclePars(center,dTime,rocksTrajCirclePars))
 		return false;
 	if (RocksTrajSineAccCircle(&m_rockMech,&rocksTrajCirclePars)   != NYCE_OK )
 		return false;
-// 	if (RocksKinInverseGantry(&m_rockMech,&kinInvPars)			   != NYCE_OK )
+	if (RocksKinDefineGantry(&m_rockMech,ROCKS_GANTRY_Y)		   != NYCE_OK )
+		return false;
+	if (RocksKinInverseGantry(&m_rockMech,&kinInvPars)			   != NYCE_OK )
+		return false;
+// 	if (RocksKinInverseCartesian(&m_rockMech,&kinInvPars)		   != NYCE_OK )
 // 		return false;
-	if (RocksKinInverseCartesian(&m_rockMech,&kinInvPars)		   != NYCE_OK )
+	if (RocksStream(&m_rockMech)								   != NYCE_OK )
+ 	{
+#ifdef _DEBUG
+		NYCE_STATUS status = RocksStream(&m_rockMech);
+		string str = NyceGetStatusString(status);
+#endif // _DEBUG
 		return false;
-// 	if (RocksStream(&m_rockMech)								   != NYCE_OK )
+	}
+	
+
+// 	if (RocksStreamSynchronize(&m_rockMech,SAC_INDEFINITE) != NYCE_OK )
 // 		return false;
-	status = RocksStream(&m_rockMech);
-	string str = NyceGetStatusString(status);
-
-	SAC_STATE state;
-	m_pAxisX ->GetStatus(&state);
-	m_pAxisY1->GetStatus(&state);
-	m_pAxisY2->GetStatus(&state);
-	m_pAxisZ ->GetStatus(&state);
-
-	if (RocksStreamSynchronize(&m_rockMech,SAC_INDEFINITE) != NYCE_OK )
-		return false;
-
-	if (RocksMechDelete(&m_rockMech)!= NYCE_OK)
-		return false;
+// 
 
 	return true;
 }
+
+
+// bool NyceSystem::RocksGantryArcInterpolation(POS &center,double &dTime)
+// {
+// 	SineAcc(100, 100, 0, 0, 0, 0, 50, 500);
+// // 	SineAcc(-30, -10, 0, 0, 0, 0, 5, 50);
+// // 	SineAcc(30, 10, 0, 0, 0, 0, 5, 50);
+// // 	SineAcc(-30, -10, 0, 0, 0, 0, 5, 50);
+// 	return true;
+// }
+// 
+// NYCE_STATUS NyceSystem::SineAcc(double endPos0, double endPos1, double endPos2, double endPos3, double endPos4, double endPos5, double  maxVel, double maxAcc)
+// {
+// 	int			i;
+// 	NYCE_STATUS	nyceStatus;
+// 	ROCKS_TRAJ_SINE_ACC_PTP_PARS	rockPtpPars;
+// 	ROCKS_KIN_INV_PARS				kinInvParBuf;
+// 
+// 	if (RocksMechCreate(&m_rockMech) != NYCE_OK)
+// 		return false;
+// 
+// 	if (RocksKinDefineGantry(&m_rockMech,ROCKS_GANTRY_Y)		   != NYCE_OK )
+// 		return false;
+// 
+// 	// get Start Positions in world Coordinates
+// 	nyceStatus = RocksKinGantryPosition(&m_rockMech, rockPtpPars.startPos);
+//  
+// 	rockPtpPars.splineTime				= 0.1;
+// 	rockPtpPars.endPos[0]				= endPos0;
+// 	rockPtpPars.endPos[1]				= endPos1;
+// 	rockPtpPars.endPos[2]				= endPos2;
+// 	rockPtpPars.endPos[3]				= endPos3;
+// 	rockPtpPars.endPos[4]				= endPos4;
+// 	rockPtpPars.endPos[5]				= endPos5;
+// 	rockPtpPars.maxVelocity				= maxVel;
+// 	rockPtpPars.maxAcceleration			= maxAcc;
+// 	rockPtpPars.maxNrOfSplines			= 0;
+// 	rockPtpPars.pVelocitySplineBuffer	= NULL;
+// 	rockPtpPars.pPositionSplineBuffer	= NULL;
+// 	//
+// 	// Create trajectory
+// 	nyceStatus = RocksTrajSineAccPtp(&m_rockMech, &rockPtpPars);
+//  
+// 	//
+// 	// Convert to joint splines 
+// 	for (i=0; i<ROCKS_MECH_MAX_NR_OF_JOINTS; i++)
+// 	{
+// 		kinInvParBuf.pJointPositionBuffer[i] = NULL;
+// 		kinInvParBuf.pJointVelocityBuffer[i] = NULL;
+// 	}
+// 	nyceStatus = RocksKinInverseGantry(&m_rockMech,&kinInvParBuf);
+//  
+// 	//
+// 	//  stream it
+// 	nyceStatus = RocksStream(&m_rockMech);
+// 	string str = NyceGetStatusString(nyceStatus);
+// /*	nyceStatus = RocksStreamSynchronize (&m_rockMech, 30);*/
+// 	
+// 	if (RocksMechDelete(&m_rockMech) != NYCE_OK)
+// 		return false;
+// 
+// 	return(nyceStatus);
+// }
+
+
+

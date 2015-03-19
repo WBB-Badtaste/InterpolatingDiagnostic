@@ -180,6 +180,15 @@ namespace Window
                 listBox_result.Items.Add(new TextBox() { Text = "完成初始化。" });
                 bInit = true;
                 Seletion();
+
+                if (Backstage.RocksGantryInitialize(pNodeName, pAxisNameX, pAxisNameY1, pAxisNameY2, pAxisNameZ) == Backstage.OK)
+                {
+                    listBox_result.Items.Add(new TextBox() { Text = "完成龙门结构初始化。" });
+                }
+                else
+                {
+                    listBox_result.Items.Add(new TextBox() { Text = "龙门结构初始化失败！" });
+                }
             }          
         }
 
@@ -202,7 +211,8 @@ namespace Window
                 return;
             bWorking = false;
             Thread.Sleep(1000);
-            if (Backstage.Terminate() == 0)
+            if (Backstage.RocksGantryTerminal() == Backstage.OK &&
+                Backstage.Terminate()           == Backstage.OK )
                 bInit = false;
             Marshal.FreeHGlobal(pNodeName);
             Marshal.FreeHGlobal(pAxisNameX);
@@ -268,6 +278,7 @@ namespace Window
         private void Button_Click_Interpolate(object sender, RoutedEventArgs e)
         {
             bMoving = true;
+
 //             unsafe
 //             {
 //                 fixed (InSeg* p = &inSeg[0])
@@ -276,7 +287,15 @@ namespace Window
 //                     int a = Backstage.MoveInterpolating(p, sum, true);
 //                 }
 //             }
-            Backstage.RocksArcInterpolation(pNodeName, pAxisNameX, pAxisNameY1, pAxisNameY2, pAxisNameZ, 1000, 1000, 1000, 360.0);
+
+            if (Backstage.RocksGanrtyArcInterpolation(150, 0, 0.1, 360.0) != Backstage.OK)
+            {
+                listBox_result.Items.Add(new TextBox() { Text = "启动插补运动失败！" });
+            }
+            else 
+            {
+                listBox_result.Items.Add(new TextBox() { Text = "正常启动插补运动。" });
+            }
         }
 
         private void Button_Click_GenerateFile(object sender, RoutedEventArgs e)

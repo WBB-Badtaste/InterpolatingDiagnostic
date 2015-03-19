@@ -57,6 +57,7 @@ public:
 	bool							GetInSeg_Cicle_xy(const IN_INFO * const pInInfo,IN_SED_PRT const pSegments);
 	bool							MoveInterpolating(IN_SED_PRT pSegments,const int &iSum,const bool &bAbsolute);
 	bool							RocksGantryInitialize(GANTRY_INFO *pGantryInfo);
+	bool							RocksGantryTerminal();
 	bool							RocksGantryArcInterpolation(POS &center,double &dTime);
 private:
 	SYSTEM_STATUS					m_status;
@@ -72,5 +73,7 @@ private:
 	bool							ModifyInSegPars_V(const double &dDistance,double &dVel,double &dAcc, double &dTime,const double &dMVel,const double &dMAcc,const double &dJerk);
 
 	bool							InitalizeRocksTrajCirclePars(POS &center,double &dTime,ROCKS_TRAJ_SINE_ACC_CIRCLE_PARS &rocksTrajCirclePars);
+
+	NYCE_STATUS						SineAcc(double endPos0, double endPos1, double endPos2, double endPos3, double endPos4, double endPos5, double  maxVel, double maxAcc);
 };
 

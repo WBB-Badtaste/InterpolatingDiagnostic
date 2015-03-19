@@ -50,8 +50,12 @@ namespace Window
         public extern static int GetAxisStopPars(IntPtr axName,ref double dMaxAcc);
         [DllImport("Backstage.dll", EntryPoint = "SetAxisStopPars", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public extern static int SetAxisStopPars(IntPtr axName,double dMaxAcc);
-        [DllImport("Backstage.dll", EntryPoint = "RocksArcInterpolation", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        public extern static int RocksArcInterpolation(IntPtr node,IntPtr axX,IntPtr axY1,IntPtr axY2,IntPtr axZ, double cX,double cY,double time,double angle);
+        [DllImport("Backstage.dll", EntryPoint = "RocksGantryInitialize", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public extern static int RocksGantryInitialize(IntPtr node, IntPtr axX, IntPtr axY1, IntPtr axY2, IntPtr axZ);
+        [DllImport("Backstage.dll", EntryPoint = "RocksGantryTerminal", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public extern static int RocksGantryTerminal();
+        [DllImport("Backstage.dll", EntryPoint = "RocksGanrtyArcInterpolation", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public extern static int RocksGanrtyArcInterpolation(double cX, double cY, double time, double angle);
 
         public static int OK                = 10000;
         public static int INITALIZE_FAIL    = 10001;

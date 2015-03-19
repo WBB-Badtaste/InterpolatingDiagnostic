@@ -42,5 +42,9 @@ EXTERN_C BACKSTAGE_API int WINAPI SetAxisStopPars(char*, double);
 EXTERN_C BACKSTAGE_API int WINAPI GetInSeg_Circle(const double *dCurX, const double *dCurY, const double *dRadius,IN_SED_PRT const pSegments,const int *segSum);
 //插补运动
 EXTERN_C BACKSTAGE_API int WINAPI MoveInterpolating(IN_SED_PRT pSegments,const int iSum,const bool bAbsolute);
+//初始化龙门运动结构
+EXTERN_C BACKSTAGE_API int WINAPI RocksGantryInitialize(char* node,char* axisX,char* axisY1,char* axisY2,char* axisZ);
+//注销龙门运动结构
+EXTERN_C BACKSTAGE_API int WINAPI RocksGantryTerminal();
 //Rocks圆弧插补
-EXTERN_C BACKSTAGE_API int WINAPI RocksArcInterpolation(char* node,char* axisX,char* axisY1,char* axisY2,char* axisZ,double dCenterX,double dCenterY,double dTime,double dAngle);
+EXTERN_C BACKSTAGE_API int WINAPI RocksGanrtyArcInterpolation(double dCenterX,double dCenterY,double dTime,double dAngle);
