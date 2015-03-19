@@ -23,6 +23,12 @@ bool NyceAxis::Connect()
 		return true;
 	if (SacConnect(m_name.c_str(), &m_id)	!= NYCE_OK )
 		return false;
+  	if (SacShutdown(m_id)									!= NYCE_OK ||
+  		SacSynchronize( m_id, SAC_REQ_SHUTDOWN, 1.0 )		!= NYCE_OK )
+  		return false;
+  	if (SacInitialize( m_id, SAC_USE_FLASH )				!= NYCE_OK ||
+  		SacSynchronize( m_id, SAC_REQ_INITIALIZE, 1.0 )		!= NYCE_OK )
+  		return false;
 	m_status = AXIS_CONNECTED;
 	return true;
 }
@@ -46,12 +52,12 @@ bool NyceAxis::Align()
 {
 	if (m_status != AXIS_CONNECTED)
 		return false;
-// 	if (SacShutdown(m_id)									!= NYCE_OK ||
-// 		SacSynchronize( m_id, SAC_REQ_SHUTDOWN, 1.0 )		!= NYCE_OK )
-// 		return false;
-// 	if (SacInitialize( m_id, SAC_USE_FLASH )				!= NYCE_OK ||
-// 		SacSynchronize( m_id, SAC_REQ_INITIALIZE, 1.0 )		!= NYCE_OK )
-// 		return false;
+//  	if (SacShutdown(m_id)									!= NYCE_OK ||
+//  		SacSynchronize( m_id, SAC_REQ_SHUTDOWN, 1.0 )		!= NYCE_OK )
+//  		return false;
+//  	if (SacInitialize( m_id, SAC_USE_FLASH )				!= NYCE_OK ||
+//  		SacSynchronize( m_id, SAC_REQ_INITIALIZE, 1.0 )		!= NYCE_OK )
+//  		return false;
 	if (SacReset( m_id)										!= NYCE_OK ||
 		SacSynchronize( m_id, SAC_REQ_RESET, 1.0 )			!= NYCE_OK )
 		return false;
@@ -62,7 +68,7 @@ bool NyceAxis::Align()
 		SacSynchronize( m_id, SAC_REQ_ALIGN_MOTOR, SAC_INDEFINITE )		!= NYCE_OK )
 		return false;
 	if (SacLock(m_id)								!= NYCE_OK ||
-		SacSynchronize( m_id, SAC_REQ_LOCK, 1.0 )	!= NYCE_OK )
+		SacSynchronize( m_id, SAC_REQ_LOCK, 2.0 )	!= NYCE_OK )
 		return false;
 	return true;
 }
