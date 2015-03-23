@@ -90,8 +90,8 @@ void GetInPars(const AXIS_PARS * const pAxisInfos,const ARC_INFO * const pArcInf
 	bufAngVel = pow(pAxisInfos->axisPars_y.dMaxJerk / pArcInfo->dRadius,1.0 / 3.0);
 	if (pArcInBuffer->dAngVel > bufAngVel) pArcInBuffer->dAngVel = bufAngVel;
 
-	pArcInBuffer->inPars.dMaxVel = pArcInfo->dRadius * pArcInBuffer->dAngVel;
-	pArcInBuffer->inPars.dMaxAcc = pArcInfo->dRadius * pArcInBuffer->dAngVel * pArcInBuffer->dAngVel;
+	pArcInBuffer->inPars.dMaxVel  = pArcInfo->dRadius * pArcInBuffer->dAngVel;
+	pArcInBuffer->inPars.dMaxAcc  = pArcInfo->dRadius * pArcInBuffer->dAngVel * pArcInBuffer->dAngVel;
 	pArcInBuffer->inPars.dMaxJerk = pArcInfo->dRadius * pArcInBuffer->dAngVel * pArcInBuffer->dAngVel * pArcInBuffer->dAngVel;
 }
 
@@ -120,3 +120,5 @@ void GenerateArcSeg(const AXIS_PARS * const pAxisInfos,const ARC_INFO * const pA
 	ARCIN_BUFFER arcInBuffer;
 	GetInPars(pAxisInfos,pArcInfo,&arcInBuffer);
 }
+
+

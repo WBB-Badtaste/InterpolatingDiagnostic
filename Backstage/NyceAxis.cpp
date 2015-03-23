@@ -26,6 +26,7 @@ bool NyceAxis::Connect()
   	if (SacShutdown(m_id)									!= NYCE_OK ||
   		SacSynchronize( m_id, SAC_REQ_SHUTDOWN, 1.0 )		!= NYCE_OK )
   		return false;
+	Sleep(100);
   	if (SacInitialize( m_id, SAC_USE_FLASH )				!= NYCE_OK ||
   		SacSynchronize( m_id, SAC_REQ_INITIALIZE, 1.0 )		!= NYCE_OK )
   		return false;
