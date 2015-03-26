@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Types.h"
-
+#include <process.h>
 #include "gsl/gsl_poly.h"
 
 //轴参数子集
@@ -206,31 +206,6 @@ typedef struct StreamThreadInformation
 	KIN_PARS *pKinPars;
 }STREAM_TH_INFO;
 
-//生成spline
-static bool PathConverToSpline(const KIN_PARS *const pKinPars)
-{
-	STREAM_TH_INFO *pInfo = new STREAM_TH_INFO();
-	pInfo->pCubPars_x = new SAC_CUB_PARS[iPathSegSum]();
-	pInfo->pCubPars_x = new SAC_CUB_PARS[iPathSegSum]();
-	pInfo->pCubPars_x = new SAC_CUB_PARS[iPathSegSum]();
-	pInfo->pKinPars = pKinPars;
-	for (int index = 0; index < iPathSegSum; ++index)
-	{
-		double dAngle(pPathSeg[iPathSegSum]->dPosition / dRadius);
-
-	}
-	HANDLE h=(HANDLE)_beginthreadex(NULL,0,StreamThread,pInfo,0,NULL);
-	
-	return true;
-} 
-
-
-
-static bool StreamStart()
-{
-	
-}
-
 static unsigned WINAPI StreamThread( LPVOID lpParameter )
 {
 	STREAM_TH_INFO *pInfo=(STREAM_TH_INFO*)lpParameter;
@@ -239,7 +214,7 @@ static unsigned WINAPI StreamThread( LPVOID lpParameter )
 	MacDefineSyncGroup(pInfo->pKinPars->jointAxisId, pInfo->pKinPars->nrOfJoints, &uGroundId);
 	SacClearInterpolantBuffer(pInfo->pKinPars->jointAxisId[0]);
 	SacClearInterpolantBuffer(pInfo->pKinPars->jointAxisId[1]);
-	MacStartSyncGroup(uGroundId);
+	MacStartSyncGroup(uGroundId,MAC_SYNC_MOTION);
 	MacDeleteSyncGroup(uGroundId);
 
 	delete[] pPathSeg;
@@ -248,3 +223,26 @@ static unsigned WINAPI StreamThread( LPVOID lpParameter )
 	delete[] pInfo->pCubPars_z;
 	delete pInfo;
 }
+
+//生成spline
+static bool PathConverToSpline(KIN_PARS *const pKinPars)
+{
+	STREAM_TH_INFO *pInfo = new STREAM_TH_INFO();
+	pInfo->pCubPars_x = new SAC_CUB_PARS[iPathSegSum]();
+	pInfo->pCubPars_x = new SAC_CUB_PARS[iPathSegSum]();
+	pInfo->pCubPars_x = new SAC_CUB_PARS[iPathSegSum]();
+	pInfo->pKinPars = pKinPars;
+	for (int index = 0; index < iPathSegSum; ++index)
+	{
+		double dAngle((pPathSeg+iPathSegSum)->dPosition / dRadius);
+	}
+	HANDLE h=(HANDLE)_beginthreadex(NULL,0,StreamThread,pInfo,0,NULL);
+	
+	return true;
+} 
+
+static bool StreamStart()
+{
+	
+}
+
