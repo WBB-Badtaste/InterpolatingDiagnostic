@@ -24,11 +24,10 @@ bool NyceAxis::Connect()
 	if (SacConnect(m_name.c_str(), &m_id)	!= NYCE_OK )
 		return false;
   	if (SacShutdown(m_id)									!= NYCE_OK ||
-  		SacSynchronize( m_id, SAC_REQ_SHUTDOWN, 1.0 )		!= NYCE_OK )
+  		SacSynchronize( m_id, SAC_REQ_SHUTDOWN, 10.0 )		!= NYCE_OK )
   		return false;
-	Sleep(100);
   	if (SacInitialize( m_id, SAC_USE_FLASH )				!= NYCE_OK ||
-  		SacSynchronize( m_id, SAC_REQ_INITIALIZE, 1.0 )		!= NYCE_OK )
+  		SacSynchronize( m_id, SAC_REQ_INITIALIZE, 10.0 )		!= NYCE_OK )
   		return false;
 	m_status = AXIS_CONNECTED;
 	return true;
@@ -131,6 +130,7 @@ bool NyceAxis::GetMotionPars(double &dMaxSpeed, double &dMaxAcc, double &dMaxJer
 		return false;
 	return  true;
 }
+
 bool NyceAxis::SetStopPars(const double &dMaxAcc)
 {
 	if (m_status != AXIS_CONNECTED										   ||
@@ -138,6 +138,7 @@ bool NyceAxis::SetStopPars(const double &dMaxAcc)
 		return false;
 	return true;
 }
+
 bool NyceAxis::GetStopPars(double &dMaxAcc)
 {
 	if (m_status != AXIS_CONNECTED										   ||
@@ -145,6 +146,7 @@ bool NyceAxis::GetStopPars(double &dMaxAcc)
 		return false;
 	return true;
 }
+
 bool NyceAxis::Home()
 {
 	if (m_status != AXIS_CONNECTED)

@@ -34,4 +34,5 @@
 #include "dehtypes.h"
 
 #include "rocksenums.h"
+#include "Interpolation.h"
 

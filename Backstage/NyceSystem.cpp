@@ -741,7 +741,7 @@ bool NyceSystem::InitalizeRocksTrajCirclePars(POS &center,double &dTime,ROCKS_TR
 
 bool NyceSystem::RocksGantryArcInterpolation(POS &center,double &dTime)
 {
-	ROCKS_TRAJ_SINE_ACC_CIRCLE_PARS rocksTrajCirclePars;
+/*	ROCKS_TRAJ_SINE_ACC_CIRCLE_PARS rocksTrajCirclePars;*/
 	 
 	ROCKS_KIN_INV_PARS kinInvPars;
 	for (int i=0;i<ROCKS_MECH_MAX_NR_OF_JOINTS;++i)
@@ -769,7 +769,7 @@ bool NyceSystem::RocksGantryArcInterpolation(POS &center,double &dTime)
 	myTrajSegArcPars.endVelocity = 300;
 	myTrajSegArcPars.plane = ROCKS_PLANE_XY;
 	myTrajSegArcPars.maxAcceleration = 1000; 
-	myTrajSegArcPars.originOffset.r.x = M_PI / 4.0;
+	myTrajSegArcPars.originOffset.r.x = M_PI_4;
 	myTrajSegArcPars.originOffset.r.y = 0;
 	myTrajSegArcPars.originOffset.r.z = 0;
 	myTrajSegArcPars.originOffset.t.x = 0;
@@ -787,7 +787,7 @@ bool NyceSystem::RocksGantryArcInterpolation(POS &center,double &dTime)
 	myTrajSegArcPars.endVelocity = 0;
 	myTrajSegArcPars.plane = ROCKS_PLANE_XY;
 	myTrajSegArcPars.maxAcceleration = 1000; 
-	myTrajSegArcPars.originOffset.r.x = M_PI / 4.0;
+	myTrajSegArcPars.originOffset.r.x = M_PI_4;
 	myTrajSegArcPars.originOffset.r.y = 0;
 	myTrajSegArcPars.originOffset.r.z = 0;
 	myTrajSegArcPars.originOffset.t.x = 0;
@@ -808,17 +808,20 @@ bool NyceSystem::RocksGantryArcInterpolation(POS &center,double &dTime)
 	if (RocksKinInverseCartesian(&m_rockMech,&kinInvPars)		   != NYCE_OK )
 		return false;
 
-	if (SacClearInterpolantBuffer(m_rockMech.jointAxisId[2])	   != NYCE_OK)
-		return false;
-
-	if (RocksStream(&m_rockMech)								   != NYCE_OK )
- 	{
+// 	if (SacClearInterpolantBuffer(m_rockMech.jointAxisId[2])	   != NYCE_OK)
+// 		return false;
 #ifdef _DEBUG
-		NYCE_STATUS status = RocksStream(&m_rockMech); 
+	NYCE_STATUS status = RocksStream(&m_rockMech); 
+	if (status!= NYCE_OK)
+	{
 		string str = NyceGetStatusString(status);
-#endif // _DEBUG
 		return false;
 	}
+#else
+	if (RocksStream(&m_rockMech)								   != NYCE_OK )
+		return false;
+#endif
+
 
 
 // 	if (RocksStreamSynchronize(&m_rockMech,SAC_INDEFINITE) != NYCE_OK )
