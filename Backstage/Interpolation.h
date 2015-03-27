@@ -2,6 +2,7 @@
 
 #include "Types.h"
 #include <process.h>
+#include <math.h>
 #include "gsl/gsl_poly.h"
 
 //轴参数子集
@@ -70,6 +71,8 @@ public:
 //路径指针
 static PATH_SEG* pPathSeg(nullptr);
 static int iPathSegSum(0);
+static ARC_PARS arcPars;
+
 static POSITION center;
 static double dRadius;
 
@@ -214,6 +217,29 @@ static unsigned WINAPI StreamThread( LPVOID lpParameter )
 	MacDefineSyncGroup(pInfo->pKinPars->jointAxisId, pInfo->pKinPars->nrOfJoints, &uGroundId);
 	SacClearInterpolantBuffer(pInfo->pKinPars->jointAxisId[0]);
 	SacClearInterpolantBuffer(pInfo->pKinPars->jointAxisId[1]);
+	for (int sum = iPathSegSum,i = 0;sum>0;sum -= 16, ++i)
+	{
+		if (i * 16 > 200)
+		continue;
+		if (sum > 16)
+		{
+			if(SacWriteCubicIntBuffer(pInfo->pKinPars->jointAxisId[0],16,pInfo->pCubPars_x + 16 * i) !=NYCE_OK)
+				return false;
+			if(SacWriteCubicIntBuffer(pInfo->pKinPars->jointAxisId[1],16,pInfo->pCubPars_y + 16 * i) !=NYCE_OK)
+				return false;
+		}
+		else
+		{
+			if(SacWriteCubicIntBuffer(pInfo->pKinPars->jointAxisId[0],sum,pInfo->pCubPars_x + 16 * i) !=NYCE_OK)
+				return false;
+			if(SacWriteCubicIntBuffer(pInfo->pKinPars->jointAxisId[1],sum,pInfo->pCubPars_y + 16 * i) !=NYCE_OK)
+				return false;
+		}
+	}
+	if (SacStartInterpolation(pInfo->pKinPars->jointAxisId[0]) != NYCE_OK)
+		return false;
+	if (SacStartInterpolation(pInfo->pKinPars->jointAxisId[1]) != NYCE_OK)
+		return false;
 	MacStartSyncGroup(uGroundId,MAC_SYNC_MOTION);
 	MacDeleteSyncGroup(uGroundId);
 
@@ -234,10 +260,25 @@ static bool PathConverToSpline(KIN_PARS *const pKinPars)
 	pInfo->pKinPars = pKinPars;
 	for (int index = 0; index < iPathSegSum; ++index)
 	{
-		double dAngle((pPathSeg+iPathSegSum)->dPosition / dRadius);
+		PATH_SEG *pSeg(pPathSeg + iPathSegSum);
+		double dAngle(pSeg->dPosition / dRadius);
+		SAC_CUB_PARS *pCubPars(pInfo->pCubPars_x + iPathSegSum);
+		pCubPars->splineId = iPathSegSum;
+		pCubPars->position = dRadius * cos(dAngle);
+		pCubPars->positionReference = SAC_ABSOLUTE;
+		pCubPars->time = 0.01;
+		pCubPars->velocity = -dRadius * sin(dAngle);
+		pCubPars->generateEvent = FALSE;
+
+		pCubPars = pInfo->pCubPars_y + iPathSegSum;
+		pCubPars->splineId = iPathSegSum;
+		pCubPars->position = dRadius * cos(dAngle);
+		pCubPars->positionReference = SAC_ABSOLUTE;
+		pCubPars->time = 0.01;
+		pCubPars->velocity = -dRadius * sin(dAngle);
+		pCubPars->generateEvent = FALSE;
 	}
 	HANDLE h=(HANDLE)_beginthreadex(NULL,0,StreamThread,pInfo,0,NULL);
-	
 	return true;
 } 
 
