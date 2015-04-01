@@ -3,8 +3,10 @@
 #include "Types.h"
 #include <process.h>
 #include <math.h>
+#include <string>
 #include "gsl/gsl_poly.h"
 
+using namespace std;
 //轴参数子集
 typedef class MotionStatus
 {
@@ -114,7 +116,7 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 
 	 ***********************************/
 	double cdDis1(cdVelS * dTime1 + 0.5 * cdAcc1 * dTime1 * dTime1);
-	double cdDis2(cdMaxVel * dTime2 +0.5 * cdAcc2 * dTime2 * dTime2);
+	double cdDis2(cdMaxVel * dTime3 +0.5 * cdAcc2 * dTime3 * dTime3);
  	if (cdDis1 + cdDis2 > cdDistance)
 	{
 		/*****************************************************
@@ -134,7 +136,8 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 		dTime1 = (cdVelE - cdVelS - cdAcc2 * dTime3) / cdAcc1;
 	}
 	else
-		double dTime3((cdDistance - cdDis1 -cdDis2) / cdMaxVel);
+		dTime2 = (cdDistance - cdDis1 -cdDis2) / cdMaxVel;
+
 
 	const double dUinformTimePoint(dTime1);
 	const double dDecelerateTimePoint(dTime1 + dTime2);
@@ -167,18 +170,18 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 		{
 			pSeg->dPosition = cdVelS * dPassTime + 0.5 * cdAcc1 * dPassTime * dPassTime;
 			pSeg->dVelocity = cdVelS + cdAcc1 * dPassTime;
-			continue;			
+			continue;
 		}
 		if (dPassTime <= dDecelerateTimePoint)
 		{
 			double dUniformTime(dPassTime - dUinformTimePoint);
 			pSeg->dPosition = dUinformPosition + cdMaxVel * dUniformTime;
 			pSeg->dVelocity = cdMaxVel;
-			continue;			
+			continue;
 		}
 		if (dPassTime <= dCompleteTimePoint)
 		{
-			double dDecelerateTime(dPassTime - dDecelerateTimePoint);
+			double dDecelerateTime(dCompleteTimePoint -dPassTime);
 			pSeg->dPosition = dCompletePosition - (cdVelE * dDecelerateTime - 0.5 * cdAcc2 * dDecelerateTime * dDecelerateTime);
 			pSeg->dVelocity = cdVelE - cdAcc2 * dDecelerateTime;
 			continue;
@@ -206,48 +209,62 @@ public:
 typedef struct StreamThreadInformation
 {
 	SAC_CUB_PARS *pCubPars_x,*pCubPars_y,*pCubPars_z;
-	KIN_PARS *pKinPars;
+	KIN_PARS kinPars;
 }STREAM_TH_INFO;
+
 
 static unsigned WINAPI StreamThread( LPVOID lpParameter )
 {
 	STREAM_TH_INFO *pInfo=(STREAM_TH_INFO*)lpParameter;
 
 	uint32_t uGroundId;
-	MacDefineSyncGroup(pInfo->pKinPars->jointAxisId, pInfo->pKinPars->nrOfJoints, &uGroundId);
-	SacClearInterpolantBuffer(pInfo->pKinPars->jointAxisId[0]);
-	SacClearInterpolantBuffer(pInfo->pKinPars->jointAxisId[1]);
+	NYCE_STATUS status;
+	string strStatus;
+	status = MacDefineSyncGroup(pInfo->kinPars.jointAxisId, pInfo->kinPars.nrOfJoints, &uGroundId);
+	if (status != NYCE_OK)
+	{
+		strStatus =NyceGetStatusString(status);
+		return false;
+	}
+	if (SacClearInterpolantBuffer(pInfo->kinPars.jointAxisId[0])							  != NYCE_OK) 
+		return false;
+	if (SacClearInterpolantBuffer(pInfo->kinPars.jointAxisId[1])							  != NYCE_OK) 
+		return false;
 	for (int sum = iPathSegSum,i = 0;sum>0;sum -= 16, ++i)
 	{
 		if (i * 16 > 200)
-		continue;
+		break;
 		if (sum > 16)
 		{
-			if(SacWriteCubicIntBuffer(pInfo->pKinPars->jointAxisId[0],16,pInfo->pCubPars_x + 16 * i) !=NYCE_OK)
+			if(SacWriteCubicIntBuffer(pInfo->kinPars.jointAxisId[0],16,pInfo->pCubPars_x + 16 * i) !=NYCE_OK)
 				return false;
-			if(SacWriteCubicIntBuffer(pInfo->pKinPars->jointAxisId[1],16,pInfo->pCubPars_y + 16 * i) !=NYCE_OK)
+			if(SacWriteCubicIntBuffer(pInfo->kinPars.jointAxisId[1],16,pInfo->pCubPars_y + 16 * i) !=NYCE_OK)
 				return false;
 		}
 		else
 		{
-			if(SacWriteCubicIntBuffer(pInfo->pKinPars->jointAxisId[0],sum,pInfo->pCubPars_x + 16 * i) !=NYCE_OK)
+			if(SacWriteCubicIntBuffer(pInfo->kinPars.jointAxisId[0],sum,pInfo->pCubPars_x + 16 * i) !=NYCE_OK)
 				return false;
-			if(SacWriteCubicIntBuffer(pInfo->pKinPars->jointAxisId[1],sum,pInfo->pCubPars_y + 16 * i) !=NYCE_OK)
+			if(SacWriteCubicIntBuffer(pInfo->kinPars.jointAxisId[1],sum,pInfo->pCubPars_y + 16 * i) !=NYCE_OK)
 				return false;
 		}
 	}
-	if (SacStartInterpolation(pInfo->pKinPars->jointAxisId[0]) != NYCE_OK)
+	if (SacStartInterpolation(pInfo->kinPars.jointAxisId[0]) != NYCE_OK)
 		return false;
-	if (SacStartInterpolation(pInfo->pKinPars->jointAxisId[1]) != NYCE_OK)
+	if (SacStartInterpolation(pInfo->kinPars.jointAxisId[1]) != NYCE_OK)
 		return false;
-	MacStartSyncGroup(uGroundId,MAC_SYNC_MOTION);
-	MacDeleteSyncGroup(uGroundId);
+	if(MacStartSyncGroup(uGroundId,MAC_SYNC_MOTION) != NYCE_OK) 
+		return false;
+	if(MacDeleteSyncGroup(uGroundId)			    != NYCE_OK) 
+		return false;
 
 	delete[] pPathSeg;
 	delete[] pInfo->pCubPars_x;
 	delete[] pInfo->pCubPars_y;
 	delete[] pInfo->pCubPars_z;
 	delete pInfo;
+
+	return 0;
 }
 
 //生成spline
@@ -255,27 +272,29 @@ static bool PathConverToSpline(KIN_PARS *const pKinPars)
 {
 	STREAM_TH_INFO *pInfo = new STREAM_TH_INFO();
 	pInfo->pCubPars_x = new SAC_CUB_PARS[iPathSegSum]();
-	pInfo->pCubPars_x = new SAC_CUB_PARS[iPathSegSum]();
-	pInfo->pCubPars_x = new SAC_CUB_PARS[iPathSegSum]();
-	pInfo->pKinPars = pKinPars;
+	pInfo->pCubPars_y = new SAC_CUB_PARS[iPathSegSum]();
+	pInfo->pCubPars_z = new SAC_CUB_PARS[iPathSegSum]();
+	pInfo->kinPars.jointAxisId[0] = pKinPars->jointAxisId[0];
+	pInfo->kinPars.jointAxisId[1] = pKinPars->jointAxisId[1];
+	pInfo->kinPars.nrOfJoints = pKinPars->nrOfJoints;
 	for (int index = 0; index < iPathSegSum; ++index)
 	{
-		PATH_SEG *pSeg(pPathSeg + iPathSegSum);
+		PATH_SEG *pSeg(pPathSeg + index);
 		double dAngle(pSeg->dPosition / dRadius);
-		SAC_CUB_PARS *pCubPars(pInfo->pCubPars_x + iPathSegSum);
-		pCubPars->splineId = iPathSegSum;
-		pCubPars->position = dRadius * cos(dAngle);
+		SAC_CUB_PARS *pCubPars(pInfo->pCubPars_x + index);
+		pCubPars->splineId = index;
+		pCubPars->position = dRadius - dRadius * cos(dAngle);
 		pCubPars->positionReference = SAC_ABSOLUTE;
-		pCubPars->time = 0.01;
-		pCubPars->velocity = -dRadius * sin(dAngle);
+		pCubPars->time = 0.1;
+		pCubPars->velocity = pSeg->dVelocity * sin(dAngle);
 		pCubPars->generateEvent = FALSE;
 
-		pCubPars = pInfo->pCubPars_y + iPathSegSum;
-		pCubPars->splineId = iPathSegSum;
-		pCubPars->position = dRadius * cos(dAngle);
+		pCubPars = pInfo->pCubPars_y + index;
+		pCubPars->splineId = index;
+		pCubPars->position = dRadius * sin(dAngle);
 		pCubPars->positionReference = SAC_ABSOLUTE;
-		pCubPars->time = 0.01;
-		pCubPars->velocity = -dRadius * sin(dAngle);
+		pCubPars->time = 0.1;
+		pCubPars->velocity = pSeg->dVelocity * cos(dAngle);
 		pCubPars->generateEvent = FALSE;
 	}
 	HANDLE h=(HANDLE)_beginthreadex(NULL,0,StreamThread,pInfo,0,NULL);

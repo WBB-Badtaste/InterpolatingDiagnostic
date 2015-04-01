@@ -231,10 +231,25 @@ EXTERN_C BACKSTAGE_API int WINAPI RocksGantryTerminal()
 
 BACKSTAGE_API int WINAPI RocksGanrtyArcInterpolation(double dCenterX,double dCenterY,double dTime,double dAngle)
 {
-	POS center;
-	center.dX = dCenterX;
-	center.dY = dCenterY;
-	if (!g_pNyce->RocksGantryArcInterpolation(center,dTime))
-		return BACKSTAGE_ROCKGANRTYSARCIN_FAIL;
+// 	POS center;
+// 	center.dX = dCenterX;
+// 	center.dY = dCenterY;
+// 	if (!g_pNyce->RocksGantryArcInterpolation(center,dTime))
+// 		return BACKSTAGE_ROCKGANRTYSARCIN_FAIL;
+
+	ARC_PARS arcPars;
+	arcPars.centerPos.dX = 150;
+	arcPars.dAngle = M_PI * 2.0;
+	arcPars.dExtraVel = 500;
+	arcPars.dMaxVel = 300;
+	arcPars.dSplineTime = 0.1;
+	GenerateArcPath(&arcPars);
+
+	KIN_PARS kinPars;
+	kinPars.jointAxisId[0] = g_pNyce->m_pAxisX->m_id;
+	kinPars.jointAxisId[1] = g_pNyce->m_pAxisY1->m_id;
+	kinPars.nrOfJoints = 2;
+	PathConverToSpline(&kinPars);
+
 	return BACKSTAGE_OK;
 }

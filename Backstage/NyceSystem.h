@@ -62,10 +62,12 @@ public:
 private:
 	SYSTEM_STATUS					m_status;
 	map<string, NyceNode*>			m_nodeMap;
+public:
 	NyceAxis*						m_pAxisX;
 	NyceAxis*						m_pAxisY1;
 	NyceAxis*						m_pAxisY2;
 	NyceAxis*						m_pAxisZ;
+private:
 	ROCKS_MECH						m_rockMech;
 
 	bool							GetInSegPars(const double &dDistance,double &dVel, double &dAcc, double &dTime,const double &dMVel,const double &dMAcc,const double &dJerk);
