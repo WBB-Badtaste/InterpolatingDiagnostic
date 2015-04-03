@@ -238,10 +238,10 @@ BACKSTAGE_API int WINAPI RocksGanrtyArcInterpolation(double dCenterX,double dCen
 // 		return BACKSTAGE_ROCKGANRTYSARCIN_FAIL;
 
 	ARC_PARS arcPars;
-	arcPars.centerPos.dX = 150;
+	arcPars.centerPos.dX = 500;
 	arcPars.dAngle = M_PI * 2.0;
-	arcPars.dExtraVel = 500;
-	arcPars.dMaxVel = 300;
+	arcPars.dExtraVel = 10;
+	arcPars.dMaxVel = 500;
 	arcPars.dSplineTime = 0.1;
 	GenerateArcPath(&arcPars);
 

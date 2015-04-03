@@ -99,14 +99,14 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 	 *********************************************/
  	const double cdRadius(sqrt(pow(pArcPars->centerPos.dX - pArcPars->startStatus.position.dX,2.0) + pow(pArcPars->centerPos.dY -pArcPars->startStatus.position.dY,2.0) + pow(pArcPars->centerPos.dZ - pArcPars->startStatus.position.dZ,2.0)));
 	const double cdDistance(cdAngle * cdRadius);
-	const double cdDiffVel1(cdMaxVel - cdVelS);
-	const double cdDiffVel2(cdVelE - cdMaxVel);
-	const double cdAcc1(cdDiffVel1 > 0 ? pArcPars->dExtraVel : -pArcPars->dExtraVel);
-	const double cdAcc2(cdDiffVel2 > 0 ? pArcPars->dExtraVel : -pArcPars->dExtraVel);
+	const double cdDiffVelAcc(cdMaxVel - cdVelS);
+	const double cdDiffVelDec(cdVelE - cdMaxVel);
+ 	const double cdKAcc(cdDiffVelAcc > 0 ? pArcPars->dExtraVel : -pArcPars->dExtraVel);
+ 	const double cdKDec(cdDiffVelDec > 0 ? pArcPars->dExtraVel : -pArcPars->dExtraVel);
 
-	double dTime1(cdDiffVel1 / cdAcc1);
-	double dTime2(0.0);
-	double dTime3(cdDiffVel2 / cdAcc2);
+	double dTimeAcc(pow(cdDiffVelAcc * 24.0 / cdKAcc, 1.0 / 4.0));
+	double dTimeUin(0.0);
+	double dTimeDec(pow(cdDiffVelDec * 24.0 / cdKDec, 1.0 / 4.0));
 
 	/***********************************
 
@@ -115,9 +115,10 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 			加速度由用户决定
 
 	 ***********************************/
-	double cdDis1(cdVelS * dTime1 + 0.5 * cdAcc1 * dTime1 * dTime1);
-	double cdDis2(cdMaxVel * dTime3 +0.5 * cdAcc2 * dTime3 * dTime3);
- 	if (cdDis1 + cdDis2 > cdDistance)
+
+	double cdDisAcc(cdVelS * dTimeAcc + cdKAcc * pow(dTimeAcc, 5) / 120.0);
+	double cdDisDec(cdMaxVel * dTimeDec + cdKDec * pow(dTimeDec, 5) / 120.0);
+ 	if (cdDisAcc + cdDisDec > cdDistance)
 	{
 		/*****************************************************
 
@@ -126,25 +127,24 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 								   Vs+A1*T1=Ve-A2*T2
 
 		 *****************************************************/
-		const double cdF1(cdAcc2 / cdAcc1);
+		const double cdF1(cdKDec / cdKAcc);
 		const double cdF2(cdVelE - cdVelS);
 		double dSol1(0.0),dSol2(0.0);
-		int res = gsl_poly_solve_quadratic((1.0 + cdF1) * cdAcc2 * 0.5, cdF1 * cdVelS + cdF1 * cdF2 + cdVelE, cdVelS / cdAcc1 * cdF2 + cdF2 * cdF2 / cdAcc1 *0.5, &dSol1, &dSol2);
+		int res = gsl_poly_solve_quadratic((1.0 + cdF1) * cdKDec * 0.5, cdF1 * cdVelS + cdF1 * cdF2 + cdVelE, cdVelS / cdKAcc * cdF2 + cdF2 * cdF2 / cdKAcc *0.5, &dSol1, &dSol2);
 		if (res == 0) return false;//无解
-		if (res == 1) dTime3 = dSol1;
-		if (res == 2) dTime3 = dSol1 > 0 ? dSol1 : dSol2;
-		dTime1 = (cdVelE - cdVelS - cdAcc2 * dTime3) / cdAcc1;
+		if (res == 1) dTimeDec = dSol1;
+		if (res == 2) dTimeDec = dSol1 > 0 ? dSol1 : dSol2;
+		dTimeAcc = (cdVelE - cdVelS - cdKDec * dTimeDec) / cdKAcc;
 	}
 	else
-		dTime2 = (cdDistance - cdDis1 -cdDis2) / cdMaxVel;
+		dTimeUin = (cdDistance - cdDisAcc - cdDisDec) / cdMaxVel;
 
-
-	const double dUinformTimePoint(dTime1);
-	const double dDecelerateTimePoint(dTime1 + dTime2);
-	const double dCompleteTimePoint(dTime1 + dTime2 + dTime3);
-	const double dUinformPosition(cdDis1);
-	const double dDeceleratePosition(cdDistance - cdDis2);
-	const double dCompletePosition(cdDistance);
+	const double dUinformTimePoint(dTimeAcc);
+	const double dDecelerateTimePoint(dTimeAcc + dTimeUin);
+	const double dCompleteTimePoint(dTimeAcc + dTimeUin + dTimeDec);
+	const double dUinformPosition(cdDisAcc);
+	const double dDeceleratePosition(cdDistance - cdDisDec);
+	const double dCompletePosition(cdDistance); 
 	/****************************************
 
 		注意：
@@ -168,8 +168,8 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 		PATH_SEG *pSeg(pPathSeg + index);
 		if (dPassTime <= dUinformTimePoint)
 		{
-			pSeg->dPosition = cdVelS * dPassTime + 0.5 * cdAcc1 * dPassTime * dPassTime;
-			pSeg->dVelocity = cdVelS + cdAcc1 * dPassTime;
+			pSeg->dPosition = cdVelS * dPassTime + 0.5 * cdKAcc * dPassTime * dPassTime;
+			pSeg->dVelocity = cdVelS + cdKAcc * dPassTime;
 			continue;
 		}
 		if (dPassTime <= dDecelerateTimePoint)
@@ -181,9 +181,9 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 		}
 		if (dPassTime <= dCompleteTimePoint)
 		{
-			double dDecelerateTime(dCompleteTimePoint -dPassTime);
-			pSeg->dPosition = dCompletePosition - (cdVelE * dDecelerateTime - 0.5 * cdAcc2 * dDecelerateTime * dDecelerateTime);
-			pSeg->dVelocity = cdVelE - cdAcc2 * dDecelerateTime;
+			double dDecelerateTime(dCompleteTimePoint - dPassTime);
+			pSeg->dPosition = dCompletePosition - (cdVelE * dDecelerateTime - 0.5 * cdKDec * dDecelerateTime * dDecelerateTime);
+			pSeg->dVelocity = cdVelE - cdKDec * dDecelerateTime;
 			continue;
 		}
 		return false;//算法错误，不可能出现大于dCompleteTimePoint的情况		

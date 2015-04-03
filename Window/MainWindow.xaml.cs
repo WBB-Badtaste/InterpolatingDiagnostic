@@ -288,7 +288,7 @@ namespace Window
 //                 }
 //             }
 
-            if (Backstage.RocksGanrtyArcInterpolation(150, 0, 0.1, 360.0) != Backstage.OK)
+            if (Backstage.RocksGanrtyArcInterpolation(500, 0, 0.1, 360.0) != Backstage.OK)
             {
                 listBox_result.Items.Add(new TextBox() { Text = "启动插补运动失败！" });
             }
@@ -308,7 +308,7 @@ namespace Window
                     double dCurY = 0;
                     Backstage.GetAxisPosition(pAxisNameX, ref dCurX);
                     Backstage.GetAxisPosition(pAxisNameY1, ref dCurY);
-                    double dRadius = 150;
+                    double dRadius = 500;
                     int sum = inSeg.Length;
                     int a = Backstage.GetInSeg_Circle(ref dCurX, ref dCurY, ref dRadius, p, ref sum);
                 }
