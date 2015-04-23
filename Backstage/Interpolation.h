@@ -4,7 +4,7 @@
 #include <process.h>
 #include <math.h>
 #include <string>
-#include "gsl/gsl_poly.h"
+//#include "gsl/gsl_poly.h"
 
 using namespace std;
 //轴参数子集
@@ -120,6 +120,7 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 	double cdDisDec(cdMaxVel * dTimeDec + cdKDec * pow(dTimeDec, 5) / 120.0);
  	if (cdDisAcc + cdDisDec > cdDistance)
 	{
+		
 		/*****************************************************
 
 			不能达到最大速度，调整时间
