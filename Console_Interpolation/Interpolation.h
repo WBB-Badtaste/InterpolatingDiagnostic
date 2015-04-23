@@ -4,7 +4,7 @@
 #include <process.h>
 #include <math.h>
 #include <string>
-//#include "gsl/gsl_poly.h"
+//#include "../gsl/gsl_poly.h"
 
 using namespace std;
 //轴参数子集
@@ -111,7 +111,7 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 	/***********************************
 
 		注意：
-			这里的加速过程是合速度匀加速
+			这里的加速过程是合速度匀加加加加速
 			加速度由用户决定
 
 	 ***********************************/
@@ -131,7 +131,8 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 		const double cdF1(cdKDec / cdKAcc);
 		const double cdF2(cdVelE - cdVelS);
 		double dSol1(0.0),dSol2(0.0);
-		int res = gsl_poly_solve_quadratic((1.0 + cdF1) * cdKDec * 0.5, cdF1 * cdVelS + cdF1 * cdF2 + cdVelE, cdVelS / cdKAcc * cdF2 + cdF2 * cdF2 / cdKAcc *0.5, &dSol1, &dSol2);
+		int res = 0;
+//		int res = gsl_poly_solve_quadratic((1.0 + cdF1) * cdKDec * 0.5, cdF1 * cdVelS + cdF1 * cdF2 + cdVelE, cdVelS / cdKAcc * cdF2 + cdF2 * cdF2 / cdKAcc *0.5, &dSol1, &dSol2);
 		if (res == 0) return false;//无解
 		if (res == 1) dTimeDec = dSol1;
 		if (res == 2) dTimeDec = dSol1 > 0 ? dSol1 : dSol2;
@@ -156,11 +157,8 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 
 	 ****************************************/
 	const double dPathSegSum(dCompleteTimePoint / cdSplineTime);
-	iPathSegSum = (int)dPathSegSum;
-	if (dPathSegSum - (double)iPathSegSum >= 0.05)
-		++iPathSegSum;
-	++iPathSegSum;//算上起始点
-
+	iPathSegSum = dPathSegSum == (int)dPathSegSum ? ((int)dPathSegSum + 1) : ((int)dPathSegSum + 2);
+	 
 	pPathSeg = new PATH_SEG[iPathSegSum];
 	int index = 0;
 	for (;index < iPathSegSum - 1; ++index)
@@ -169,8 +167,8 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 		PATH_SEG *pSeg(pPathSeg + index);
 		if (dPassTime <= dUinformTimePoint)
 		{
-			pSeg->dPosition = cdVelS * dPassTime + 0.5 * cdKAcc * dPassTime * dPassTime;
-			pSeg->dVelocity = cdVelS + cdKAcc * dPassTime;
+			pSeg->dPosition = cdVelS * dPassTime + cdKAcc * pow(dPassTime, 5) / 120.0;
+			pSeg->dVelocity = cdVelS + cdKAcc * pow(dPassTime, 4) / 24.0;
 			continue;
 		}
 		if (dPassTime <= dDecelerateTimePoint)
@@ -183,8 +181,8 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 		if (dPassTime <= dCompleteTimePoint)
 		{
 			double dDecelerateTime(dCompleteTimePoint - dPassTime);
-			pSeg->dPosition = dCompletePosition - (cdVelE * dDecelerateTime - 0.5 * cdKDec * dDecelerateTime * dDecelerateTime);
-			pSeg->dVelocity = cdVelE - cdKDec * dDecelerateTime;
+			pSeg->dPosition = dDeceleratePosition + (cdMaxVel * dDecelerateTime + cdKDec * pow(dPassTime, 5) / 120.0);
+			pSeg->dVelocity = cdVelE + cdKDec * pow(dPassTime, 4) / 24.0;
 			continue;
 		}
 		return false;//算法错误，不可能出现大于dCompleteTimePoint的情况		
@@ -231,7 +229,7 @@ static unsigned WINAPI StreamThread( LPVOID lpParameter )
 		return false;
 	if (SacClearInterpolantBuffer(pInfo->kinPars.jointAxisId[1])							  != NYCE_OK) 
 		return false;
-	for (int sum = iPathSegSum,i = 0;sum>0;sum -= 16, ++i)
+	for (int sum = iPathSegSum,i = 0; sum>0; sum -= 16, ++i)
 	{
 		if (i * 16 > 200)
 		break;
@@ -258,7 +256,7 @@ static unsigned WINAPI StreamThread( LPVOID lpParameter )
 		return false;
 	if(MacDeleteSyncGroup(uGroundId)			    != NYCE_OK) 
 		return false;
-
+	
 	delete[] pPathSeg;
 	delete[] pInfo->pCubPars_x;
 	delete[] pInfo->pCubPars_y;
@@ -282,6 +280,7 @@ static bool PathConverToSpline(KIN_PARS *const pKinPars)
 	{
 		PATH_SEG *pSeg(pPathSeg + index);
 		double dAngle(pSeg->dPosition / dRadius);
+
 		SAC_CUB_PARS *pCubPars(pInfo->pCubPars_x + index);
 		pCubPars->splineId = index;
 		pCubPars->position = dRadius - dRadius * cos(dAngle);
@@ -299,6 +298,7 @@ static bool PathConverToSpline(KIN_PARS *const pKinPars)
 		pCubPars->generateEvent = FALSE;
 	}
 	HANDLE h=(HANDLE)_beginthreadex(NULL,0,StreamThread,pInfo,0,NULL);
+
 	return true;
 } 
 

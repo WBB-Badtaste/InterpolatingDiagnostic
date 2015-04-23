@@ -707,19 +707,19 @@ bool NyceSystem::RocksGantryTerminal()
 
 bool NyceSystem::InitalizeRocksTrajCirclePars(POS &center,double &dTime,ROCKS_TRAJ_SINE_ACC_CIRCLE_PARS &rocksTrajCirclePars)
 {
-	double dPosX, dVelX(0.0), dAccX(0.0), dJerkX(0.0);
-	double dPosY1,dVelY1(0.0),dAccY1(0.0),dJerkY1(0.0);
-	double dPosY2,dVelY2(0.0),dAccY2(0.0),dJerkY2(0.0);
-	double dPosZ, dVelZ(0.0), dAccZ(0.0), dJerkZ(0.0);
-	if (!m_pAxisX ->GetMotionPars(dVelX,dAccX,dJerkX)	 ||
-		!m_pAxisY1->GetMotionPars(dVelY1,dAccY1,dJerkY1) ||
-		!m_pAxisY2->GetMotionPars(dVelY2,dAccY2,dJerkY2) ||
-		!m_pAxisZ ->GetMotionPars(dVelZ,dAccZ,dJerkZ)	 ||
-		!m_pAxisX ->GetPosition(&dPosX)					 ||
-		!m_pAxisY1->GetPosition(&dPosY1)				 ||
-		!m_pAxisY2->GetPosition(&dPosY2)				 ||
-		!m_pAxisZ ->GetPosition(&dPosZ)					 )
-		return false;
+// 	double dPosX, dVelX(0.0), dAccX(0.0), dJerkX(0.0);
+// 	double dPosY1,dVelY1(0.0),dAccY1(0.0),dJerkY1(0.0);
+// 	double dPosY2,dVelY2(0.0),dAccY2(0.0),dJerkY2(0.0);
+// 	double dPosZ, dVelZ(0.0), dAccZ(0.0), dJerkZ(0.0);
+// 	if (!m_pAxisX ->GetMotionPars(dVelX,dAccX,dJerkX)	 ||
+// 		!m_pAxisY1->GetMotionPars(dVelY1,dAccY1,dJerkY1) ||
+// 		!m_pAxisY2->GetMotionPars(dVelY2,dAccY2,dJerkY2) ||
+// 		!m_pAxisZ ->GetMotionPars(dVelZ,dAccZ,dJerkZ)	 ||
+// 		!m_pAxisX ->GetPosition(&dPosX)					 ||
+// 		!m_pAxisY1->GetPosition(&dPosY1)				 ||
+// 		!m_pAxisY2->GetPosition(&dPosY2)				 ||
+// 		!m_pAxisZ ->GetPosition(&dPosZ)					 )
+// 		return false;
 
 //  	if (RocksKinGantryPosition(&m_rockMech,rocksTrajCirclePars.startPos) != NYCE_OK)
 //  		return false;
@@ -741,7 +741,7 @@ bool NyceSystem::InitalizeRocksTrajCirclePars(POS &center,double &dTime,ROCKS_TR
 
 bool NyceSystem::RocksGantryArcInterpolation(POS &center,double &dTime)
 {
-/*	ROCKS_TRAJ_SINE_ACC_CIRCLE_PARS rocksTrajCirclePars;*/
+
 	 
 	ROCKS_KIN_INV_PARS kinInvPars;
 	for (int i=0;i<ROCKS_MECH_MAX_NR_OF_JOINTS;++i)
@@ -749,58 +749,60 @@ bool NyceSystem::RocksGantryArcInterpolation(POS &center,double &dTime)
 		kinInvPars.pJointPositionBuffer[i] = NULL;
 		kinInvPars.pJointVelocityBuffer[i] = NULL;
 	}
-	ROCKS_TRAJ_SEGMENT_START_PARS myTrajSegStartPars;
-	myTrajSegStartPars.splineTime = 0.01;
-	if (RocksKinCartesianPosition(&m_rockMech,myTrajSegStartPars.startPos) != NYCE_OK)
-		return false;
-	myTrajSegStartPars.maxNrOfSplines = 0;
-	myTrajSegStartPars.pPositionSplineBuffer = NULL;
-	myTrajSegStartPars.pVelocitySplineBuffer = NULL;
 
-	if (RocksTrajSegmentStart(&m_rockMech,&myTrajSegStartPars) != NYCE_OK)
-		return false;
-
-	ROCKS_TRAJ_SEGMENT_ARC_PARS myTrajSegArcPars;
-	myTrajSegArcPars.center[0] = center.dX;
-	myTrajSegArcPars.center[1] = center.dY;
-	myTrajSegArcPars.endPos[0] = 300;
-	myTrajSegArcPars.endPos[1] = 0;
-	myTrajSegArcPars.positiveAngle = TRUE;
-	myTrajSegArcPars.endVelocity = 300;
-	myTrajSegArcPars.plane = ROCKS_PLANE_XY;
-	myTrajSegArcPars.maxAcceleration = 1000; 
-	myTrajSegArcPars.originOffset.r.x = M_PI_4;
-	myTrajSegArcPars.originOffset.r.y = 0;
-	myTrajSegArcPars.originOffset.r.z = 0;
-	myTrajSegArcPars.originOffset.t.x = 0;
-	myTrajSegArcPars.originOffset.t.y = 0;
-	myTrajSegArcPars.originOffset.t.z = 0;
-
-	if (RocksTrajSegmentArc(&m_rockMech,&myTrajSegArcPars) != NYCE_OK)
-		return false;
-
-	myTrajSegArcPars.center[0] = center.dX;
-	myTrajSegArcPars.center[1] = center.dY;
-	myTrajSegArcPars.endPos[0] = 0;
-	myTrajSegArcPars.endPos[1] = 0;
-	myTrajSegArcPars.positiveAngle = TRUE;
-	myTrajSegArcPars.endVelocity = 0;
-	myTrajSegArcPars.plane = ROCKS_PLANE_XY;
-	myTrajSegArcPars.maxAcceleration = 1000; 
-	myTrajSegArcPars.originOffset.r.x = M_PI_4;
-	myTrajSegArcPars.originOffset.r.y = 0;
-	myTrajSegArcPars.originOffset.r.z = 0;
-	myTrajSegArcPars.originOffset.t.x = 0;
-	myTrajSegArcPars.originOffset.t.y = 0;
-	myTrajSegArcPars.originOffset.t.z = 0;
-
-	if (RocksTrajSegmentArc(&m_rockMech,&myTrajSegArcPars) != NYCE_OK)
-		return false;
-
-// 	if (!InitalizeRocksTrajCirclePars(center,dTime,rocksTrajCirclePars))
+// 	ROCKS_TRAJ_SEGMENT_START_PARS myTrajSegStartPars;
+// 	myTrajSegStartPars.splineTime = 0.01;
+// 	if (RocksKinCartesianPosition(&m_rockMech,myTrajSegStartPars.startPos) != NYCE_OK)
 // 		return false;
-// 	if (RocksTrajSineAccCircle(&m_rockMech,&rocksTrajCirclePars)   != NYCE_OK )
+// 	myTrajSegStartPars.maxNrOfSplines = 0;
+// 	myTrajSegStartPars.pPositionSplineBuffer = NULL;
+// 	myTrajSegStartPars.pVelocitySplineBuffer = NULL;
+// 
+// 	if (RocksTrajSegmentStart(&m_rockMech,&myTrajSegStartPars) != NYCE_OK)
 // 		return false;
+// 
+// 	ROCKS_TRAJ_SEGMENT_ARC_PARS myTrajSegArcPars;
+// 	myTrajSegArcPars.center[0] = center.dX;
+// 	myTrajSegArcPars.center[1] = center.dY;
+// 	myTrajSegArcPars.endPos[0] = 300;
+// 	myTrajSegArcPars.endPos[1] = 0;
+// 	myTrajSegArcPars.positiveAngle = TRUE;
+// 	myTrajSegArcPars.endVelocity = 300;
+// 	myTrajSegArcPars.plane = ROCKS_PLANE_XY;
+// 	myTrajSegArcPars.maxAcceleration = 1000; 
+// 	myTrajSegArcPars.originOffset.r.x = 0;
+// 	myTrajSegArcPars.originOffset.r.y = 0;
+// 	myTrajSegArcPars.originOffset.r.z = 0;
+// 	myTrajSegArcPars.originOffset.t.x = 0;
+// 	myTrajSegArcPars.originOffset.t.y = 0;
+// 	myTrajSegArcPars.originOffset.t.z = 0;
+// 
+// 	if (RocksTrajSegmentArc(&m_rockMech,&myTrajSegArcPars) != NYCE_OK)
+// 		return false;
+// 
+// 	myTrajSegArcPars.center[0] = center.dX;
+// 	myTrajSegArcPars.center[1] = center.dY;
+// 	myTrajSegArcPars.endPos[0] = 0;
+// 	myTrajSegArcPars.endPos[1] = 0;
+// 	myTrajSegArcPars.positiveAngle = TRUE;
+// 	myTrajSegArcPars.endVelocity = 0;
+// 	myTrajSegArcPars.plane = ROCKS_PLANE_XY;
+// 	myTrajSegArcPars.maxAcceleration = 1000; 
+// 	myTrajSegArcPars.originOffset.r.x = 0;
+// 	myTrajSegArcPars.originOffset.r.y = 0;
+// 	myTrajSegArcPars.originOffset.r.z = 0;
+// 	myTrajSegArcPars.originOffset.t.x = 0;
+// 	myTrajSegArcPars.originOffset.t.y = 0;
+// 	myTrajSegArcPars.originOffset.t.z = 0;
+// 
+// 	if (RocksTrajSegmentArc(&m_rockMech,&myTrajSegArcPars) != NYCE_OK)
+// 		return false;
+
+	ROCKS_TRAJ_SINE_ACC_CIRCLE_PARS rocksTrajCirclePars;
+	if (!InitalizeRocksTrajCirclePars(center,dTime,rocksTrajCirclePars))
+		return false;
+	if (RocksTrajSineAccCircle(&m_rockMech,&rocksTrajCirclePars)   != NYCE_OK )
+		return false;
 // 	if (RocksKinDefineGantry(&m_rockMech,ROCKS_GANTRY_Y)		   != NYCE_OK )
 // 		return false;
 // 	if (RocksKinInverseGantry(&m_rockMech,&kinInvPars)			   != NYCE_OK )

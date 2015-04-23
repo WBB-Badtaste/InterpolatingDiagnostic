@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Window", "Window\Window.csp
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Backstage", "Backstage\Backstage.vcxproj", "{5A91B990-9D36-41C7-AC82-9626BAF35BBA}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Console_Interpolation", "Console_Interpolation\Console_Interpolation.vcxproj", "{697117FB-806B-405C-9BEA-5BEA4F584D95}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -35,6 +37,16 @@ Global
 		{5A91B990-9D36-41C7-AC82-9626BAF35BBA}.Release|Win32.ActiveCfg = Release|Win32
 		{5A91B990-9D36-41C7-AC82-9626BAF35BBA}.Release|Win32.Build.0 = Release|Win32
 		{5A91B990-9D36-41C7-AC82-9626BAF35BBA}.Release|x86.ActiveCfg = Release|Win32
+		{697117FB-806B-405C-9BEA-5BEA4F584D95}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{697117FB-806B-405C-9BEA-5BEA4F584D95}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{697117FB-806B-405C-9BEA-5BEA4F584D95}.Debug|Win32.ActiveCfg = Debug|Win32
+		{697117FB-806B-405C-9BEA-5BEA4F584D95}.Debug|Win32.Build.0 = Debug|Win32
+		{697117FB-806B-405C-9BEA-5BEA4F584D95}.Debug|x86.ActiveCfg = Debug|Win32
+		{697117FB-806B-405C-9BEA-5BEA4F584D95}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{697117FB-806B-405C-9BEA-5BEA4F584D95}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{697117FB-806B-405C-9BEA-5BEA4F584D95}.Release|Win32.ActiveCfg = Release|Win32
+		{697117FB-806B-405C-9BEA-5BEA4F584D95}.Release|Win32.Build.0 = Release|Win32
+		{697117FB-806B-405C-9BEA-5BEA4F584D95}.Release|x86.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
