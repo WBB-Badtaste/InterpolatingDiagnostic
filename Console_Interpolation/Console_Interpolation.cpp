@@ -246,7 +246,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	arcPars.centerPos.dY = 0;
 	arcPars.centerPos.dZ = 0;
 	arcPars.dAngle = M_PI * 2;
-	arcPars.dExtraVel = 1;
+	arcPars.dExtraVel = 20;
 	arcPars.dMaxVel = 10;
 	arcPars.dSplineTime = 0.1;
 	

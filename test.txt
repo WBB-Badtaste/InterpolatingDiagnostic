@@ -1,0 +1,146 @@
+index:  0 angle:       0    pos_e:  0.000000    vel_e:  0.000000    pos_x:  0.000000    vel_x:  0.000000    pos_y:  0.000000    vel_y:  0.000000
+index:  1 angle:0.000000    pos_e:  0.000002    vel_e:  0.000083    pos_x:  0.000000    vel_x:  0.000000    pos_y:  0.000002    vel_y:  0.000083
+index:  2 angle:0.000003    pos_e:  0.000053    vel_e:  0.001333    pos_x:  0.000000    vel_x:  0.000000    pos_y:  0.000053    vel_y:  0.001333
+index:  3 angle:0.000020    pos_e:  0.000405    vel_e:  0.006750    pos_x:  0.000000    vel_x:  0.000000    pos_y:  0.000405    vel_y:  0.006750
+index:  4 angle:0.000085    pos_e:  0.001707    vel_e:  0.021333    pos_x:  0.000000    vel_x:  0.000002    pos_y:  0.001707    vel_y:  0.021333
+index:  5 angle:0.000260    pos_e:  0.005208    vel_e:  0.052083    pos_x:  0.000001    vel_x:  0.000014    pos_y:  0.005208    vel_y:  0.052083
+index:  6 angle:0.000648    pos_e:  0.012960    vel_e:  0.108000    pos_x:  0.000004    vel_x:  0.000070    pos_y:  0.012960    vel_y:  0.108000
+index:  7 angle:0.001401    pos_e:  0.028012    vel_e:  0.200083    pos_x:  0.000020    vel_x:  0.000280    pos_y:  0.028012    vel_y:  0.200083
+index:  8 angle:0.002731    pos_e:  0.054613    vel_e:  0.341333    pos_x:  0.000075    vel_x:  0.000932    pos_y:  0.054613    vel_y:  0.341332
+index:  9 angle:0.004921    pos_e:  0.098415    vel_e:  0.546750    pos_x:  0.000242    vel_x:  0.002690    pos_y:  0.098415    vel_y:  0.546743
+index: 10 angle:0.008333    pos_e:  0.166667    vel_e:  0.833333    pos_x:  0.000694    vel_x:  0.006944    pos_y:  0.166665    vel_y:  0.833304
+index: 11 angle:0.013421    pos_e:  0.268418    vel_e:  1.220083    pos_x:  0.001801    vel_x:  0.016374    pos_y:  0.268410    vel_y:  1.219973
+index: 12 angle:0.020736    pos_e:  0.414720    vel_e:  1.728000    pos_x:  0.004300    vel_x:  0.035829    pos_y:  0.414690    vel_y:  1.727629
+index: 13 angle:0.030941    pos_e:  0.618822    vel_e:  2.380083    pos_x:  0.009573    vel_x:  0.073631    pos_y:  0.618723    vel_y:  2.378944
+index: 14 angle:0.044819    pos_e:  0.896373    vel_e:  3.201333    pos_x:  0.020084    vel_x:  0.143431    pos_y:  0.896073    vel_y:  3.198119
+index: 15 angle:0.063281    pos_e:  1.265625    vel_e:  4.218750    pos_x:  0.040032    vel_x:  0.266790    pos_y:  1.264780    vel_y:  4.210306
+index: 16 angle:0.087381    pos_e:  1.747627    vel_e:  5.461333    pos_x:  0.076306    vel_x:  0.476612    pos_y:  1.745404    vel_y:  5.440497
+index: 17 angle:0.118321    pos_e:  2.366428    vel_e:  6.960083    pos_x:  0.139836    vel_x:  0.821607    pos_y:  2.360911    vel_y:  6.911420
+index: 18 angle:0.157464    pos_e:  3.149280    vel_e:  8.748000    pos_x:  0.247437    vel_x:  1.371810    pos_y:  3.136282    vel_y:  8.639771
+index: 19 angle:0.205516    pos_e:  4.110322    vel_e: 10.000000    pos_x:  0.420884    vel_x:  2.040724    pos_y:  4.081449    vel_y:  9.789558
+index: 20 angle:0.255516    pos_e:  5.110322    vel_e: 10.000000    pos_x:  0.649340    vel_x:  2.527448    pos_y:  5.054896    vel_y:  9.675330
+index: 21 angle:0.305516    pos_e:  6.110322    vel_e: 10.000000    pos_x:  0.926163    vel_x:  3.007854    pos_y:  6.015709    vel_y:  9.536918
+index: 22 angle:0.355516    pos_e:  7.110322    vel_e: 10.000000    pos_x:  1.250661    vel_x:  3.480743    pos_y:  6.961485    vel_y:  9.374670
+index: 23 angle:0.405516    pos_e:  8.110322    vel_e: 10.000000    pos_x:  1.622022    vel_x:  3.944931    pos_y:  7.889861    vel_y:  9.188989
+index: 24 angle:0.455516    pos_e:  9.110322    vel_e: 10.000000    pos_x:  2.039318    vel_x:  4.399259    pos_y:  8.798517    vel_y:  8.980341
+index: 25 angle:0.505516    pos_e: 10.110322    vel_e: 10.000000    pos_x:  2.501507    vel_x:  4.842591    pos_y:  9.685181    vel_y:  8.749247
+index: 26 angle:0.555516    pos_e: 11.110322    vel_e: 10.000000    pos_x:  3.007433    vel_x:  5.273819    pos_y: 10.547637    vel_y:  8.496284
+index: 27 angle:0.605516    pos_e: 12.110322    vel_e: 10.000000    pos_x:  3.555831    vel_x:  5.691865    pos_y: 11.383730    vel_y:  8.222084
+index: 28 angle:0.655516    pos_e: 13.110322    vel_e: 10.000000    pos_x:  4.145331    vel_x:  6.095685    pos_y: 12.191369    vel_y:  7.927334
+index: 29 angle:0.705516    pos_e: 14.110322    vel_e: 10.000000    pos_x:  4.774460    vel_x:  6.484268    pos_y: 12.968536    vel_y:  7.612770
+index: 30 angle:0.755516    pos_e: 15.110322    vel_e: 10.000000    pos_x:  5.441645    vel_x:  6.856644    pos_y: 13.713289    vel_y:  7.279178
+index: 31 angle:0.805516    pos_e: 16.110322    vel_e: 10.000000    pos_x:  6.145218    vel_x:  7.211883    pos_y: 14.423765    vel_y:  6.927391
+index: 32 angle:0.855516    pos_e: 17.110322    vel_e: 10.000000    pos_x:  6.883420    vel_x:  7.549095    pos_y: 15.098190    vel_y:  6.558290
+index: 33 angle:0.905516    pos_e: 18.110322    vel_e: 10.000000    pos_x:  7.654408    vel_x:  7.867438    pos_y: 15.734877    vel_y:  6.172796
+index: 34 angle:0.955516    pos_e: 19.110322    vel_e: 10.000000    pos_x:  8.456253    vel_x:  8.166117    pos_y: 16.332235    vel_y:  5.771874
+index: 35 angle:1.005516    pos_e: 20.110322    vel_e: 10.000000    pos_x:  9.286951    vel_x:  8.444385    pos_y: 16.888771    vel_y:  5.356525
+index: 36 angle:1.055516    pos_e: 21.110322    vel_e: 10.000000    pos_x: 10.144426    vel_x:  8.701547    pos_y: 17.403093    vel_y:  4.927787
+index: 37 angle:1.105516    pos_e: 22.110322    vel_e: 10.000000    pos_x: 11.026535    vel_x:  8.936959    pos_y: 17.873918    vel_y:  4.486732
+index: 38 angle:1.155516    pos_e: 23.110322    vel_e: 10.000000    pos_x: 11.931073    vel_x:  9.150033    pos_y: 18.300066    vel_y:  4.034463
+index: 39 angle:1.205516    pos_e: 24.110322    vel_e: 10.000000    pos_x: 12.855779    vel_x:  9.340237    pos_y: 18.680474    vel_y:  3.572110
+index: 40 angle:1.255516    pos_e: 25.110322    vel_e: 10.000000    pos_x: 13.798342    vel_x:  9.507095    pos_y: 19.014191    vel_y:  3.100829
+index: 41 angle:1.305516    pos_e: 26.110322    vel_e: 10.000000    pos_x: 14.756406    vel_x:  9.650191    pos_y: 19.300381    vel_y:  2.621797
+index: 42 angle:1.355516    pos_e: 27.110322    vel_e: 10.000000    pos_x: 15.727576    vel_x:  9.769166    pos_y: 19.538331    vel_y:  2.136212
+index: 43 angle:1.405516    pos_e: 28.110322    vel_e: 10.000000    pos_x: 16.709425    vel_x:  9.863723    pos_y: 19.727446    vel_y:  1.645287
+index: 44 angle:1.455516    pos_e: 29.110322    vel_e: 10.000000    pos_x: 17.699499    vel_x:  9.933626    pos_y: 19.867252    vel_y:  1.150250
+index: 45 angle:1.505516    pos_e: 30.110322    vel_e: 10.000000    pos_x: 18.695323    vel_x:  9.978700    pos_y: 19.957400    vel_y:  0.652339
+index: 46 angle:1.555516    pos_e: 31.110322    vel_e: 10.000000    pos_x: 19.694408    vel_x:  9.998833    pos_y: 19.997665    vel_y:  0.152796
+index: 47 angle:1.605516    pos_e: 32.110322    vel_e: 10.000000    pos_x: 20.694256    vel_x:  9.993973    pos_y: 19.987947    vel_y: -0.347128
+index: 48 angle:1.655516    pos_e: 33.110322    vel_e: 10.000000    pos_x: 21.692370    vel_x:  9.964134    pos_y: 19.928268    vel_y: -0.846185
+index: 49 angle:1.705516    pos_e: 34.110322    vel_e: 10.000000    pos_x: 22.686253    vel_x:  9.909390    pos_y: 19.818780    vel_y: -1.343126
+index: 50 angle:1.755516    pos_e: 35.110322    vel_e: 10.000000    pos_x: 23.673422    vel_x:  9.829878    pos_y: 19.659755    vel_y: -1.836711
+index: 51 angle:1.805516    pos_e: 36.110322    vel_e: 10.000000    pos_x: 24.651409    vel_x:  9.725795    pos_y: 19.451591    vel_y: -2.325705
+index: 52 angle:1.855516    pos_e: 37.110322    vel_e: 10.000000    pos_x: 25.617771    vel_x:  9.597404    pos_y: 19.194808    vel_y: -2.808885
+index: 53 angle:1.905516    pos_e: 38.110322    vel_e: 10.000000    pos_x: 26.570090    vel_x:  9.445024    pos_y: 18.890048    vel_y: -3.285045
+index: 54 angle:1.955516    pos_e: 39.110322    vel_e: 10.000000    pos_x: 27.505988    vel_x:  9.269036    pos_y: 18.538073    vel_y: -3.752994
+index: 55 angle:2.005516    pos_e: 40.110322    vel_e: 10.000000    pos_x: 28.423125    vel_x:  9.069881    pos_y: 18.139762    vel_y: -4.211563
+index: 56 angle:2.055516    pos_e: 41.110322    vel_e: 10.000000    pos_x: 29.319209    vel_x:  8.848056    pos_y: 17.696111    vel_y: -4.659604
+index: 57 angle:2.105516    pos_e: 42.110322    vel_e: 10.000000    pos_x: 30.191999    vel_x:  8.604115    pos_y: 17.208229    vel_y: -5.096000
+index: 58 angle:2.155516    pos_e: 43.110322    vel_e: 10.000000    pos_x: 31.039315    vel_x:  8.338668    pos_y: 16.677336    vel_y: -5.519657
+index: 59 angle:2.205516    pos_e: 44.110322    vel_e: 10.000000    pos_x: 31.859038    vel_x:  8.052379    pos_y: 16.104758    vel_y: -5.929519
+index: 60 angle:2.255516    pos_e: 45.110322    vel_e: 10.000000    pos_x: 32.649120    vel_x:  7.745963    pos_y: 15.491926    vel_y: -6.324560
+index: 61 angle:2.305516    pos_e: 46.110322    vel_e: 10.000000    pos_x: 33.407585    vel_x:  7.420186    pos_y: 14.840373    vel_y: -6.703793
+index: 62 angle:2.355516    pos_e: 47.110322    vel_e: 10.000000    pos_x: 34.132539    vel_x:  7.075863    pos_y: 14.151726    vel_y: -7.066269
+index: 63 angle:2.405516    pos_e: 48.110322    vel_e: 10.000000    pos_x: 34.822168    vel_x:  6.713854    pos_y: 13.427708    vel_y: -7.411084
+index: 64 angle:2.455516    pos_e: 49.110322    vel_e: 10.000000    pos_x: 35.474750    vel_x:  6.335063    pos_y: 12.670127    vel_y: -7.737375
+index: 65 angle:2.505516    pos_e: 50.110322    vel_e: 10.000000    pos_x: 36.088653    vel_x:  5.940439    pos_y: 11.880877    vel_y: -8.044327
+index: 66 angle:2.555516    pos_e: 51.110322    vel_e: 10.000000    pos_x: 36.662343    vel_x:  5.530966    pos_y: 11.061932    vel_y: -8.331171
+index: 67 angle:2.605516    pos_e: 52.110322    vel_e: 10.000000    pos_x: 37.194385    vel_x:  5.107669    pos_y: 10.215337    vel_y: -8.597193
+index: 68 angle:2.655516    pos_e: 53.110322    vel_e: 10.000000    pos_x: 37.683451    vel_x:  4.671605    pos_y:  9.343210    vel_y: -8.841725
+index: 69 angle:2.705516    pos_e: 54.110322    vel_e: 10.000000    pos_x: 38.128317    vel_x:  4.223864    pos_y:  8.447729    vel_y: -9.064159
+index: 70 angle:2.755516    pos_e: 55.110322    vel_e: 10.000000    pos_x: 38.527872    vel_x:  3.765567    pos_y:  7.531133    vel_y: -9.263936
+index: 71 angle:2.805516    pos_e: 56.110322    vel_e: 10.000000    pos_x: 38.881117    vel_x:  3.297857    pos_y:  6.595714    vel_y: -9.440558
+index: 72 angle:2.855516    pos_e: 57.110322    vel_e: 10.000000    pos_x: 39.187168    vel_x:  2.821904    pos_y:  5.643808    vel_y: -9.593584
+index: 73 angle:2.905516    pos_e: 58.110322    vel_e: 10.000000    pos_x: 39.445262    vel_x:  2.338898    pos_y:  4.677796    vel_y: -9.722631
+index: 74 angle:2.955516    pos_e: 59.110322    vel_e: 10.000000    pos_x: 39.654753    vel_x:  1.850046    pos_y:  3.700092    vel_y: -9.827377
+index: 75 angle:3.005516    pos_e: 60.110322    vel_e: 10.000000    pos_x: 39.815117    vel_x:  1.356570    pos_y:  2.713140    vel_y: -9.907559
+index: 76 angle:3.055516    pos_e: 61.110322    vel_e: 10.000000    pos_x: 39.925954    vel_x:  0.859703    pos_y:  1.719406    vel_y: -9.962977
+index: 77 angle:3.105516    pos_e: 62.110322    vel_e: 10.000000    pos_x: 39.986986    vel_x:  0.360687    pos_y:  0.721374    vel_y: -9.993493
+index: 78 angle:3.155516    pos_e: 63.110322    vel_e: 10.000000    pos_x: 39.998061    vel_x: -0.139230    pos_y: -0.278460    vel_y: -9.999031
+index: 79 angle:3.205516    pos_e: 64.110322    vel_e: 10.000000    pos_x: 39.959152    vel_x: -0.638799    pos_y: -1.277599    vel_y: -9.979576
+index: 80 angle:3.255516    pos_e: 65.110322    vel_e: 10.000000    pos_x: 39.870355    vel_x: -1.136772    pos_y: -2.273544    vel_y: -9.935177
+index: 81 angle:3.305516    pos_e: 66.110322    vel_e: 10.000000    pos_x: 39.731892    vel_x: -1.631903    pos_y: -3.263806    vel_y: -9.865946
+index: 82 angle:3.355516    pos_e: 67.110322    vel_e: 10.000000    pos_x: 39.544110    vel_x: -2.122955    pos_y: -4.245911    vel_y: -9.772055
+index: 83 angle:3.405516    pos_e: 68.110322    vel_e: 10.000000    pos_x: 39.307478    vel_x: -2.608702    pos_y: -5.217403    vel_y: -9.653739
+index: 84 angle:3.455516    pos_e: 69.110322    vel_e: 10.000000    pos_x: 39.022587    vel_x: -3.087927    pos_y: -6.175854    vel_y: -9.511294
+index: 85 angle:3.505516    pos_e: 70.110322    vel_e: 10.000000    pos_x: 38.690150    vel_x: -3.559435    pos_y: -7.118869    vel_y: -9.345075
+index: 86 angle:3.555516    pos_e: 71.110322    vel_e: 10.000000    pos_x: 38.310997    vel_x: -4.022045    pos_y: -8.044091    vel_y: -9.155498
+index: 87 angle:3.605516    pos_e: 72.110322    vel_e: 10.000000    pos_x: 37.886076    vel_x: -4.474603    pos_y: -8.949206    vel_y: -8.943038
+index: 88 angle:3.655516    pos_e: 73.110322    vel_e: 10.000000    pos_x: 37.416449    vel_x: -4.915977    pos_y: -9.831953    vel_y: -8.708225
+index: 89 angle:3.705516    pos_e: 74.110322    vel_e: 10.000000    pos_x: 36.903290    vel_x: -5.345063    pos_y:-10.690125    vel_y: -8.451645
+index: 90 angle:3.755516    pos_e: 75.110322    vel_e: 10.000000    pos_x: 36.347882    vel_x: -5.760789    pos_y:-11.521578    vel_y: -8.173941
+index: 91 angle:3.805516    pos_e: 76.110322    vel_e: 10.000000    pos_x: 35.751612    vel_x: -6.162116    pos_y:-12.324233    vel_y: -7.875806
+index: 92 angle:3.855516    pos_e: 77.110322    vel_e: 10.000000    pos_x: 35.115972    vel_x: -6.548041    pos_y:-13.096083    vel_y: -7.557986
+index: 93 angle:3.905516    pos_e: 78.110322    vel_e: 10.000000    pos_x: 34.442550    vel_x: -6.917600    pos_y:-13.835200    vel_y: -7.221275
+index: 94 angle:3.955516    pos_e: 79.110322    vel_e: 10.000000    pos_x: 33.733028    vel_x: -7.269868    pos_y:-14.539736    vel_y: -6.866514
+index: 95 angle:4.005516    pos_e: 80.110322    vel_e: 10.000000    pos_x: 32.989182    vel_x: -7.603965    pos_y:-15.207931    vel_y: -6.494591
+index: 96 angle:4.055516    pos_e: 81.110322    vel_e: 10.000000    pos_x: 32.212869    vel_x: -7.919057    pos_y:-15.838113    vel_y: -6.106434
+index: 97 angle:4.105516    pos_e: 82.110322    vel_e: 10.000000    pos_x: 31.406030    vel_x: -8.214354    pos_y:-16.428709    vel_y: -5.703015
+index: 98 angle:4.155516    pos_e: 83.110322    vel_e: 10.000000    pos_x: 30.570683    vel_x: -8.489121    pos_y:-16.978241    vel_y: -5.285341
+index: 99 angle:4.205516    pos_e: 84.110322    vel_e: 10.000000    pos_x: 29.708914    vel_x: -8.742668    pos_y:-17.485337    vel_y: -4.854457
+index:100 angle:4.255516    pos_e: 85.110322    vel_e: 10.000000    pos_x: 28.822877    vel_x: -8.974364    pos_y:-17.948728    vel_y: -4.411439
+index:101 angle:4.305516    pos_e: 86.110322    vel_e: 10.000000    pos_x: 27.914789    vel_x: -9.183628    pos_y:-18.367257    vel_y: -3.957394
+index:102 angle:4.355516    pos_e: 87.110322    vel_e: 10.000000    pos_x: 26.986917    vel_x: -9.369939    pos_y:-18.739877    vel_y: -3.493458
+index:103 angle:4.405516    pos_e: 88.110322    vel_e: 10.000000    pos_x: 26.041582    vel_x: -9.532829    pos_y:-19.065657    vel_y: -3.020791
+index:104 angle:4.455516    pos_e: 89.110322    vel_e: 10.000000    pos_x: 25.081145    vel_x: -9.671892    pos_y:-19.343784    vel_y: -2.540573
+index:105 angle:4.505516    pos_e: 90.110322    vel_e: 10.000000    pos_x: 24.108009    vel_x: -9.786780    pos_y:-19.573560    vel_y: -2.054005
+index:106 angle:4.555516    pos_e: 91.110322    vel_e: 10.000000    pos_x: 23.124605    vel_x: -9.877207    pos_y:-19.754413    vel_y: -1.562302
+index:107 angle:4.605516    pos_e: 92.110322    vel_e: 10.000000    pos_x: 22.133391    vel_x: -9.942945    pos_y:-19.885891    vel_y: -1.066695
+index:108 angle:4.655516    pos_e: 93.110322    vel_e: 10.000000    pos_x: 21.136844    vel_x: -9.983832    pos_y:-19.967663    vel_y: -0.568422
+index:109 angle:4.705516    pos_e: 94.110322    vel_e: 10.000000    pos_x: 20.137456    vel_x: -9.999764    pos_y:-19.999528    vel_y: -0.068728
+index:110 angle:4.755516    pos_e: 95.110322    vel_e: 10.000000    pos_x: 19.137725    vel_x: -9.990702    pos_y:-19.981403    vel_y:  0.431138
+index:111 angle:4.805516    pos_e: 96.110322    vel_e: 10.000000    pos_x: 18.140148    vel_x: -9.956668    pos_y:-19.913336    vel_y:  0.929926
+index:112 angle:4.855516    pos_e: 97.110322    vel_e: 10.000000    pos_x: 17.147221    vel_x: -9.897748    pos_y:-19.795496    vel_y:  1.426390
+index:113 angle:4.905516    pos_e: 98.110322    vel_e: 10.000000    pos_x: 16.161424    vel_x: -9.814088    pos_y:-19.628177    vel_y:  1.919288
+index:114 angle:4.955516    pos_e: 99.110322    vel_e: 10.000000    pos_x: 15.185221    vel_x: -9.705899    pos_y:-19.411798    vel_y:  2.407390
+index:115 angle:5.005516    pos_e:100.110322    vel_e: 10.000000    pos_x: 14.221052    vel_x: -9.573450    pos_y:-19.146900    vel_y:  2.889474
+index:116 angle:5.055516    pos_e:101.110322    vel_e: 10.000000    pos_x: 13.271328    vel_x: -9.417072    pos_y:-18.834144    vel_y:  3.364336
+index:117 angle:5.105516    pos_e:102.110322    vel_e: 10.000000    pos_x: 12.338423    vel_x: -9.237156    pos_y:-18.474313    vel_y:  3.830789
+index:118 angle:5.155516    pos_e:103.110322    vel_e: 10.000000    pos_x: 11.424667    vel_x: -9.034153    pos_y:-18.068305    vel_y:  4.287667
+index:119 angle:5.205516    pos_e:104.110322    vel_e: 10.000000    pos_x: 10.532345    vel_x: -8.808568    pos_y:-17.617137    vel_y:  4.733828
+index:120 angle:5.255516    pos_e:105.110322    vel_e: 10.000000    pos_x:  9.663687    vel_x: -8.560967    pos_y:-17.121934    vel_y:  5.168156
+index:121 angle:5.305516    pos_e:106.110322    vel_e: 10.000000    pos_x:  8.820865    vel_x: -8.291968    pos_y:-16.583936    vel_y:  5.589568
+index:122 angle:5.355516    pos_e:107.110322    vel_e: 10.000000    pos_x:  8.005984    vel_x: -8.002243    pos_y:-16.004487    vel_y:  5.997008
+index:123 angle:5.405516    pos_e:108.110322    vel_e: 10.000000    pos_x:  7.221083    vel_x: -7.692517    pos_y:-15.385034    vel_y:  6.389459
+index:124 angle:5.455516    pos_e:109.110322    vel_e: 10.000000    pos_x:  6.468122    vel_x: -7.363564    pos_y:-14.727127    vel_y:  6.765939
+index:125 angle:5.505516    pos_e:110.110322    vel_e: 10.000000    pos_x:  5.748984    vel_x: -7.016205    pos_y:-14.032410    vel_y:  7.125508
+index:126 angle:5.555516    pos_e:111.110322    vel_e:  9.999999    pos_x:  5.065466    vel_x: -6.651309    pos_y:-13.302619    vel_y:  7.467266
+index:127 angle:5.605516    pos_e:112.110315    vel_e:  9.999734    pos_x:  4.419280    vel_x: -6.269626    pos_y:-12.539584    vel_y:  7.790153
+index:128 angle:5.655510    pos_e:113.110206    vel_e:  9.997517    pos_x:  3.812098    vel_x: -5.871187    pos_y:-11.745290    vel_y:  8.091941
+index:129 angle:5.705482    pos_e:114.109633    vel_e:  9.989675    pos_x:  3.245622    vel_x: -5.455378    pos_y:-10.922033    vel_y:  8.368540
+index:130 angle:5.755388    pos_e:115.107767    vel_e:  9.970536    pos_x:  2.721626    vel_x: -5.021474    pos_y:-10.072626    vel_y:  8.613732
+index:131 angle:5.805156    pos_e:116.103110    vel_e:  9.932426    pos_x:  2.241940    vel_x: -4.569221    pos_y: -9.200614    vel_y:  8.819031
+index:132 angle:5.854665    pos_e:117.093300    vel_e:  9.865674    pos_x:  1.808368    vel_x: -4.099438    pos_y: -8.310507    vel_y:  8.973635
+index:133 angle:5.903745    pos_e:118.074904    vel_e:  9.758606    pos_x:  1.422557    vel_x: -3.614593    pos_y: -7.408010    vel_y:  9.064498
+index:134 angle:5.952161    pos_e:119.043224    vel_e:  9.597551    pos_x:  1.085800    vel_x: -3.119317    pos_y: -6.500235    vel_y:  9.076500
+index:135 angle:5.999605    pos_e:119.992094    vel_e:  9.366835    pos_x:  0.798805    vel_x: -2.620794    pos_y: -5.595901    vel_y:  8.992721
+index:136 angle:6.045684    pos_e:120.913682    vel_e:  9.048786    pos_x:  0.561422    vel_x: -2.128951    pos_y: -4.705495    vel_y:  8.794777
+index:137 angle:6.089914    pos_e:121.798287    vel_e:  8.623732    pos_x:  0.372375    vel_x: -1.656360    pos_y: -3.841400    vel_y:  8.463168
+index:138 angle:6.131707    pos_e:122.634141    vel_e:  8.069999    pos_x:  0.229018    vel_x: -1.217760    pos_y: -3.017993    vel_y:  7.977590
+index:139 angle:6.170361    pos_e:123.407210    vel_e:  7.363915    pos_x:  0.127159    vel_x: -0.829071    pos_y: -2.251712    vel_y:  7.317096
+index:140 angle:6.205050    pos_e:124.100992    vel_e:  6.479808    pos_x:  0.061021    vel_x: -0.505789    pos_y: -1.561124    vel_y:  6.460038
+index:141 angle:6.234816    pos_e:124.696318    vel_e:  5.390005    pos_x:  0.023391    vel_x: -0.260610    pos_y: -0.967011    vel_y:  5.383701
+index:142 angle:6.258557    pos_e:125.171150    vel_e:  4.064834    pos_x:  0.006065    vel_x: -0.100098    pos_y: -0.492507    vel_y:  4.063601
+index:143 angle:6.275019    pos_e:125.500385    vel_e:  2.472621    pos_x:  0.000667    vel_x: -0.020191    pos_y: -0.163319    vel_y:  2.472538
+index:144 angle:6.282783    pos_e:125.655652    vel_e:  0.579694    pos_x:  0.000002    vel_x: -0.000233    pos_y: -0.008054    vel_y:  0.579694
+index:145 angle:6.283185    pos_e:125.663706    vel_e:  0.000000    pos_x:  0.000000    vel_x: -0.000000    pos_y: -0.000000    vel_y:  0.000000
