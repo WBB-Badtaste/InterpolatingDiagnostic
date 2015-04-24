@@ -88,6 +88,18 @@ double Factorial(double x)
 	return y;
 }
 
+double Vel2Jerk(double vel, double radius)
+{
+	double jerk = pow(vel, 4.0) / pow(radius, 3.0);
+	return jerk;
+}
+
+double Jerk2Vel(double jerk, double radius)
+{
+	double vel = pow(jerk * pow(radius, 3.0), 1.0 / 4.0);
+	return vel;
+}
+
 //生成圆弧规划路径
 static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 {
@@ -113,14 +125,19 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 	 *********************************************/
  	const double cdRadius(sqrt(pow(pArcPars->centerPos.dX - pArcPars->startStatus.position.dX,2.0) + pow(pArcPars->centerPos.dY -pArcPars->startStatus.position.dY,2.0) + pow(pArcPars->centerPos.dZ - pArcPars->startStatus.position.dZ,2.0)));
 	const double cdDistance(cdAngle * cdRadius);
-	const double cdDiffVelAcc(cdMaxVel - cdVelS);
-	const double cdDiffVelDec(cdVelE - cdMaxVel);
- 	const double cdKAcc(cdDiffVelAcc > 0 ? pArcPars->dExtraVel : -pArcPars->dExtraVel);
- 	const double cdKDec(cdDiffVelDec > 0 ? pArcPars->dExtraVel : -pArcPars->dExtraVel);
 
-	double dTimeAcc(pow(cdDiffVelAcc * fac1 / cdKAcc, 1.0 / (LEVEL - 1.0)));
+	const double cdJerkS(Vel2Jerk(cdVelS, cdRadius));
+	const double cdJerkE(Vel2Jerk(cdVelE, cdRadius));
+	const double cdMaxJerk(Vel2Jerk(cdMaxVel, cdRadius));
+
+	const double cdDiffJerkAcc(cdMaxVel - cdVelS);
+	const double cdDiffJerkDec(cdVelE - cdMaxVel);
+	const double cdKAcc(cdDiffJerkAcc > 0 ? pArcPars->dExtraVel : -pArcPars->dExtraVel);
+	const double cdKDec(cdDiffJerkDec > 0 ? pArcPars->dExtraVel : -pArcPars->dExtraVel);
+
+	double dTimeAcc(pow(cdDiffJerkAcc * fac1 / cdKAcc, 1.0 / (LEVEL - 1.0)));
 	double dTimeUin(0.0);
-	double dTimeDec(pow(cdDiffVelDec * fac1 / cdKDec, 1.0 / (LEVEL - 1.0)));
+	double dTimeDec(pow(cdDiffJerkDec * fac1 / cdKDec, 1.0 / (LEVEL - 1.0)));
 
 	/***********************************
 
@@ -129,31 +146,30 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 			加速度由用户决定
 
 	 ***********************************/
-
-	double cdDisAcc(cdVelS * dTimeAcc + cdKAcc * pow(dTimeAcc, LEVEL) /  fac2);
-	double cdDisDec(cdMaxVel * dTimeDec + cdKDec * pow(dTimeDec, LEVEL) /  fac2);
- 	if (cdDisAcc + cdDisDec > cdDistance)
-	{
-		
-		/*****************************************************
-
-			不能达到最大速度，调整时间
-				解方程组：Vs*T1+0.5*A1*T1^2=Ve*T2-0.5*A2*T2^2
-								   Vs+A1*T1=Ve-A2*T2
-
-		 *****************************************************/
-		const double cdF1(cdKDec / cdKAcc);
-		const double cdF2(cdVelE - cdVelS);
-		double dSol1(0.0),dSol2(0.0);
-		int res = 0;
-//		int res = gsl_poly_solve_quadratic((1.0 + cdF1) * cdKDec * 0.5, cdF1 * cdVelS + cdF1 * cdF2 + cdVelE, cdVelS / cdKAcc * cdF2 + cdF2 * cdF2 / cdKAcc *0.5, &dSol1, &dSol2);
-		if (res == 0) return false;//无解
-		if (res == 1) dTimeDec = dSol1;
-		if (res == 2) dTimeDec = dSol1 > 0 ? dSol1 : dSol2;
-		dTimeAcc = (cdVelE - cdVelS - cdKDec * dTimeDec) / cdKAcc;
-	}
+	double fac_DisAcc,fac_DisDec;
+	if (cdKAcc > 0)
+		 fac_DisAcc = pow(cdKAcc / fac2 * pow(cdRadius, 3.0), 1.0 / 4.0);
 	else
-		dTimeUin = (cdDistance - cdDisAcc - cdDisDec) / cdMaxVel;
+	{
+		 fac_DisAcc = pow(-cdKAcc / fac2 * pow(cdRadius, 3.0), 1.0 / 4.0);
+		fac_DisAcc = -fac_DisAcc;
+	}
+	if (cdKDec > 0)
+		 fac_DisDec = pow(cdKDec / fac2 * pow(cdRadius, 3.0), 1.0 / 4.0);
+	else
+	{
+		 fac_DisDec = pow(-cdKDec / fac2 * pow(cdRadius, 3.0), 1.0 / 4.0);
+		fac_DisDec = -fac_DisDec;
+	}
+
+ 	double cdDisAcc(cdVelS * dTimeAcc + 4.0 / (LEVEL + 4.0) * fac_DisAcc * pow(dTimeAcc, (LEVEL + 4.0) / 4.0));
+ 	double cdDisDec(cdMaxVel * dTimeDec + 4.0 / (LEVEL + 4.0) * fac_DisDec * pow(dTimeDec, (LEVEL + 4.0) / 4.0));
+//   	if (cdDisAcc + cdDisDec > cdDistance)
+//  	{
+//  
+//  	}
+//  	else
+	dTimeUin = (cdDistance - cdDisAcc - cdDisDec) / cdMaxVel;
 
 	const double dUinformTimePoint(dTimeAcc);
 	const double dDecelerateTimePoint(dTimeAcc + dTimeUin);
@@ -181,8 +197,8 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 		PATH_SEG *pSeg(pPathSeg + index);
 		if (dPassTime <= dUinformTimePoint)
 		{
-			pSeg->dPosition = cdVelS * dPassTime + cdKAcc * pow(dPassTime, LEVEL) /  fac2;
-			pSeg->dVelocity = cdVelS + cdKAcc * pow(dPassTime, LEVEL - 1.0) / fac1;
+			pSeg->dPosition = cdVelS * dPassTime + 4.0 / (LEVEL + 4.0) * fac_DisAcc * pow(dTimeAcc, (LEVEL + 4.0) / 4.0);
+			pSeg->dVelocity = cdVelS + fac_DisAcc * pow(dPassTime, LEVEL / 4.0);
 			continue;
 		}
 		if (dPassTime <= dDecelerateTimePoint)
@@ -195,8 +211,8 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 		if (dPassTime <= dCompleteTimePoint)
 		{
 			double dDecelerateTime(dPassTime - dDecelerateTimePoint);
-			pSeg->dPosition = dDeceleratePosition + (cdMaxVel * dDecelerateTime + cdKDec * pow(dDecelerateTime, LEVEL) / fac2);
-			pSeg->dVelocity = cdMaxVel + cdKDec * pow(dDecelerateTime, LEVEL - 1.0) /  fac1;
+			pSeg->dPosition = dDeceleratePosition + (cdMaxVel * dDecelerateTime + 4.0 / (LEVEL + 4.0) * fac_DisDec * pow(dTimeDec, (LEVEL + 4.0) / 4.0));
+			pSeg->dVelocity = cdMaxVel + fac_DisDec * pow(dTimeAcc, LEVEL / 4.0);
 			continue;
 		}
 		return false;//算法错误，不可能出现大于dCompleteTimePoint的情况		
