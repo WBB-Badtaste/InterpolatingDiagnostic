@@ -6,6 +6,8 @@
 #include <string>
 //#include "../gsl/gsl_poly.h"
 
+#define LEVEL 7.0
+
 using namespace std;
 //轴参数子集
 typedef class MotionStatus
@@ -78,6 +80,14 @@ static ARC_PARS arcPars;
 static POSITION center;
 static double dRadius;
 
+double Factorial(double x)
+{
+	double y = 1;
+	while (x)
+		y *= x--;
+	return y;
+}
+
 //生成圆弧规划路径
 static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 {
@@ -86,6 +96,10 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 		pArcPars->dMaxVel	  <= 0 ||
 		pArcPars->dSplineTime <= 0 )
 		return false;
+
+	double fac1 = Factorial(LEVEL - 1.0);
+	double fac2 = Factorial(LEVEL);
+
 	const double &cdVelS(pArcPars->startStatus.motionStatus.dVel);
 	const double &cdVelE(pArcPars->endStatus.motionStatus.dVel);
 	const double &cdMaxVel(pArcPars->dMaxVel);
@@ -104,9 +118,9 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
  	const double cdKAcc(cdDiffVelAcc > 0 ? pArcPars->dExtraVel : -pArcPars->dExtraVel);
  	const double cdKDec(cdDiffVelDec > 0 ? pArcPars->dExtraVel : -pArcPars->dExtraVel);
 
-	double dTimeAcc(pow(cdDiffVelAcc * 24.0 / cdKAcc, 1.0 / 4.0));
+	double dTimeAcc(pow(cdDiffVelAcc * fac1 / cdKAcc, 1.0 / (LEVEL - 1.0)));
 	double dTimeUin(0.0);
-	double dTimeDec(pow(cdDiffVelDec * 24.0 / cdKDec, 1.0 / 4.0));
+	double dTimeDec(pow(cdDiffVelDec * fac1 / cdKDec, 1.0 / (LEVEL - 1.0)));
 
 	/***********************************
 
@@ -116,8 +130,8 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 
 	 ***********************************/
 
-	double cdDisAcc(cdVelS * dTimeAcc + cdKAcc * pow(dTimeAcc, 5) / 120.0);
-	double cdDisDec(cdMaxVel * dTimeDec + cdKDec * pow(dTimeDec, 5) / 120.0);
+	double cdDisAcc(cdVelS * dTimeAcc + cdKAcc * pow(dTimeAcc, LEVEL) /  fac2);
+	double cdDisDec(cdMaxVel * dTimeDec + cdKDec * pow(dTimeDec, LEVEL) /  fac2);
  	if (cdDisAcc + cdDisDec > cdDistance)
 	{
 		
@@ -167,8 +181,8 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 		PATH_SEG *pSeg(pPathSeg + index);
 		if (dPassTime <= dUinformTimePoint)
 		{
-			pSeg->dPosition = cdVelS * dPassTime + cdKAcc * pow(dPassTime, 5) / 120.0;
-			pSeg->dVelocity = cdVelS + cdKAcc * pow(dPassTime, 4) / 24.0;
+			pSeg->dPosition = cdVelS * dPassTime + cdKAcc * pow(dPassTime, LEVEL) /  fac2;
+			pSeg->dVelocity = cdVelS + cdKAcc * pow(dPassTime, LEVEL - 1.0) / fac1;
 			continue;
 		}
 		if (dPassTime <= dDecelerateTimePoint)
@@ -180,9 +194,9 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 		}
 		if (dPassTime <= dCompleteTimePoint)
 		{
-			double dDecelerateTime(dCompleteTimePoint - dPassTime);
-			pSeg->dPosition = dDeceleratePosition + (cdMaxVel * dDecelerateTime + cdKDec * pow(dPassTime, 5) / 120.0);
-			pSeg->dVelocity = cdVelE + cdKDec * pow(dPassTime, 4) / 24.0;
+			double dDecelerateTime(dPassTime - dDecelerateTimePoint);
+			pSeg->dPosition = dDeceleratePosition + (cdMaxVel * dDecelerateTime + cdKDec * pow(dDecelerateTime, LEVEL) / fac2);
+			pSeg->dVelocity = cdMaxVel + cdKDec * pow(dDecelerateTime, LEVEL - 1.0) /  fac1;
 			continue;
 		}
 		return false;//算法错误，不可能出现大于dCompleteTimePoint的情况		
@@ -210,7 +224,6 @@ typedef struct StreamThreadInformation
 	SAC_CUB_PARS *pCubPars_x,*pCubPars_y,*pCubPars_z;
 	KIN_PARS kinPars;
 }STREAM_TH_INFO;
-
 
 static unsigned WINAPI StreamThread( LPVOID lpParameter )
 {
@@ -248,6 +261,10 @@ static unsigned WINAPI StreamThread( LPVOID lpParameter )
 				return false;
 		}
 	}
+	if (SacStopInterpolation(pInfo->kinPars.jointAxisId[0]) != NYCE_OK)
+		return false;
+	if (SacStopInterpolation(pInfo->kinPars.jointAxisId[1]) != NYCE_OK)
+		return false;
 	if (SacStartInterpolation(pInfo->kinPars.jointAxisId[0]) != NYCE_OK)
 		return false;
 	if (SacStartInterpolation(pInfo->kinPars.jointAxisId[1]) != NYCE_OK)
@@ -266,9 +283,15 @@ static unsigned WINAPI StreamThread( LPVOID lpParameter )
 	return 0;
 }
 
+#include <fstream>
+#include <iostream>
+#define ADDR "..\\test.txt"
+
 //生成spline
 static bool PathConverToSpline(KIN_PARS *const pKinPars)
 {
+	ofstream file(ADDR);
+
 	STREAM_TH_INFO *pInfo = new STREAM_TH_INFO();
 	pInfo->pCubPars_x = new SAC_CUB_PARS[iPathSegSum]();
 	pInfo->pCubPars_y = new SAC_CUB_PARS[iPathSegSum]();
@@ -276,34 +299,45 @@ static bool PathConverToSpline(KIN_PARS *const pKinPars)
 	pInfo->kinPars.jointAxisId[0] = pKinPars->jointAxisId[0];
 	pInfo->kinPars.jointAxisId[1] = pKinPars->jointAxisId[1];
 	pInfo->kinPars.nrOfJoints = pKinPars->nrOfJoints;
+	double posX, posY;
+	SacReadVariable(pInfo->kinPars.jointAxisId[0], SAC_VAR_AXIS_POS, &posX);
+	SacReadVariable(pInfo->kinPars.jointAxisId[1], SAC_VAR_AXIS_POS, &posY);
+
+	//file<<setfill(0)<<setiosflags(ios::fixed)<<setiosflags(ios::showpos)<<setw(10);
 	for (int index = 0; index < iPathSegSum; ++index)
 	{
 		PATH_SEG *pSeg(pPathSeg + index);
 		double dAngle(pSeg->dPosition / dRadius);
 
+		file<<"index:"<<setw(3)<<index<<" angle:"<<setw(8)<<dAngle<<"    pos_e:"<<setiosflags(ios::fixed)<<setw(10)<<pSeg->dPosition<<"    vel_e:"<<setw(10)<<pSeg->dVelocity;
+
 		SAC_CUB_PARS *pCubPars(pInfo->pCubPars_x + index);
 		pCubPars->splineId = index;
-		pCubPars->position = dRadius - dRadius * cos(dAngle);
+		pCubPars->position = posX + dRadius - dRadius * cos(dAngle);
 		pCubPars->positionReference = SAC_ABSOLUTE;
 		pCubPars->time = 0.1;
 		pCubPars->velocity = pSeg->dVelocity * sin(dAngle);
 		pCubPars->generateEvent = FALSE;
 
+		file<<"    pos_x:"<<setw(10)<<pCubPars->position<<"    vel_x:"<<setw(10)<<pCubPars->velocity;
+
 		pCubPars = pInfo->pCubPars_y + index;
 		pCubPars->splineId = index;
-		pCubPars->position = dRadius * sin(dAngle);
+		pCubPars->position = posY + dRadius * sin(dAngle);
 		pCubPars->positionReference = SAC_ABSOLUTE;
 		pCubPars->time = 0.1;
 		pCubPars->velocity = pSeg->dVelocity * cos(dAngle);
 		pCubPars->generateEvent = FALSE;
-	}
-	HANDLE h=(HANDLE)_beginthreadex(NULL,0,StreamThread,pInfo,0,NULL);
 
+		file<<"    pos_y:"<<setw(10)<<pCubPars->position<<"    vel_y:"<<setw(10)<<pCubPars->velocity<<endl;
+
+	}
+
+	file.close();
+
+	HANDLE h=(HANDLE)_beginthreadex(NULL,0,StreamThread,pInfo,0,NULL);
+	
 	return true;
 } 
 
-static bool StreamStart()
-{
-	
-}
 
