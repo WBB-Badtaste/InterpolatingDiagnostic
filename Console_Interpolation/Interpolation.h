@@ -6,8 +6,6 @@
 #include <string>
 //#include "../gsl/gsl_poly.h"
 
-#define LEVEL 7.0
-
 using namespace std;
 //轴参数子集
 typedef class MotionStatus
@@ -97,12 +95,9 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 		pArcPars->dSplineTime <= 0 )
 		return false;
 
-	double fac1 = Factorial(LEVEL - 1.0);
-	double fac2 = Factorial(LEVEL);
-
 	const double &cdVelS(pArcPars->startStatus.motionStatus.dVel);
 	const double &cdVelE(pArcPars->endStatus.motionStatus.dVel);
-	const double &cdMaxVel(pArcPars->dMaxVel);
+	 double dMaxVel(pArcPars->dMaxVel);
 	const double &cdAngle(pArcPars->dAngle);
 	const double &cdSplineTime(pArcPars->dSplineTime);
 	/*********************************************
@@ -113,54 +108,44 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 	 *********************************************/
  	const double cdRadius(sqrt(pow(pArcPars->centerPos.dX - pArcPars->startStatus.position.dX,2.0) + pow(pArcPars->centerPos.dY -pArcPars->startStatus.position.dY,2.0) + pow(pArcPars->centerPos.dZ - pArcPars->startStatus.position.dZ,2.0)));
 	const double cdDistance(cdAngle * cdRadius);
-	const double cdDiffVelAcc(cdMaxVel - cdVelS);
-	const double cdDiffVelDec(cdVelE - cdMaxVel);
+	const double cdDiffVelAcc(dMaxVel - cdVelS);
+	const double cdDiffVelDec(cdVelE - dMaxVel);
  	const double cdKAcc(cdDiffVelAcc > 0 ? pArcPars->dExtraVel : -pArcPars->dExtraVel);
  	const double cdKDec(cdDiffVelDec > 0 ? pArcPars->dExtraVel : -pArcPars->dExtraVel);
 
-	double dTimeAcc(pow(cdDiffVelAcc * fac1 / cdKAcc, 1.0 / (LEVEL - 1.0)));
+	double dTimeAccOne(pow(cdDiffVelAcc / cdKAcc, 1.0 / 2.0));
+	double dTimeAccTwo(pow(cdDiffVelAcc / cdKAcc, 1.0 / 2.0));
 	double dTimeUin(0.0);
-	double dTimeDec(pow(cdDiffVelDec * fac1 / cdKDec, 1.0 / (LEVEL - 1.0)));
+	double dTimeDecOne(pow(cdDiffVelDec / cdKDec, 1.0 / 2.0));
+	double dTimeDecTwo(pow(cdDiffVelDec / cdKDec, 1.0 / 2.0));
 
-	/***********************************
+	double dMidAAcc(cdKAcc * dTimeAccOne);
+	double dMidADec(cdKDec * dTimeDecOne);
+	double dMidVAcc(cdVelS + 0.5 * cdKAcc * dTimeAccOne * dTimeAccOne);
+	double dMidVDec(dMaxVel + 0.5 * cdKDec * dTimeDecOne * dTimeDecOne);
 
-		注意：
-			这里的加速过程是合速度匀加加加加速
-			加速度由用户决定
-
-	 ***********************************/
-
-	double cdDisAcc(cdVelS * dTimeAcc + cdKAcc * pow(dTimeAcc, LEVEL) /  fac2);
-	double cdDisDec(cdMaxVel * dTimeDec + cdKDec * pow(dTimeDec, LEVEL) /  fac2);
- 	if (cdDisAcc + cdDisDec > cdDistance)
+	double cdDisAcc1(cdVelS * dTimeAccOne + cdKAcc * dTimeAccOne * dTimeAccOne * dTimeAccOne / 6.0);
+	double cdDisAcc2(dMidVAcc * dTimeAccTwo + 0.5 * dMidAAcc * dTimeAccTwo * dTimeAccTwo - cdKAcc * dTimeAccTwo * dTimeAccTwo * dTimeAccTwo / 6.0);
+	double cdDisDec1(dMaxVel * dTimeDecOne + cdKDec * dTimeDecOne * dTimeDecOne * dTimeDecOne / 6.0);
+	double cdDisDec2(dMidVDec * dTimeDecTwo + 0.5 * dMidADec * dTimeDecTwo *dTimeDecTwo - cdKDec * dTimeDecTwo * dTimeDecTwo * dTimeDecTwo / 6.0);
+ 	if (cdDisAcc1 + cdDisAcc2 + cdDisDec1 + cdDisDec2 > cdDistance)
 	{
-		
-		/*****************************************************
-
-			不能达到最大速度，调整时间
-				解方程组：Vs*T1+0.5*A1*T1^2=Ve*T2-0.5*A2*T2^2
-								   Vs+A1*T1=Ve-A2*T2
-
-		 *****************************************************/
-		const double cdF1(cdKDec / cdKAcc);
-		const double cdF2(cdVelE - cdVelS);
-		double dSol1(0.0),dSol2(0.0);
-		int res = 0;
-//		int res = gsl_poly_solve_quadratic((1.0 + cdF1) * cdKDec * 0.5, cdF1 * cdVelS + cdF1 * cdF2 + cdVelE, cdVelS / cdKAcc * cdF2 + cdF2 * cdF2 / cdKAcc *0.5, &dSol1, &dSol2);
-		if (res == 0) return false;//无解
-		if (res == 1) dTimeDec = dSol1;
-		if (res == 2) dTimeDec = dSol1 > 0 ? dSol1 : dSol2;
-		dTimeAcc = (cdVelE - cdVelS - cdKDec * dTimeDec) / cdKAcc;
+		;
 	}
 	else
-		dTimeUin = (cdDistance - cdDisAcc - cdDisDec) / cdMaxVel;
+		dTimeUin = (cdDistance - (cdDisAcc1 + cdDisAcc2 + cdDisDec1 + cdDisDec2)) / dMaxVel;
 
-	const double dUinformTimePoint(dTimeAcc);
-	const double dDecelerateTimePoint(dTimeAcc + dTimeUin);
-	const double dCompleteTimePoint(dTimeAcc + dTimeUin + dTimeDec);
-	const double dUinformPosition(cdDisAcc);
-	const double dDeceleratePosition(cdDistance - cdDisDec);
-	const double dCompletePosition(cdDistance); 
+	const double cdAccelecteMidTimePoint(dTimeAccOne);
+	const double cdUinformTimePoint(dTimeAccOne + dTimeAccTwo);
+	const double cdDecelerateTimePoint(cdUinformTimePoint + dTimeUin);
+	const double cdDecelerateMidTimePoint(cdDecelerateTimePoint + dTimeDecOne);
+	const double cdCompleteTimePoint(cdDecelerateMidTimePoint + dTimeDecTwo);
+
+	const double cdAccelecteMidPosition(cdDisAcc1);
+	const double cdUinformPosition(cdDisAcc1 + cdDisAcc2);
+	const double cdDeceleratePosition(cdUinformPosition + dMaxVel * dTimeUin);
+	const double cdDecelerateMidPosition(cdDeceleratePosition + cdDisDec1);
+	const double cdCompletePosition(cdDecelerateMidPosition + cdDisDec2); 
 	/****************************************
 
 		注意：
@@ -170,7 +155,7 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 			将多加一段。
 
 	 ****************************************/
-	const double dPathSegSum(dCompleteTimePoint / cdSplineTime);
+	const double dPathSegSum(cdCompleteTimePoint / cdSplineTime);
 	iPathSegSum = dPathSegSum == (int)dPathSegSum ? ((int)dPathSegSum + 1) : ((int)dPathSegSum + 2);
 	 
 	pPathSeg = new PATH_SEG[iPathSegSum];
@@ -179,30 +164,45 @@ static bool GenerateArcPath(const ARC_PARS * const pArcPars)
 	{
 		double dPassTime((double)index * cdSplineTime);
 		PATH_SEG *pSeg(pPathSeg + index);
-		if (dPassTime <= dUinformTimePoint)
+		if (dPassTime <= cdAccelecteMidTimePoint)
 		{
-			pSeg->dPosition = cdVelS * dPassTime + cdKAcc * pow(dPassTime, LEVEL) /  fac2;
-			pSeg->dVelocity = cdVelS + cdKAcc * pow(dPassTime, LEVEL - 1.0) / fac1;
+			double dAccelecteTimeOne(dPassTime);
+			pSeg->dPosition = cdVelS * dAccelecteTimeOne + cdKAcc * dAccelecteTimeOne * dAccelecteTimeOne * dAccelecteTimeOne / 6.0;
+			pSeg->dVelocity = cdVelS + 0.5 * cdKAcc * dAccelecteTimeOne * dAccelecteTimeOne;
 			continue;
 		}
-		if (dPassTime <= dDecelerateTimePoint)
+		if (dPassTime <= cdUinformTimePoint)
 		{
-			double dUniformTime(dPassTime - dUinformTimePoint);
-			pSeg->dPosition = dUinformPosition + cdMaxVel * dUniformTime;
-			pSeg->dVelocity = cdMaxVel;
+			double dAccelecteTimeTwo(dPassTime - cdAccelecteMidTimePoint);
+			pSeg->dPosition = cdAccelecteMidPosition + dMidVAcc * dAccelecteTimeTwo + 0.5 * dMidAAcc * dAccelecteTimeTwo * dAccelecteTimeTwo - cdKAcc * dAccelecteTimeTwo * dAccelecteTimeTwo * dAccelecteTimeTwo / 6.0;
+			pSeg->dVelocity = dMidVAcc + dMidAAcc * dAccelecteTimeTwo - 0.5 * cdKAcc * dAccelecteTimeTwo * dAccelecteTimeTwo;
 			continue;
 		}
-		if (dPassTime <= dCompleteTimePoint)
+		if (dPassTime <= cdDecelerateTimePoint)
 		{
-			double dDecelerateTime(dPassTime - dDecelerateTimePoint);
-			pSeg->dPosition = dDeceleratePosition + (cdMaxVel * dDecelerateTime + cdKDec * pow(dDecelerateTime, LEVEL) / fac2);
-			pSeg->dVelocity = cdMaxVel + cdKDec * pow(dDecelerateTime, LEVEL - 1.0) /  fac1;
+			double dUniformTime(dPassTime - cdUinformTimePoint);
+			pSeg->dPosition = cdUinformPosition + dMaxVel * dUniformTime;
+			pSeg->dVelocity = dMaxVel;
 			continue;
 		}
-		return false;//算法错误，不可能出现大于dCompleteTimePoint的情况		
+		if (dPassTime <= cdDecelerateMidTimePoint)
+		{
+			double dDecelerateTimeOne(dPassTime - cdDecelerateTimePoint);
+			pSeg->dPosition = cdDeceleratePosition + dMaxVel * dDecelerateTimeOne + cdKDec * dDecelerateTimeOne * dDecelerateTimeOne * dDecelerateTimeOne / 6.0;
+			pSeg->dVelocity = dMaxVel + 0.5 * cdKDec * dDecelerateTimeOne * dDecelerateTimeOne;
+			continue;
+		}
+		if (dPassTime <= cdCompleteTimePoint)
+		{
+			double dDecelerateTimeTwo(dPassTime - cdDecelerateMidTimePoint); 
+			pSeg->dPosition = cdDecelerateMidPosition + dMidVDec * dDecelerateTimeTwo + 0.5 * dMidADec * dDecelerateTimeTwo * dDecelerateTimeTwo - cdKDec * dDecelerateTimeTwo * dDecelerateTimeTwo * dDecelerateTimeTwo / 6.0;
+			pSeg->dVelocity = dMidVDec + dMidADec * dDecelerateTimeTwo - 0.5 * cdKDec * dDecelerateTimeTwo * dDecelerateTimeTwo;
+			continue;
+		}
+		return false;//算法错误，不可能出现大于cdCompleteTimePoint的情况		
 	}
 	PATH_SEG *pSeg(pPathSeg + index);
-	pSeg->dPosition = dCompletePosition;
+	pSeg->dPosition = cdCompletePosition;
 	pSeg->dVelocity = cdVelE;
 
 	dRadius = cdRadius;
@@ -283,6 +283,47 @@ static unsigned WINAPI StreamThread( LPVOID lpParameter )
 	return 0;
 }
 
+struct dataToEvent
+{
+	int *pIndex;
+	STREAM_TH_INFO *pInfo;
+};
+
+void OnInterpolantEvent( NYCE_ID nyceId, NYCE_EVENT eventId, NYCE_EVENT_DATA *pEventData, void *pUserData )
+{
+	dataToEvent *pData = (dataToEvent *)pUserData;
+	int &index(*pData->pIndex);
+	STREAM_TH_INFO *pInfo = pData->pInfo;
+	bool bBegin = false;
+	for (; index < iPathSegSum; index += 16)
+	{
+		if (index % 96 == 0)
+			if (bBegin)
+				break;
+			else 
+				bBegin = true;
+		
+		if (iPathSegSum - index > 16)
+		{
+			if(SacWriteCubicIntBuffer(pInfo->kinPars.jointAxisId[0],16,pInfo->pCubPars_x + index) !=NYCE_OK)
+				return ;
+			if(SacWriteCubicIntBuffer(pInfo->kinPars.jointAxisId[1],16,pInfo->pCubPars_y + index) !=NYCE_OK)
+				return ;
+		}
+		else
+		{
+			if(SacWriteCubicIntBuffer(pInfo->kinPars.jointAxisId[0],iPathSegSum - index,pInfo->pCubPars_x + index) !=NYCE_OK)
+				return ;
+			if(SacWriteCubicIntBuffer(pInfo->kinPars.jointAxisId[1],iPathSegSum - index,pInfo->pCubPars_y + index) !=NYCE_OK)
+				return ;
+			if (SacStopInterpolation(pInfo->kinPars.jointAxisId[0]) != NYCE_OK)
+				return ;
+			if (SacStopInterpolation(pInfo->kinPars.jointAxisId[1]) != NYCE_OK)
+				return ;
+		}
+	}
+}
+
 #include <fstream>
 #include <iostream>
 #define ADDR "..\\test.txt"
@@ -317,7 +358,11 @@ static bool PathConverToSpline(KIN_PARS *const pKinPars)
 		pCubPars->positionReference = SAC_ABSOLUTE;
 		pCubPars->time = 0.1;
 		pCubPars->velocity = pSeg->dVelocity * sin(dAngle);
-		pCubPars->generateEvent = FALSE;
+		if (index % 96 == 0)
+			pCubPars->generateEvent = TRUE;
+		else
+			pCubPars->generateEvent = FALSE;
+			
 
 		file<<"    pos_x:"<<setw(10)<<pCubPars->position<<"    vel_x:"<<setw(10)<<pCubPars->velocity;
 
@@ -327,7 +372,10 @@ static bool PathConverToSpline(KIN_PARS *const pKinPars)
 		pCubPars->positionReference = SAC_ABSOLUTE;
 		pCubPars->time = 0.1;
 		pCubPars->velocity = pSeg->dVelocity * cos(dAngle);
-		pCubPars->generateEvent = FALSE;
+		if (index % 96 == 0)
+			pCubPars->generateEvent = TRUE;
+		else
+			pCubPars->generateEvent = FALSE;
 
 		file<<"    pos_y:"<<setw(10)<<pCubPars->position<<"    vel_y:"<<setw(10)<<pCubPars->velocity<<endl;
 
@@ -335,8 +383,93 @@ static bool PathConverToSpline(KIN_PARS *const pKinPars)
 
 	file.close();
 
-	HANDLE h=(HANDLE)_beginthreadex(NULL,0,StreamThread,pInfo,0,NULL);
+//	HANDLE h=(HANDLE)_beginthreadex(NULL,0,StreamThread,pInfo,0,NULL);
 	
+	uint32_t uGroundId;
+	NYCE_STATUS status;
+	string strStatus;
+	status = MacDefineSyncGroup(pInfo->kinPars.jointAxisId, pInfo->kinPars.nrOfJoints, &uGroundId);
+	if (status != NYCE_OK)
+	{
+		strStatus =NyceGetStatusString(status);
+		return false;
+	}
+	if (SacClearInterpolantBuffer(pInfo->kinPars.jointAxisId[0])							  != NYCE_OK) 
+		return false;
+	if (SacClearInterpolantBuffer(pInfo->kinPars.jointAxisId[1])							  != NYCE_OK) 
+		return false;
+	int index = 0;
+	bool bBegin = false;
+	for (; index < iPathSegSum; index += 16)
+	{
+		if (index % 96 == 0)
+			if (bBegin)
+				break;
+			else
+				bBegin = true;
+
+		if (iPathSegSum - index > 16)
+		{
+			if(SacWriteCubicIntBuffer(pInfo->kinPars.jointAxisId[0],16,pInfo->pCubPars_x + index) !=NYCE_OK)
+				return false;
+			if(SacWriteCubicIntBuffer(pInfo->kinPars.jointAxisId[1],16,pInfo->pCubPars_y + index) !=NYCE_OK)
+				return false;
+		}
+		else
+		{
+			if(SacWriteCubicIntBuffer(pInfo->kinPars.jointAxisId[0],iPathSegSum - index,pInfo->pCubPars_x + index) !=NYCE_OK)
+				return false;
+			if(SacWriteCubicIntBuffer(pInfo->kinPars.jointAxisId[1],iPathSegSum - index,pInfo->pCubPars_y + index) !=NYCE_OK)
+				return false;
+			if (SacStopInterpolation(pInfo->kinPars.jointAxisId[0]) != NYCE_OK)
+				return false;
+			if (SacStopInterpolation(pInfo->kinPars.jointAxisId[1]) != NYCE_OK)
+				return false;
+		}
+	}
+
+	dataToEvent data;
+	data.pIndex = &index;
+	data.pInfo = pInfo;
+
+	if(SacDefineEventEnrolment(pInfo->kinPars.jointAxisId[0], SAC_EV_INTERPOLANT_STARTED, OnInterpolantEvent, (void * )&data) != NYCE_OK)
+		return false;
+	if (SacStartInterpolation(pInfo->kinPars.jointAxisId[0]) != NYCE_OK)
+		return false;
+	if (SacStartInterpolation(pInfo->kinPars.jointAxisId[1]) != NYCE_OK)
+		return false;
+	if(MacStartSyncGroup(uGroundId,MAC_SYNC_MOTION) != NYCE_OK) 
+		return false;
+
+	Sleep(100000);
+// 	string str;
+// 	status = SacSynchronize(pInfo->kinPars.jointAxisId[0], SAC_REQ_MOTION_STOPPED, INFINITE);
+// 	if (status != NYCE_OK)
+// 	{
+// 		str = NyceGetStatusString(status);
+// 	}
+// 	status = SacSynchronize(pInfo->kinPars.jointAxisId[1], SAC_REQ_MOTION_STOPPED, INFINITE);
+// 	if (status != NYCE_OK)
+// 	{
+// 		str = NyceGetStatusString(status);
+// 	}
+
+//  	if(SacSynchronize(pInfo->kinPars.jointAxisId[0], SAC_REQ_MOTION_STOPPED, INFINITE) != NYCE_OK) 
+//  		return false;
+//  	if(SacSynchronize(pInfo->kinPars.jointAxisId[1], SAC_REQ_MOTION_STOPPED, INFINITE) != NYCE_OK) 
+//  		return false;
+
+// 	if(SacDeleteEventEnrolment(pInfo->kinPars.jointAxisId[0], SAC_EV_INTERPOLANT_STARTED, OnInterpolantEvent, NULL) != NYCE_OK)
+// 		return false;
+// 	if(MacDeleteSyncGroup(uGroundId)			    != NYCE_OK) 
+// 		return false;
+// 
+// 	delete[] pPathSeg;
+// 	delete[] pInfo->pCubPars_x;
+// 	delete[] pInfo->pCubPars_y;
+// 	delete[] pInfo->pCubPars_z;
+// 	delete pInfo;
+
 	return true;
 } 
 
